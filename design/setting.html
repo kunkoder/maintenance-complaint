@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Document Table - Atlantis Admin</title>
+    <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
+    <link rel="icon" href="assets/img/icon.ico" type="image/x-icon" />
+    <!-- Fonts and icons -->
+    <script src="assets/js/plugin/webfont/webfont.min.js"></script>
+    <script>
+        WebFont.load({
+            google: { "families": ["Lato:300,400,700,900"] },
+            custom: { "families": ["Flaticon", "Font Awesome 5 Solid", "Font Awesome 5 Regular", "simple-line-icons"], urls: ['assets/css/fonts.min.css'] },
+            active: function () {
+                sessionStorage.fonts = true;
+            }
+        });
+    </script>
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/atlantis.min.css">
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="main-header">
+            <!-- Logo Header -->
+            <div class="logo-header" data-background-color="blue">
+
+                <a href="index.html" class="logo">
+                    <img src="assets/img/logo.svg" alt="navbar brand" class="navbar-brand">
+                </a>
+                <button class="navbar-toggler sidenav-toggler ml-auto" type="button" data-toggle="collapse"
+                    data-target="collapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon">
+                        <i class="icon-menu"></i>
+                    </span>
+                </button>
+                <button class="topbar-toggler more"><i class="icon-options-vertical"></i></button>
+                <div class="nav-toggle">
+                    <button class="btn btn-toggle toggle-sidebar">
+                        <i class="icon-menu"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- End Logo Header -->
+
+            <!-- Navbar Header -->
+            <nav class="navbar navbar-header navbar-expand-lg" data-background-color="blue2">
+
+                <div class="container-fluid">
+                    <div class="collapse" id="search-nav">
+                        <form class="navbar-left navbar-form nav-search mr-md-3">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <button type="submit" class="btn btn-search pr-1">
+                                        <i class="fa fa-search search-icon"></i>
+                                    </button>
+                                </div>
+                                <input type="text" placeholder="Search ..." class="form-control">
+                            </div>
+                        </form>
+                    </div>
+                    <ul class="navbar-nav topbar-nav ml-md-auto align-items-center">
+                        <li class="nav-item toggle-nav-search hidden-caret">
+                            <a class="nav-link" data-toggle="collapse" href="#search-nav" role="button"
+                                aria-expanded="false" aria-controls="search-nav">
+                                <i class="fa fa-search"></i>
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown hidden-caret">
+                            <a class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#"
+                                aria-expanded="false">
+                                <div class="avatar-sm">
+                                    <img src="assets/img/profile.jpg" alt="..." class="avatar-img rounded-circle">
+                                </div>
+                            </a>
+                            <ul class="dropdown-menu dropdown-user animated fadeIn">
+                                <div class="dropdown-user-scroll scrollbar-outer">
+                                    <li>
+                                        <div class="user-box">
+                                            <div class="avatar-lg"><img src="assets/img/profile.jpg" alt="image profile"
+                                                    class="avatar-img rounded"></div>
+                                            <div class="u-text">
+                                                <h4>Hizrian</h4>
+                                                <p class="text-muted">hello@example.com</p><a href="profile.html"
+                                                    class="btn btn-xs btn-secondary btn-sm">View Profile</a>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="#">My Profile</a>
+                                        <a class="dropdown-item" href="#">My Balance</a>
+                                        <a class="dropdown-item" href="#">Inbox</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="#">Account Setting</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="#">Logout</a>
+                                    </li>
+                                </div>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            <!-- End Navbar -->
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar sidebar-style-2">
+            <div class="sidebar-wrapper scrollbar scrollbar-inner">
+                <div class="sidebar-content">
+                    <div class="user">
+                        <div class="avatar-sm float-left mr-2">
+                            <img src="assets/img/profile.jpg" alt="..." class="avatar-img rounded-circle">
+                        </div>
+                        <div class="info">
+                            <a data-toggle="collapse" href="#collapseExample" aria-expanded="true">
+                                <span>
+                                    Hizrian
+                                    <span class="user-level">Administrator</span>
+                                    <span class="caret"></span>
+                                </span>
+                            </a>
+                            <div class="clearfix"></div>
+
+                            <div class="collapse in" id="collapseExample">
+                                <ul class="nav">
+                                    <li>
+                                        <a href="#profile">
+                                            <span class="link-collapse">My Profile</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#edit">
+                                            <span class="link-collapse">Edit Profile</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#settings">
+                                            <span class="link-collapse">Settings</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <ul class="nav nav-primary">
+                        <li class="nav-item">
+                            <a data-toggle="collapse" href="#dashboard" class="collapsed" aria-expanded="false">
+                                <i class="fas fa-home"></i>
+                                <p>Dashboard</p>
+                                <span class="caret"></span>
+                            </a>
+                        </li>
+                        <li class="nav-section">
+                            <span class="sidebar-mini-icon">
+                                <i class="fa fa-ellipsis-h"></i>
+                            </span>
+                            <h4 class="text-section">Menu</h4>
+                        </li>
+                        <li class="nav-item">
+                            <a data-toggle="collapse" href="#base">
+                                <i class="fas fa-users"></i>
+                                <p>User Management</p>
+                                <!-- <span class="caret"></span> -->
+                            </a>
+                            <!-- <div class="collapse" id="base">
+								<ul class="nav nav-collapse">
+									<li>
+										<a href="components/avatars.html">
+											<span class="sub-item">Avatars</span>
+										</a>
+									</li>
+								</ul>
+							</div> -->
+                        </li>
+                        <li class="nav-item">
+                            <a data-toggle="collapse" href="#base">
+                                <i class="fas fa-folder-open"></i>
+                                <p>Documents</p>
+                            </a>
+                        </li>
+                        <li class="nav-item active">
+                            <a data-toggle="collapse" href="#base">
+                                <i class="fas fa-sliders-h"></i>
+                                <p>Setting</p>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- End Sidebar -->
+
+        <div class="main-panel">
+            <div class="content">
+                <div class="panel-header bg-primary-gradient">
+                    <div class="page-inner py-5">
+                        <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row">
+                            <div>
+                                <h2 class="text-white pb-2 fw-bold">Dashboard</h2>
+                                <h5 class="text-white op-7 mb-2">Free Bootstrap 4 Admin Dashboard</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="page-inner mt--5">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="d-flex align-items-center">
+                                        <h4 class="card-title">Cabinet</h4>
+                                        <button class="btn btn-primary btn-round ml-auto" data-toggle="modal"
+                                            data-target="#addCabinetModal">
+                                            <i class="fa fa-plus"></i> Add
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table id="cabinet-table" class="display table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Cabinet Name</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tfoot>
+                                                <tr>
+                                                    <th>Cabinet Name</th>
+                                                </tr>
+                                            </tfoot>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Tiger Nixon</td>
+                                                    <td>
+                                                        <div class="form-button-action">
+                                                            <button type="button"
+                                                                class="btn btn-link btn-primary btn-lg edit-cabinet"
+                                                                data-id="1" data-name="Tiger Nixon">
+                                                                <i class="fa fa-edit"></i>
+                                                            </button>
+                                                            <button type="button"
+                                                                class="btn btn-link btn-danger delete-cabinet"
+                                                                data-id="1" data-name="Tiger Nixon">
+                                                                <i class="fa fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Donna Snider</td>
+                                                    <td>
+                                                        <div class="form-button-action">
+                                                            <button type="button"
+                                                                class="btn btn-link btn-primary btn-lg edit-cabinet"
+                                                                data-id="2" data-name="Donna Snider">
+                                                                <i class="fa fa-edit"></i>
+                                                            </button>
+                                                            <button type="button"
+                                                                class="btn btn-link btn-danger delete-cabinet"
+                                                                data-id="2" data-name="Donna Snider">
+                                                                <i class="fa fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal Add -->
+                            <div class="modal fade" id="addCabinetModal" tabindex="-1" role="dialog" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header no-bd">
+                                            <h5 class="modal-title">Add Cabinet</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form id="formAddCabinet">
+                                                <div class="form-group">
+                                                    <label>Cabinet Name</label>
+                                                    <input type="text" class="form-control" id="addCabinetName"
+                                                        placeholder="Enter cabinet name" required>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="modal-footer no-bd">
+                                            <button type="button" class="btn btn-primary"
+                                                id="addCabinetButton">Add</button>
+                                            <button type="button" class="btn btn-danger"
+                                                data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal Edit -->
+                            <div class="modal fade" id="editCabinetModal" tabindex="-1" role="dialog"
+                                aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header no-bd">
+                                            <h5 class="modal-title">Edit Cabinet</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <input type="hidden" id="editCabinetId">
+                                            <form id="formEditCabinet">
+                                                <div class="form-group">
+                                                    <label>Cabinet Name</label>
+                                                    <input type="text" class="form-control" id="editCabinetName"
+                                                        required>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="modal-footer no-bd">
+                                            <button type="button" class="btn btn-primary"
+                                                id="saveEditCabinetButton">Save</button>
+                                            <button type="button" class="btn btn-danger"
+                                                data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal Delete -->
+                            <div class="modal fade" id="deleteCabinetModal" tabindex="-1" role="dialog"
+                                aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header no-bd">
+                                            <h5 class="modal-title">Delete Cabinet</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Are you sure to delete <strong id="deleteCabinetName"></strong>?</p>
+                                        </div>
+                                        <div class="modal-footer no-bd">
+                                            <button type="button" class="btn btn-danger"
+                                                id="confirmDeleteCabinetButton">Yes, Delete</button>
+                                            <button type="button" class="btn btn-secondary"
+                                                data-dismiss="modal">Cancel</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Category Card -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="d-flex align-items-center">
+                                        <h4 class="card-title">Category</h4>
+                                        <button class="btn btn-primary btn-round ml-auto" data-toggle="modal"
+                                            data-target="#addCategoryModal">
+                                            <i class="fa fa-plus"></i> Add
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Table -->
+                                    <div class="table-responsive">
+                                        <table id="category-table" class="display table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Category Name</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tfoot>
+                                                <tr>
+                                                    <th>Category Name</th>
+                                                </tr>
+                                            </tfoot>
+                                            <tbody>
+                                                <tr>
+                                                    <td>HR</td>
+                                                    <td>
+                                                        <div class="form-button-action">
+                                                            <button type="button"
+                                                                class="btn btn-link btn-primary btn-lg edit-category"
+                                                                data-id="1" data-name="HR">
+                                                                <i class="fa fa-edit"></i>
+                                                            </button>
+                                                            <button type="button"
+                                                                class="btn btn-link btn-danger delete-category"
+                                                                data-id="1" data-name="HR">
+                                                                <i class="fa fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Finance</td>
+                                                    <td>
+                                                        <div class="form-button-action">
+                                                            <button type="button"
+                                                                class="btn btn-link btn-primary btn-lg edit-category"
+                                                                data-id="2" data-name="Finance">
+                                                                <i class="fa fa-edit"></i>
+                                                            </button>
+                                                            <button type="button"
+                                                                class="btn btn-link btn-danger delete-category"
+                                                                data-id="2" data-name="Finance">
+                                                                <i class="fa fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Modal Add Category -->
+                            <div class="modal fade" id="addCategoryModal" tabindex="-1" role="dialog"
+                                aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header no-bd">
+                                            <h5 class="modal-title">Add Category</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form id="formAddCategory">
+                                                <div class="form-group">
+                                                    <label>Category Name</label>
+                                                    <input type="text" class="form-control" id="addCategoryName"
+                                                        placeholder="Enter category name" required>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="modal-footer no-bd">
+                                            <button type="button" class="btn btn-primary"
+                                                id="addCategoryButton">Add</button>
+                                            <button type="button" class="btn btn-danger"
+                                                data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal Edit Category -->
+                            <div class="modal fade" id="editCategoryModal" tabindex="-1" role="dialog"
+                                aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header no-bd">
+                                            <h5 class="modal-title">Edit Category</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <input type="hidden" id="editCategoryId">
+                                            <form id="formEditCategory">
+                                                <div class="form-group">
+                                                    <label>Category Name</label>
+                                                    <input type="text" class="form-control" id="editCategoryName"
+                                                        required>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="modal-footer no-bd">
+                                            <button type="button" class="btn btn-primary"
+                                                id="saveEditCategoryButton">Save</button>
+                                            <button type="button" class="btn btn-danger"
+                                                data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal Delete Category -->
+                            <div class="modal fade" id="deleteCategoryModal" tabindex="-1" role="dialog"
+                                aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header no-bd">
+                                            <h5 class="modal-title">Delete Category</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Are you sure to delete <strong id="deleteCategoryName"></strong>?</p>
+                                        </div>
+                                        <div class="modal-footer no-bd">
+                                            <button type="button" class="btn btn-danger"
+                                                id="confirmDeleteCategoryButton">Yes, Delete</button>
+                                            <button type="button" class="btn btn-secondary"
+                                                data-dismiss="modal">Cancel</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status Card -->
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="d-flex align-items-center">
+                                        <h4 class="card-title">Status</h4>
+                                        <button class="btn btn-primary btn-round ml-auto" data-toggle="modal"
+                                            data-target="#addStatusModal">
+                                            <i class="fa fa-plus"></i> Add
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Table -->
+                                    <div class="table-responsive">
+                                        <table id="status-table" class="display table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Status</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tfoot>
+                                                <tr>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </tfoot>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Active</td>
+                                                    <td>
+                                                        <div class="form-button-action">
+                                                            <button type="button"
+                                                                class="btn btn-link btn-primary btn-lg edit-status"
+                                                                data-id="1" data-name="Active">
+                                                                <i class="fa fa-edit"></i>
+                                                            </button>
+                                                            <button type="button"
+                                                                class="btn btn-link btn-danger delete-status"
+                                                                data-id="1" data-name="Active">
+                                                                <i class="fa fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Archived</td>
+                                                    <td>
+                                                        <div class="form-button-action">
+                                                            <button type="button"
+                                                                class="btn btn-link btn-primary btn-lg edit-status"
+                                                                data-id="2" data-name="Archived">
+                                                                <i class="fa fa-edit"></i>
+                                                            </button>
+                                                            <button type="button"
+                                                                class="btn btn-link btn-danger delete-status"
+                                                                data-id="2" data-name="Archived">
+                                                                <i class="fa fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal Add Status -->
+                            <div class="modal fade" id="addStatusModal" tabindex="-1" role="dialog" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header no-bd">
+                                            <h5 class="modal-title">Add Status</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form id="formAddStatus">
+                                                <div class="form-group">
+                                                    <label>Status Name</label>
+                                                    <input type="text" class="form-control" id="addStatusName"
+                                                        placeholder="Enter status name" required>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="modal-footer no-bd">
+                                            <button type="button" class="btn btn-primary"
+                                                id="addStatusButton">Add</button>
+                                            <button type="button" class="btn btn-danger"
+                                                data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal Edit Status -->
+                            <div class="modal fade" id="editStatusModal" tabindex="-1" role="dialog" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header no-bd">
+                                            <h5 class="modal-title">Edit Status</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <input type="hidden" id="editStatusId">
+                                            <form id="formEditStatus">
+                                                <div class="form-group">
+                                                    <label>Status Name</label>
+                                                    <input type="text" class="form-control" id="editStatusName"
+                                                        required>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="modal-footer no-bd">
+                                            <button type="button" class="btn btn-primary"
+                                                id="saveEditStatusButton">Save</button>
+                                            <button type="button" class="btn btn-danger"
+                                                data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal Delete Status -->
+                            <div class="modal fade" id="deleteStatusModal" tabindex="-1" role="dialog"
+                                aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header no-bd">
+                                            <h5 class="modal-title">Delete Status</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Are you sure to delete <strong id="deleteStatusName"></strong>?</p>
+                                        </div>
+                                        <div class="modal-footer no-bd">
+                                            <button type="button" class="btn btn-danger"
+                                                id="confirmDeleteStatusButton">Yes, Delete</button>
+                                            <button type="button" class="btn btn-secondary"
+                                                data-dismiss="modal">Cancel</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Owner Card -->
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="d-flex align-items-center">
+                                        <h4 class="card-title">Owner</h4>
+                                        <button class="btn btn-primary btn-round ml-auto" data-toggle="modal"
+                                            data-target="#addOwnerModal">
+                                            <i class="fa fa-plus"></i> Add
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Table -->
+                                    <div class="table-responsive">
+                                        <table id="owner-table" class="display table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Owner Name</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tfoot>
+                                                <tr>
+                                                    <th>Owner Name</th>
+                                                </tr>
+                                            </tfoot>
+                                            <tbody>
+                                                <tr>
+                                                    <td>John Doe</td>
+                                                    <td>
+                                                        <div class="form-button-action">
+                                                            <button type="button"
+                                                                class="btn btn-link btn-primary btn-lg edit-owner"
+                                                                data-id="1" data-name="John Doe">
+                                                                <i class="fa fa-edit"></i>
+                                                            </button>
+                                                            <button type="button"
+                                                                class="btn btn-link btn-danger delete-owner" data-id="1"
+                                                                data-name="John Doe">
+                                                                <i class="fa fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Jane Smith</td>
+                                                    <td>
+                                                        <div class="form-button-action">
+                                                            <button type="button"
+                                                                class="btn btn-link btn-primary btn-lg edit-owner"
+                                                                data-id="2" data-name="Jane Smith">
+                                                                <i class="fa fa-edit"></i>
+                                                            </button>
+                                                            <button type="button"
+                                                                class="btn btn-link btn-danger delete-owner" data-id="2"
+                                                                data-name="Jane Smith">
+                                                                <i class="fa fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal Add Owner -->
+                            <div class="modal fade" id="addOwnerModal" tabindex="-1" role="dialog" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header no-bd">
+                                            <h5 class="modal-title">Add Owner</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form id="formAddOwner">
+                                                <div class="form-group">
+                                                    <label>Owner Name</label>
+                                                    <input type="text" class="form-control" id="addOwnerName"
+                                                        placeholder="Enter owner name" required>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="modal-footer no-bd">
+                                            <button type="button" class="btn btn-primary"
+                                                id="addOwnerButton">Add</button>
+                                            <button type="button" class="btn btn-danger"
+                                                data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal Edit Owner -->
+                            <div class="modal fade" id="editOwnerModal" tabindex="-1" role="dialog" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header no-bd">
+                                            <h5 class="modal-title">Edit Owner</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <input type="hidden" id="editOwnerId">
+                                            <form id="formEditOwner">
+                                                <div class="form-group">
+                                                    <label>Owner Name</label>
+                                                    <input type="text" class="form-control" id="editOwnerName" required>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="modal-footer no-bd">
+                                            <button type="button" class="btn btn-primary"
+                                                id="saveEditOwnerButton">Save</button>
+                                            <button type="button" class="btn btn-danger"
+                                                data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal Delete Owner -->
+                            <div class="modal fade" id="deleteOwnerModal" tabindex="-1" role="dialog"
+                                aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header no-bd">
+                                            <h5 class="modal-title">Delete Owner</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Are you sure to delete <strong id="deleteOwnerName"></strong>?</p>
+                                        </div>
+                                        <div class="modal-footer no-bd">
+                                            <button type="button" class="btn btn-danger"
+                                                id="confirmDeleteOwnerButton">Yes, Delete</button>
+                                            <button type="button" class="btn btn-secondary"
+                                                data-dismiss="modal">Cancel</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Location Card -->
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="d-flex align-items-center">
+                                        <h4 class="card-title">Location</h4>
+                                        <button class="btn btn-primary btn-round ml-auto" data-toggle="modal"
+                                            data-target="#addLocationModal">
+                                            <i class="fa fa-plus"></i> Add
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Table -->
+                                    <div class="table-responsive">
+                                        <table id="location-table" class="display table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Location Name</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tfoot>
+                                                <tr>
+                                                    <th>Location Name</th>
+                                                </tr>
+                                            </tfoot>
+                                            <tbody>
+                                                <tr>
+                                                    <td>John Doe</td>
+                                                    <td>
+                                                        <div class="form-button-action">
+                                                            <button type="button"
+                                                                class="btn btn-link btn-primary btn-lg edit-location"
+                                                                data-id="1" data-name="John Doe">
+                                                                <i class="fa fa-edit"></i>
+                                                            </button>
+                                                            <button type="button"
+                                                                class="btn btn-link btn-danger delete-location" data-id="1"
+                                                                data-name="John Doe">
+                                                                <i class="fa fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Jane Smith</td>
+                                                    <td>
+                                                        <div class="form-button-action">
+                                                            <button type="button"
+                                                                class="btn btn-link btn-primary btn-lg edit-location"
+                                                                data-id="2" data-name="Jane Smith">
+                                                                <i class="fa fa-edit"></i>
+                                                            </button>
+                                                            <button type="button"
+                                                                class="btn btn-link btn-danger delete-location" data-id="2"
+                                                                data-name="Jane Smith">
+                                                                <i class="fa fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal Add Location -->
+                            <div class="modal fade" id="addLocationModal" tabindex="-1" role="dialog" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header no-bd">
+                                            <h5 class="modal-title">Add Location</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form id="formAddLocation">
+                                                <div class="form-group">
+                                                    <label>Location Name</label>
+                                                    <input type="text" class="form-control" id="addLocationName"
+                                                        placeholder="Enter location name" required>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="modal-footer no-bd">
+                                            <button type="button" class="btn btn-primary"
+                                                id="addLocationButton">Add</button>
+                                            <button type="button" class="btn btn-danger"
+                                                data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal Edit Location -->
+                            <div class="modal fade" id="editLocationModal" tabindex="-1" role="dialog" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header no-bd">
+                                            <h5 class="modal-title">Edit Location</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <input type="hidden" id="editLocationId">
+                                            <form id="formEditLocation">
+                                                <div class="form-group">
+                                                    <label>Location Name</label>
+                                                    <input type="text" class="form-control" id="editLocationName" required>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="modal-footer no-bd">
+                                            <button type="button" class="btn btn-primary"
+                                                id="saveEditLocationButton">Save</button>
+                                            <button type="button" class="btn btn-danger"
+                                                data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal Delete Location -->
+                            <div class="modal fade" id="deleteLocationModal" tabindex="-1" role="dialog"
+                                aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header no-bd">
+                                            <h5 class="modal-title">Delete Location</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Are you sure to delete <strong id="deleteLocationName"></strong>?</p>
+                                        </div>
+                                        <div class="modal-footer no-bd">
+                                            <button type="button" class="btn btn-danger"
+                                                id="confirmDeleteLocationButton">Yes, Delete</button>
+                                            <button type="button" class="btn btn-secondary"
+                                                data-dismiss="modal">Cancel</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Core JS Files -->
+    <script src="assets/js/core/jquery.3.2.1.min.js"></script>
+    <script src="assets/js/core/popper.min.js"></script>
+    <script src="assets/js/core/bootstrap.min.js"></script>
+    <script src="assets/js/plugin/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+    <script src="assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
+    <!-- Datatables -->
+    <script src="assets/js/plugin/datatables/datatables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // List of table IDs you want to initialize
+            var tableIds = ['#cabinet-table', '#category-table', '#status-table', '#owner-table', '#location-table'];
+
+            $.each(tableIds, function (i, tableId) {
+                var table = $(tableId).DataTable({
+                    "pageLength": 5,
+                    "initComplete": function () {
+                        initColumnFilters(table, this.api());
+                    }
+                });
+            });
+
+            // Function to initialize column filters
+            function initColumnFilters(tableInstance, api) {
+                api.columns().every(function () {
+                    var column = this;
+
+                    // Create select element
+                    var select = $('<select class="form-control"><option value=""></option></select>')
+                        .appendTo($(column.footer()).empty())
+                        .on('change', function () {
+                            var val = $.fn.dataTable.util.escapeRegex(
+                                $(this).val()
+                            );
+
+                            column
+                                .search(val ? '^' + val + '$' : '', true, false)
+                                .draw();
+                        });
+
+                    // Get unique data and populate dropdown
+                    var uniqueValues = column.data()
+                        .unique()
+                        .sort()
+                        .each(function (d, j) {
+                            select.append('<option value="' + d + '">' + d + '</option>');
+                        });
+                });
+            }
+        });
+
+        $(document).ready(function () {
+            let currentCabinetId = null;
+
+            // Open Edit Modal
+            $('.edit-cabinet').on('click', function () {
+                currentCabinetId = $(this).data('id');
+                const cabinetName = $(this).data('name');
+
+                $('#editCabinetId').val(currentCabinetId);
+                $('#editCabinetName').val(cabinetName);
+
+                $('#editCabinetModal').modal('show');
+            });
+
+            // Open Delete Modal
+            $('.delete-cabinet').on('click', function () {
+                const cabinetName = $(this).data('name');
+                currentCabinetId = $(this).data('id');
+
+                $('#deleteCabinetName').text(cabinetName);
+                $('#deleteCabinetModal').modal('show');
+            });
+        });
+
+        $(document).ready(function () {
+            let currentCategoryId = null;
+
+            // Open Edit Modal
+            $('.edit-category').on('click', function () {
+                currentCategoryId = $(this).data('id');
+                const categoryName = $(this).data('name');
+
+                $('#editCategoryId').val(currentCategoryId);
+                $('#editCategoryName').val(categoryName);
+
+                $('#editCategoryModal').modal('show');
+            });
+
+            // Open Delete Modal
+            $('.delete-category').on('click', function () {
+                const categoryName = $(this).data('name');
+                currentCategoryId = $(this).data('id');
+
+                $('#deleteCategoryName').text(categoryName);
+                $('#deleteCategoryModal').modal('show');
+            });
+        });
+
+        $(document).ready(function () {
+            let currentStatusId = null;
+
+            // Open Edit Modal
+            $('.edit-status').on('click', function () {
+                currentStatusId = $(this).data('id');
+                const statusName = $(this).data('name');
+
+                $('#editStatusId').val(currentStatusId);
+                $('#editStatusName').val(statusName);
+
+                $('#editStatusModal').modal('show');
+            });
+
+            // Open Delete Modal
+            $('.delete-status').on('click', function () {
+                const statusName = $(this).data('name');
+                currentStatusId = $(this).data('id');
+
+                $('#deleteStatusName').text(statusName);
+                $('#deleteStatusModal').modal('show');
+            });
+        });
+
+        $(document).ready(function () {
+            let currentOwnerId = null;
+
+            // Open Edit Modal
+            $('.edit-owner').on('click', function () {
+                currentOwnerId = $(this).data('id');
+                const ownerName = $(this).data('name');
+
+                $('#editOwnerId').val(currentOwnerId);
+                $('#editOwnerName').val(ownerName);
+
+                $('#editOwnerModal').modal('show');
+            });
+
+            // Open Delete Modal
+            $('.delete-owner').on('click', function () {
+                const ownerName = $(this).data('name');
+                currentOwnerId = $(this).data('id');
+
+                $('#deleteOwnerName').text(ownerName);
+                $('#deleteOwnerModal').modal('show');
+            });
+        });
+
+        $(document).ready(function () {
+            let currentOwnerId = null;
+
+            // Open Edit Modal
+            $('.edit-owner').on('click', function () {
+                currentOwnerId = $(this).data('id');
+                const ownerName = $(this).data('name');
+
+                $('#editOwnerId').val(currentOwnerId);
+                $('#editOwnerName').val(ownerName);
+
+                $('#editOwnerModal').modal('show');
+            });
+
+            // Open Delete Modal
+            $('.delete-owner').on('click', function () {
+                const ownerName = $(this).data('name');
+                currentOwnerId = $(this).data('id');
+
+                $('#deleteOwnerName').text(ownerName);
+                $('#deleteOwnerModal').modal('show');
+            });
+        });
+
+        $(document).ready(function () {
+            let currentLocationId = null;
+
+            // Open Edit Modal
+            $('.edit-location').on('click', function () {
+                currentLocationId = $(this).data('id');
+                const locationName = $(this).data('name');
+
+                $('#editLocationId').val(currentLocationId);
+                $('#editLocationName').val(locationName);
+
+                $('#editLocationModal').modal('show');
+            });
+
+            // Open Delete Modal
+            $('.delete-location').on('click', function () {
+                const locationName = $(this).data('name');
+                currentLocationId = $(this).data('id');
+
+                $('#deleteLocationName').text(locationName);
+                $('#deleteLocationModal').modal('show');
+            });
+        });
+    </script>
+</body>
+
+</html>

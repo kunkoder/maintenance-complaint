@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Document Table - Atlantis Admin</title>
+    <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
+    <link rel="icon" href="assets/img/icon.ico" type="image/x-icon" />
+    <!-- Fonts and icons -->
+    <script src="assets/js/plugin/webfont/webfont.min.js"></script>
+    <script>
+        WebFont.load({
+            google: { "families": ["Lato:300,400,700,900"] },
+            custom: { "families": ["Flaticon", "Font Awesome 5 Solid", "Font Awesome 5 Regular", "simple-line-icons"], urls: ['assets/css/fonts.min.css'] },
+            active: function () {
+                sessionStorage.fonts = true;
+            }
+        });
+    </script>
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/atlantis.min.css">
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="main-header">
+            <!-- Logo Header -->
+            <div class="logo-header" data-background-color="blue">
+
+                <a href="index.html" class="logo">
+                    <img src="assets/img/logo.svg" alt="navbar brand" class="navbar-brand">
+                </a>
+                <button class="navbar-toggler sidenav-toggler ml-auto" type="button" data-toggle="collapse"
+                    data-target="collapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon">
+                        <i class="icon-menu"></i>
+                    </span>
+                </button>
+                <button class="topbar-toggler more"><i class="icon-options-vertical"></i></button>
+                <div class="nav-toggle">
+                    <button class="btn btn-toggle toggle-sidebar">
+                        <i class="icon-menu"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- End Logo Header -->
+
+            <!-- Navbar Header -->
+            <nav class="navbar navbar-header navbar-expand-lg" data-background-color="blue2">
+
+                <div class="container-fluid">
+                    <div class="collapse" id="search-nav">
+                        <form class="navbar-left navbar-form nav-search mr-md-3">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <button type="submit" class="btn btn-search pr-1">
+                                        <i class="fa fa-search search-icon"></i>
+                                    </button>
+                                </div>
+                                <input type="text" placeholder="Search ..." class="form-control">
+                            </div>
+                        </form>
+                    </div>
+                    <ul class="navbar-nav topbar-nav ml-md-auto align-items-center">
+                        <li class="nav-item toggle-nav-search hidden-caret">
+                            <a class="nav-link" data-toggle="collapse" href="#search-nav" role="button"
+                                aria-expanded="false" aria-controls="search-nav">
+                                <i class="fa fa-search"></i>
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown hidden-caret">
+                            <a class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#"
+                                aria-expanded="false">
+                                <div class="avatar-sm">
+                                    <img src="assets/img/profile.jpg" alt="..." class="avatar-img rounded-circle">
+                                </div>
+                            </a>
+                            <ul class="dropdown-menu dropdown-user animated fadeIn">
+                                <div class="dropdown-user-scroll scrollbar-outer">
+                                    <li>
+                                        <div class="user-box">
+                                            <div class="avatar-lg"><img src="assets/img/profile.jpg" alt="image profile"
+                                                    class="avatar-img rounded"></div>
+                                            <div class="u-text">
+                                                <h4>Hizrian</h4>
+                                                <p class="text-muted">hello@example.com</p><a href="profile.html"
+                                                    class="btn btn-xs btn-secondary btn-sm">View Profile</a>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="#">My Profile</a>
+                                        <a class="dropdown-item" href="#">My Balance</a>
+                                        <a class="dropdown-item" href="#">Inbox</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="#">Account Setting</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="#">Logout</a>
+                                    </li>
+                                </div>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            <!-- End Navbar -->
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar sidebar-style-2">
+            <div class="sidebar-wrapper scrollbar scrollbar-inner">
+                <div class="sidebar-content">
+                    <div class="user">
+                        <div class="avatar-sm float-left mr-2">
+                            <img src="assets/img/profile.jpg" alt="..." class="avatar-img rounded-circle">
+                        </div>
+                        <div class="info">
+                            <a data-toggle="collapse" href="#collapseExample" aria-expanded="true">
+                                <span>
+                                    Hizrian
+                                    <span class="user-level">Administrator</span>
+                                    <span class="caret"></span>
+                                </span>
+                            </a>
+                            <div class="clearfix"></div>
+
+                            <div class="collapse in" id="collapseExample">
+                                <ul class="nav">
+                                    <li>
+                                        <a href="#profile">
+                                            <span class="link-collapse">My Profile</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#edit">
+                                            <span class="link-collapse">Edit Profile</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#settings">
+                                            <span class="link-collapse">Settings</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <ul class="nav nav-primary">
+                        <li class="nav-item">
+                            <a data-toggle="collapse" href="#dashboard" class="collapsed" aria-expanded="false">
+                                <i class="fas fa-home"></i>
+                                <p>Dashboard</p>
+                            </a>
+                        </li>
+                        <li class="nav-section">
+                            <span class="sidebar-mini-icon">
+                                <i class="fa fa-ellipsis-h"></i>
+                            </span>
+                            <h4 class="text-section">Menu</h4>
+                        </li>
+                        <li class="nav-item active">
+                            <a data-toggle="collapse" href="#base">
+                                <i class="fas fa-users"></i>
+                                <p>User Management</p>
+                                <!-- <span class="caret"></span> -->
+                            </a>
+                            <!-- <div class="collapse" id="base">
+								<ul class="nav nav-collapse">
+									<li>
+										<a href="components/avatars.html">
+											<span class="sub-item">Avatars</span>
+										</a>
+									</li>
+								</ul>
+							</div> -->
+                        </li>
+                        <li class="nav-item">
+                            <a data-toggle="collapse" href="#base">
+                                <i class="fas fa-folder-open"></i>
+                                <p>Documents</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a data-toggle="collapse" href="#base">
+                                <i class="fas fa-sliders-h"></i>
+                                <p>Setting</p>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- End Sidebar -->
+
+        <div class="main-panel">
+            <div class="content">
+                <div class="page-inner page-inner-tab-style">
+                    <div class="page-header">
+                        <h4 class="page-title">Profil Pengguna</h4>
+                        <ul class="breadcrumbs pt-4">
+                            <li class="nav-home">
+                                <p><i class="flaticon-home"></i></p>
+                            </li>
+                            <li class="separator"><i class="flaticon-right-arrow"></i></li>
+                            <li class="nav-item">
+                                <p>Pengguna</p>
+                            </li>
+                            <li class="separator"><i class="flaticon-right-arrow"></i></li>
+                            <li class="nav-item">
+                                <p>Profil Pengguna</p>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 ml-auto mr-auto">
+                            <div class="card card-profile">
+                                <div class="card-header" style="background-image: url('assets/img/blogpost.jpg'); height: 145px;">
+                                    <div class="profile-picture">
+                                        <div class="avatar avatar-xxl">
+                                            <!-- Default image -->
+                                            <img id="profileImagePreview" src="assets/img/arashmil.jpg"
+                                                alt="Foto Profil Default" class="avatar-img rounded-circle mt--5">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tabs Navigation -->
+                                <ul class="nav nav-tabs nav-line nav-color-primary" id="profileTab" role="tablist">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" id="profile-tab" data-toggle="tab" href="#profile"
+                                            role="tab" aria-controls="profile" aria-selected="true">Profil</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" id="records-tab" data-toggle="tab" href="#records"
+                                            role="tab" aria-controls="records" aria-selected="false">Riwayat
+                                            Peminjaman</a>
+                                    </li>
+                                </ul>
+
+                                <!-- Tab Content -->
+                                <div class="tab-content" id="profileTabContent">
+                                    <!-- Profile Tab -->
+                                    <div class="tab-pane fade show active" id="profile" role="tabpanel"
+                                        aria-labelledby="profile-tab">
+                                        <div class="card-body">
+                                            <form class="contact-form" action="/icbsstaff/profile" method="POST"
+                                                enctype="multipart/form-data">
+                                                <input type="hidden" name="pk" id="pk" value="12345">
+
+                                                <div class="row">
+                                                    <div class="col-sm-12">
+                                                        <div class="form-group">
+                                                            <label for="name">Nama</label>
+                                                            <input name="name" id="name" type="text"
+                                                                class="form-control" value="John Doe" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-12">
+                                                        <div class="form-group">
+                                                            <label for="email">Email</label>
+                                                            <input name="email" id="email" type="email"
+                                                                class="form-control" value="john@example.com" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-12">
+                                                        <div class="form-group">
+                                                            <label for="job">Jabatan</label>
+                                                            <select name="job" class="form-control" id="job" required>
+                                                                <option value="Staff">Staff</option>
+                                                                <option value="Admin" selected>Admin</option>
+                                                                <option value="Librarian">Librarian</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-12">
+                                                        <div class="form-group">
+                                                            <label for="avatar">Foto Profil</label>
+                                                            <input type="file" name="avatar" id="avatar"
+                                                                class="form-control-file">
+                                                            <small class="form-text text-muted">Maksimal ukuran file
+                                                                5MB</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="text-center mt-3 mb-3">
+                                                    <button type="submit" class="btn btn-primary">Simpan</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+
+                                    <!-- Borrow Records Tab -->
+                                    <div class="tab-pane fade" id="records" role="tabpanel"
+                                        aria-labelledby="records-tab">
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table id="borrow-records-table"
+                                                    class="display table table-striped table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Buku</th>
+                                                            <th>Tanggal Pinjam</th>
+                                                            <th>Tanggal Jatuh Tempo</th>
+                                                            <th>Tanggal Kembali</th>
+                                                            <th>Status</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>Introduction to Algorithms</td>
+                                                            <td>2025-04-01</td>
+                                                            <td>2025-04-15</td>
+                                                            <td>-</td>
+                                                            <td><span class="badge badge-warning">Dipinjam</span></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Harry Potter</td>
+                                                            <td>2025-03-20</td>
+                                                            <td>2025-04-03</td>
+                                                            <td>2025-04-05</td>
+                                                            <td><span class="badge badge-success">Dikembalikan</span>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Core JS Files -->
+        <script src="assets/js/core/jquery.3.2.1.min.js"></script>
+        <script src="assets/js/core/popper.min.js"></script>
+        <script src="assets/js/core/bootstrap.min.js"></script>
+        <script src="assets/js/plugin/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+        <script src="assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
+        <script>
+            // Preview image when user selects a file
+            $(document).ready(function () {
+                $('#avatar').on('change', function () {
+                    const file = this.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            $('#profileImagePreview').attr('src', e.target.result);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            });
+        </script>
+</body>
+
+</html>

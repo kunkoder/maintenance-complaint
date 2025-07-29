@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Document Table - Atlantis Admin</title>
+    <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
+    <link rel="icon" href="assets/img/icon.ico" type="image/x-icon" />
+    <!-- Fonts and icons -->
+    <script src="assets/js/plugin/webfont/webfont.min.js"></script>
+    <script>
+        WebFont.load({
+            google: { "families": ["Lato:300,400,700,900"] },
+            custom: { "families": ["Flaticon", "Font Awesome 5 Solid", "Font Awesome 5 Regular", "simple-line-icons"], urls: ['assets/css/fonts.min.css'] },
+            active: function () {
+                sessionStorage.fonts = true;
+            }
+        });
+    </script>
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/atlantis.min.css">
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="main-header">
+            <!-- Logo Header -->
+            <div class="logo-header" data-background-color="blue">
+
+                <a href="index.html" class="logo">
+                    <img src="assets/img/logo.svg" alt="navbar brand" class="navbar-brand">
+                </a>
+                <button class="navbar-toggler sidenav-toggler ml-auto" type="button" data-toggle="collapse"
+                    data-target="collapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon">
+                        <i class="icon-menu"></i>
+                    </span>
+                </button>
+                <button class="topbar-toggler more"><i class="icon-options-vertical"></i></button>
+                <div class="nav-toggle">
+                    <button class="btn btn-toggle toggle-sidebar">
+                        <i class="icon-menu"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- End Logo Header -->
+
+            <!-- Navbar Header -->
+            <nav class="navbar navbar-header navbar-expand-lg" data-background-color="blue2">
+
+                <div class="container-fluid">
+                    <div class="collapse" id="search-nav">
+                        <form class="navbar-left navbar-form nav-search mr-md-3">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <button type="submit" class="btn btn-search pr-1">
+                                        <i class="fa fa-search search-icon"></i>
+                                    </button>
+                                </div>
+                                <input type="text" placeholder="Search ..." class="form-control">
+                            </div>
+                        </form>
+                    </div>
+                    <ul class="navbar-nav topbar-nav ml-md-auto align-items-center">
+                        <li class="nav-item toggle-nav-search hidden-caret">
+                            <a class="nav-link" data-toggle="collapse" href="#search-nav" role="button"
+                                aria-expanded="false" aria-controls="search-nav">
+                                <i class="fa fa-search"></i>
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown hidden-caret">
+                            <a class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#"
+                                aria-expanded="false">
+                                <div class="avatar-sm">
+                                    <img src="assets/img/profile.jpg" alt="..." class="avatar-img rounded-circle">
+                                </div>
+                            </a>
+                            <ul class="dropdown-menu dropdown-user animated fadeIn">
+                                <div class="dropdown-user-scroll scrollbar-outer">
+                                    <li>
+                                        <div class="user-box">
+                                            <div class="avatar-lg"><img src="assets/img/profile.jpg" alt="image profile"
+                                                    class="avatar-img rounded"></div>
+                                            <div class="u-text">
+                                                <h4>Hizrian</h4>
+                                                <p class="text-muted">hello@example.com</p>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="#">My Profile</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="#">Logout</a>
+                                    </li>
+                                </div>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            <!-- End Navbar -->
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar sidebar-style-2">
+            <div class="sidebar-wrapper scrollbar scrollbar-inner">
+                <div class="sidebar-content">
+                    <div class="user">
+                        <div class="avatar-sm float-left mr-2">
+                            <img src="assets/img/profile.jpg" alt="..." class="avatar-img rounded-circle">
+                        </div>
+                        <div class="info">
+                            <a data-toggle="collapse" href="#collapseExample" aria-expanded="true">
+                                <span>
+                                    Hizrian
+                                    <span class="user-level">Administrator</span>
+                                    <span class="caret"></span>
+                                </span>
+                            </a>
+                            <div class="clearfix"></div>
+
+                            <div class="collapse in" id="collapseExample">
+                                <ul class="nav">
+                                    <li>
+                                        <a href="#profile">
+                                            <span class="link-collapse">My Profile</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#logout">
+                                            <span class="link-collapse">Logout</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <ul class="nav nav-primary">
+                        <li class="nav-item">
+                            <a data-toggle="collapse" href="#dashboard" class="collapsed" aria-expanded="false">
+                                <i class="fas fa-home"></i>
+                                <p>Dashboard</p>
+                            </a>
+                        </li>
+                        <li class="nav-section">
+                            <span class="sidebar-mini-icon">
+                                <i class="fa fa-ellipsis-h"></i>
+                            </span>
+                            <h4 class="text-section">Menu</h4>
+                        </li>
+                        <li class="nav-item">
+                            <a data-toggle="collapse" href="#base">
+                                <i class="fas fa-users"></i>
+                                <p>User Management</p>
+                                <!-- <span class="caret"></span> -->
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a data-toggle="collapse" href="#base">
+                                <i class="fas fa-folder-open"></i>
+                                <p>Documents</p>
+                            </a>
+                        </li>
+                        <li class="nav-item active">
+                            <a data-toggle="collapse" href="#base">
+                                <i class="fas fa-clipboard-list"></i>
+                                <p>Borrow Records</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a data-toggle="collapse" href="#base">
+                                <i class="fas fa-sliders-h"></i>
+                                <p>Setting</p>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- End Sidebar -->
+
+        <div class="main-panel">
+            <div class="content">
+                <div class="page-inner">
+                    <div class="page-header">
+                        <h4 class="page-title">Menu</h4>
+                        <ul class="breadcrumbs pt-4">
+                            <li class="nav-home">
+                                <p><i class="flaticon-home"></i></p>
+                            </li>
+                            <li class="separator"><i class="flaticon-right-arrow"></i></li>
+                            <li class="nav-item">
+                                <p>Borrow Records</p>
+                            </li>
+                        </ul>
+                        <div class="ml-md-auto py-2 py-md-0">
+                            <a class="btn btn-primary btn-round ml-auto text-white" data-toggle="modal" role="button"
+                                data-target="#addBorrowModal">
+                                <i class="fa fa-plus"></i> Add
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row row-card-no-pd">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="d-flex align-items-center">
+                                        <h4 class="card-title">Borrow Records</h4>
+                                        <form class="form-inline ml-auto">
+                                            <div class="input-icon">
+                                                <input type="text" class="form-control" placeholder="Search for...">
+                                                <span class="input-icon-addon">
+                                                    <i class="fa fa-search"></i>
+                                                </span>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table id="borrow-table" class="display table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>User</th>
+                                                    <th>Document</th>
+                                                    <th>Borrow Date</th>
+                                                    <th>Due Date</th>
+                                                    <th>Return Date</th>
+                                                    <th>Status</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Tiger Nixon</td>
+                                                    <td>Introduction to Algorithms</td>
+                                                    <td>2025-04-01</td>
+                                                    <td>2025-04-15</td>
+                                                    <td>-</td>
+                                                    <td><span class="badge badge-warning">Borrowed</span></td>
+                                                    <td>
+                                                        <div class="form-button-action">
+                                                            <button type="button"
+                                                                class="btn btn-link btn-primary btn-lg edit-borrow"
+                                                                data-id="1">
+                                                                <i class="fa fa-edit"></i>
+                                                            </button>
+                                                            <button type="button"
+                                                                class="btn btn-link btn-danger delete-borrow"
+                                                                data-id="1">
+                                                                <i class="fa fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Donna Snider</td>
+                                                    <td>Harry Potter and the Sorcerer's Stone</td>
+                                                    <td>2025-03-20</td>
+                                                    <td>2025-04-03</td>
+                                                    <td>2025-04-05</td>
+                                                    <td><span class="badge badge-success">Returned</span></td>
+                                                    <td>
+                                                        <div class="form-button-action">
+                                                            <button type="button"
+                                                                class="btn btn-link btn-primary btn-lg edit-borrow"
+                                                                data-id="2">
+                                                                <i class="fa fa-edit"></i>
+                                                            </button>
+                                                            <button type="button"
+                                                                class="btn btn-link btn-danger delete-borrow"
+                                                                data-id="2">
+                                                                <i class="fa fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- Pagination -->
+                                    <nav aria-label="...">
+                                        <ul class="pagination justify-content-center">
+                                            <li class="page-item disabled">
+                                                <span class="page-link">Prev</span>
+                                            </li>
+                                            <li class="page-item"><a class="page-link" href="#">1</a></li>
+                                            <li class="page-item active">
+                                                <span class="page-link">2<span class="sr-only">(current)</span></span>
+                                            </li>
+                                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                            <li class="page-item">
+                                                <a class="page-link" href="#">Next</a>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modal Add Borrow -->
+                        <div class="modal fade" id="addBorrowModal" tabindex="-1" role="dialog" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header no-bd">
+                                        <h5 class="modal-title">Add Borrow Record</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form id="formAddBorrow">
+                                            <div class="form-group">
+                                                <label>User</label>
+                                                <select class="form-control" id="addBorrowUser" required>
+                                                    <option value="">Select User</option>
+                                                    <!-- Populate dynamically from database -->
+                                                    <option>Tiger Nixon</option>
+                                                    <option>Donna Snider</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Document</label>
+                                                <select class="form-control" id="addBorrowDocument" required>
+                                                    <option value="">Select Document</option>
+                                                    <!-- Populate dynamically from database -->
+                                                    <option>Introduction to Algorithms</option>
+                                                    <option>Harry Potter and the Sorcerer's Stone</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Borrow Date</label>
+                                                <input type="date" class="form-control" id="addBorrowDate" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Due Date</label>
+                                                <input type="date" class="form-control" id="addDueDate" required>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer no-bd">
+                                        <button type="button" class="btn btn-primary" id="addBorrowButton">Add</button>
+                                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modal Edit Borrow -->
+                        <div class="modal fade" id="editBorrowModal" tabindex="-1" role="dialog" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header no-bd">
+                                        <h5 class="modal-title">Edit Borrow Record</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input type="hidden" id="editBorrowId">
+                                        <form id="formEditBorrow">
+                                            <div class="form-group">
+                                                <label>User</label>
+                                                <select class="form-control" id="editBorrowUser" required>
+                                                    <option>Tiger Nixon</option>
+                                                    <option>Donna Snider</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Document</label>
+                                                <select class="form-control" id="editBorrowDocument" required>
+                                                    <option>Introduction to Algorithms</option>
+                                                    <option>Harry Potter and the Sorcerer's Stone</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Borrow Date</label>
+                                                <input type="date" class="form-control" id="editBorrowDate" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Due Date</label>
+                                                <input type="date" class="form-control" id="editDueDate" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Return Date (Optional)</label>
+                                                <input type="date" class="form-control" id="editReturnDate">
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer no-bd">
+                                        <button type="button" class="btn btn-primary"
+                                            id="saveEditBorrowButton">Save</button>
+                                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modal Delete Borrow -->
+                        <div class="modal fade" id="deleteBorrowModal" tabindex="-1" role="dialog" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header no-bd">
+                                        <h5 class="modal-title">Delete Borrow Record</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Are you sure to delete this borrow record?</p>
+                                    </div>
+                                    <div class="modal-footer no-bd">
+                                        <button type="button" class="btn btn-danger" id="confirmDeleteBorrowButton">Yes,
+                                            Delete</button>
+                                        <button type="button" class="btn btn-secondary"
+                                            data-dismiss="modal">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Core JS Files -->
+        <script src="assets/js/core/jquery.3.2.1.min.js"></script>
+        <script src="assets/js/core/popper.min.js"></script>
+        <script src="assets/js/core/bootstrap.min.js"></script>
+        <script src="assets/js/plugin/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+        <script src="assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                let currentBorrowId = null;
+
+                // Trigger Edit Modal
+                $('.edit-borrow').on('click', function () {
+                    currentBorrowId = $(this).data('id');
+                    const row = $(this).closest('tr');
+
+                    // Populate fields in the edit modal
+                    $('#editBorrowId').val(currentBorrowId);
+                    $('#editBorrowUser').val(row.find('td:eq(0)').text().trim()); // User
+                    $('#editBorrowDocument').val(row.find('td:eq(1)').text().trim()); // Document
+                    $('#editBorrowDate').val(row.find('td:eq(2)').text().trim()); // Borrow Date
+                    $('#editDueDate').val(row.find('td:eq(3)').text().trim());     // Due Date
+                    $('#editReturnDate').val(row.find('td:eq(4)').text().trim());  // Return Date (if any)
+
+                    $('#editBorrowModal').modal('show');
+                });
+
+                // Trigger Delete Modal
+                $('.delete-borrow').on('click', function () {
+                    const bookName = $(this).data('name'); // You can also get the book name from the row
+                    currentBorrowId = $(this).data('id');
+
+                    $('#deleteBorrowName').text(bookName); // Display name in modal
+                    $('#deleteBorrowModal').modal('show');
+                });
+            });
+        </script>
+
+        <!-- Image preview JS -->
+        <script>
+            // Image preview for Add Modal
+            document.getElementById('addImageInput')?.addEventListener('change', function () {
+                const fileName = this.files[0] ? this.files[0].name : 'Choose file';
+                document.getElementById('addImageLabel').textContent = fileName;
+                const preview = document.getElementById('addImagePreview');
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(this.files[0]);
+                } else {
+                    preview.style.display = 'none';
+                }
+            });
+
+            // Image preview for Edit Modal
+            document.getElementById('editImageInput')?.addEventListener('change', function () {
+                const fileName = this.files[0] ? this.files[0].name : 'Choose file';
+                document.getElementById('editImageLabel').textContent = fileName;
+                const preview = document.getElementById('editImagePreview');
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(this.files[0]);
+                } else {
+                    preview.style.display = 'none';
+                }
+            });
+        </script>
+</body>
+
+</html>

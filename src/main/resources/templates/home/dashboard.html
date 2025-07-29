@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layouts/home}">
+
+<head>
+	<title>Dashboard</title>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<div class="panel-header bg-primary-gradient">
+			<div class="page-inner py-5">
+				<div class="d-flex align-items-left align-items-md-center flex-column flex-md-row">
+					<div>
+						<h2 class="text-white pb-2 fw-bold">Dashboard</h2>
+						<h5 class="text-white op-7 mb-2">Free Bootstrap 4 Admin Dashboard</h5>
+					</div>
+					<div class="ml-md-auto py-2 py-md-0">
+						<a href="#" class="btn btn-white btn-border btn-round mr-2">Manage</a>
+						<a href="#" class="btn btn-secondary btn-round">Add Customer</a>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="page-inner mt--5">
+			<div class="row mt--2">
+				<div class="col-md-6">
+					<div class="card full-height">
+						<div class="card-body">
+							<div class="card-title">Overall statistics</div>
+							<div class="card-category">Daily information about complaint status</div>
+							<div class="d-flex flex-wrap justify-content-around pb-2 pt-4">
+								<div class="px-2 pb-2 pb-md-0 text-center">
+									<div id="circles-1"></div>
+									<h6 class="fw-bold mt-1 mb-3">Closed</h6>
+								</div>
+								<div class="px-2 pb-2 pb-md-0 text-center">
+									<div id="circles-2"></div>
+									<h6 class="fw-bold mt-1 mb-3">Open</h6>
+								</div>
+								<div class="px-2 pb-2 pb-md-0 text-center">
+									<div id="circles-3"></div>
+									<h6 class="fw-bold mt-1 mb-0">In Progress</h6>
+								</div>
+								<div class="px-2 pb-2 pb-md-0 text-center">
+									<div id="circles-4"></div>
+									<h6 class="fw-bold mt-1 mb-0">Pending</h6>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="card full-height">
+						<div class="card-body">
+							<div class="card-title">Complaints of the week</div>
+							<div class="row py-3">
+
+								<div class="col-md-12">
+									<div id="chart-container">
+										<canvas id="totalIncomeChart" style="height: 300px;"></canvas>
+									</div>
+								</div>
+								<div class="col-md-12 d-flex flex-row justify-content-around mt-3">
+									<div class="text-center">
+										<h6 class="fw-bold text-uppercase text-success op-8">Closed</h6>
+										<h3 class="fw-bold">15</h3>
+									</div>
+									<div class="text-center">
+										<h6 class="fw-bold text-uppercase text-danger op-8">Open</h6>
+										<h3 class="fw-bold">48</h3>
+									</div>
+									<div class="text-center">
+										<h6 class="fw-bold text-uppercase text-success op-8">In Progress</h6>
+										<h3 class="fw-bold">15</h3>
+									</div>
+									<div class="text-center">
+										<h6 class="fw-bold text-uppercase text-danger op-8">Pending</h6>
+										<h3 class="fw-bold">48</h3>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-8">
+					<div class="card">
+						<div class="card-header">
+							<div class="card-head-row card-tools-still-right">
+								<h4 class="card-title">Users Geolocation</h4>
+								<div class="card-tools">
+									<button class="btn btn-icon btn-link btn-primary btn-xs"><span
+											class="fa fa-angle-down"></span></button>
+									<button class="btn btn-icon btn-link btn-primary btn-xs btn-refresh-card"><span
+											class="fa fa-sync-alt"></span></button>
+									<button class="btn btn-icon btn-link btn-primary btn-xs"><span class="fa fa-times"></span></button>
+								</div>
+							</div>
+							<p class="card-category">
+								Map of the distribution of users around the world</p>
+						</div>
+						<div class="card-body">
+
+							<div class="table-responsive table-hover table-sales">
+								<table class="table">
+									<thead>
+										<tr>
+											<th>Avatar</th>
+											<th>Engineer</th>
+											<th>In Progress</th>
+											<th>Pending</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>
+												<div class="flag">
+													<img src="assets/img/flags/id.png" alt="indonesia">
+												</div>
+											</td>
+											<td>Fahad</td>
+											<td class="text-right">
+												23
+											</td>
+											<td class="text-right">
+												12
+											</td>
+										</tr>
+										<tr>
+											<td>
+												<div class="flag">
+													<img src="assets/img/flags/us.png" alt="united states">
+												</div>
+											</td>
+											<td>Aqeel</td>
+											<td class="text-right">
+												24
+											</td>
+											<td class="text-right">
+												4
+											</td>
+										</tr>
+										<tr>
+											<td>
+												<div class="flag">
+													<img src="assets/img/flags/au.png" alt="australia">
+												</div>
+											</td>
+											<td>Rahool</td>
+											<td class="text-right">
+												11
+											</td>
+											<td class="text-right">
+												2
+											</td>
+										</tr>
+										<tr>
+											<td>
+												<div class="flag">
+													<img src="assets/img/flags/ru.png" alt="russia">
+												</div>
+											</td>
+											<td>Waleed</td>
+											<td class="text-right">
+												1
+											</td>
+											<td class="text-right">
+												19
+											</td>
+										</tr>
+										<tr>
+											<td>
+												<div class="flag">
+													<img src="assets/img/flags/cn.png" alt="china">
+												</div>
+											</td>
+											<td>Viney</td>
+											<td class="text-right">
+												1
+											</td>
+											<td class="text-right">
+												2
+											</td>
+										</tr>
+										<tr>
+											<td>
+												<div class="flag">
+													<img src="assets/img/flags/br.png" alt="brazil">
+												</div>
+											</td>
+											<td>Khaled</td>
+											<td class="text-right">
+												64
+											</td>
+											<td class="text-right">
+												11
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-4">
+					<div class="card">
+						<div class="card-header">
+							<div class="card-title">Top locations</div>
+						</div>
+						<div class="card-body pb-0">
+							<div class="d-flex">
+								<div class="avatar">
+									<img src="assets/img/logoproduct.svg" alt="..." class="avatar-img rounded-circle">
+								</div>
+								<div class="flex-1 pt-1 ml-2">
+									<h6 class="fw-bold mb-1">AUT 1</h6>
+									<small class="text-muted">Sensor was not working</small>
+								</div>
+								<div class="d-flex ml-auto align-items-center">
+									<h3 class="text-info fw-bold">14</h3>
+								</div>
+							</div>
+							<div class="separator-dashed"></div>
+							<div class="d-flex">
+								<div class="avatar">
+									<img src="assets/img/logoproduct.svg" alt="..." class="avatar-img rounded-circle">
+								</div>
+								<div class="flex-1 pt-1 ml-2">
+									<h6 class="fw-bold mb-1">Tack Welding</h6>
+									<small class="text-muted">The wire was damaged</small>
+								</div>
+								<div class="d-flex ml-auto align-items-center">
+									<h3 class="text-info fw-bold">11</h3>
+								</div>
+							</div>
+							<div class="separator-dashed"></div>
+							<div class="d-flex">
+								<div class="avatar">
+									<img src="assets/img/logoproduct3.svg" alt="..." class="avatar-img rounded-circle">
+								</div>
+								<div class="flex-1 pt-1 ml-2">
+									<h6 class="fw-bold mb-1">Edge Miling</h6>
+									<small class="text-muted">Hydrolic issue</small>
+								</div>
+								<div class="d-flex ml-auto align-items-center">
+									<h3 class="text-info fw-bold">9</h3>
+								</div>
+							</div>
+							<div class="separator-dashed"></div>
+							<div class="d-flex">
+								<div class="avatar">
+									<img src="assets/img/logoproduct3.svg" alt="..." class="avatar-img rounded-circle">
+								</div>
+								<div class="flex-1 pt-1 ml-2">
+									<h6 class="fw-bold mb-1">Edge Miling</h6>
+									<small class="text-muted">Hydrolic issue</small>
+								</div>
+								<div class="d-flex ml-auto align-items-center">
+									<h3 class="text-info fw-bold">9</h3>
+								</div>
+							</div>
+							<div class="separator-dashed"></div>
+							<div class="d-flex">
+								<div class="avatar">
+									<img src="assets/img/logoproduct3.svg" alt="..." class="avatar-img rounded-circle">
+								</div>
+								<div class="flex-1 pt-1 ml-2">
+									<h6 class="fw-bold mb-1">Edge Miling</h6>
+									<small class="text-muted">Hydrolic issue</small>
+								</div>
+								<div class="d-flex ml-auto align-items-center">
+									<h3 class="text-info fw-bold">9</h3>
+								</div>
+							</div>
+							<div class="separator-dashed"></div>
+							<div class="d-flex">
+								<div class="avatar">
+									<img src="assets/img/logoproduct3.svg" alt="..." class="avatar-img rounded-circle">
+								</div>
+								<div class="flex-1 pt-1 ml-2">
+									<h6 class="fw-bold mb-1">Edge Miling</h6>
+									<small class="text-muted">Hydrolic issue</small>
+								</div>
+								<div class="d-flex ml-auto align-items-center">
+									<h3 class="text-info fw-bold">9</h3>
+								</div>
+							</div>
+							<div class="separator-dashed"></div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<div class="card">
+						<div class="card-header">
+							<div class="card-head-row">
+								<div class="card-title">User Statistics</div>
+								<div class="card-tools">
+									<a href="#" class="btn btn-info btn-border btn-round btn-sm mr-2">
+										<span class="btn-label">
+											<i class="fa fa-pencil"></i>
+										</span>
+										Export
+									</a>
+									<a href="#" class="btn btn-info btn-border btn-round btn-sm">
+										<span class="btn-label">
+											<i class="fa fa-print"></i>
+										</span>
+										Print
+									</a>
+								</div>
+							</div>
+						</div>
+						<div class="card-body">
+							<div class="chart-container" style="min-height: 375px">
+								<canvas id="statisticsChart"></canvas>
+							</div>
+							<div id="myChartLegend"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<footer class="footer">
+			<div class="container-fluid">
+				<nav class="pull-left">
+					<ul class="nav">
+						<li class="nav-item">
+							<a class="nav-link" href="https://www.themekita.com">
+								ThemeKita
+							</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="#">
+								Help
+							</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="#">
+								Licenses
+							</a>
+						</li>
+					</ul>
+				</nav>
+				<div class="copyright ml-auto">
+					2018, made with <i class="fa fa-heart heart text-danger"></i> by <a
+						href="https://www.themekita.com">ThemeKita</a>
+				</div>
+			</div>
+		</footer>
+	</div>
+
+	<!-- Scripts Fragment -->
+	<th:block layout:fragment="scripts">
+		<!-- <script th:src="@{/js/document-modal.js}"></script> -->
+	</th:block>
+</body>
+
+</html>

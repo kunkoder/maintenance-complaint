@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layouts/home}">
+<head>
+    <title>Documents</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="panel-header bg-primary-gradient">
+        <div class="page-inner py-5">
+            <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row">
+                <div>
+                    <h2 class="text-white pb-2 fw-bold">Documents</h2>
+                    <h5 class="text-white op-7 mb-2">Manage your documents</h5>
+                </div>
+                <div class="ml-md-auto py-2 py-md-0">
+                    <!-- Only MEMBERS can add -->
+                    <!-- <button sec:authorize="hasAnyRole('MEMBER','ADMIN','SUPERADMIN')"
+                            class="btn btn-white btn-border btn-round ml-auto"
+                            data-toggle="modal" data-target="#addRowModal">
+                        <i class="fa fa-plus"></i> Add Document
+                    </button> -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-inner mt--5">
+        <div class="row row-card-no-pd">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center">
+                            <h4 class="card-title">Documents</h4>
+                            <form class="form-inline ml-auto">
+                                <div class="input-icon">
+                                    <input type="text" id="tableSearchInput" class="form-control" placeholder="Search...">
+                                    <span class="input-icon-addon"><i class="fa fa-search"></i></span>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <!-- Include modals -->
+                        <!-- <div th:replace="documents/partials :: modals"></div> -->
+
+                        <!-- Table -->
+                        <div class="table-responsive">
+                            <table id="document-table" class="display table table-striped table-hover">
+                                <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Document Name</th>
+                                    <th>File Number</th>
+                                    <th>Cabinet</th>
+                                    <th>Row</th>
+                                    <th>Category</th>
+                                    <th>Location</th>
+                                    <th>Action</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <!-- <tr th:each="doc : ${documents}"> -->
+                                    <!-- Visible Columns -->
+                                    <td>
+                                        <!-- <img th:src="${doc.imageUrl} ?: '/assets/img/arashmil.jpg'"
+                                             width="50" class="rounded" alt="Doc"/> -->
+                                    </td>
+                                    <!-- <td><a href="#" class="show-detail" th:data-id="${doc.id}" th:text="${doc.name}"></a></td>
+                                    <td th:text="${doc.fileNumber}">SK-001</td>
+                                    <td th:text="${doc.cabinet}">A</td>
+                                    <td th:text="${doc.row}">1</td>
+                                    <td th:text="${doc.category}">HR</td>
+                                    <td th:text="${doc.location}">Rak A1</td> -->
+
+                                    <!-- Hidden Data (for modal fill) -->
+                                    <!-- <td style="display:none" th:text="${doc.status}">Aktif</td>
+                                    <td style="display:none" th:text="${doc.owner}">Owner</td>
+                                    <td style="display:none" th:text="${doc.location}">Loc</td>
+                                    <td style="display:none" th:text="${#dates.format(doc.insertedAt, 'yyyy-MM-dd')}">Date</td>
+                                    <td style="display:none" th:text="${#dates.format(doc.updatedAt, 'yyyy-MM-dd')}">Date</td>
+                                    <td style="display:none" th:text="${#dates.format(doc.expiredAt, 'yyyy-MM-dd')}">2026-01-15</td>
+                                    <td style="display:none" th:text="${doc.remark} ?: '-'">Remark</td> -->
+
+                                    <!-- Action Buttons -->
+                                    <td>
+                                        <div class="form-button-action">
+                                            <!-- <button type="button"
+                                                    class="btn btn-link btn-primary btn-lg edit-row"
+                                                    sec:authorize="hasAnyRole('MEMBER','ADMIN','SUPERADMIN')"
+                                                    th:data-id="${doc.id}">
+                                                <i class="fa fa-edit"></i>
+                                            </button>
+                                            <button type="button"
+                                                    class="btn btn-link btn-danger delete-row"
+                                                    sec:authorize="hasRole('ADMIN')"
+                                                    th:data-id="${doc.id}"
+                                                    th:data-name="${doc.name}">
+                                                <i class="fa fa-times"></i>
+                                            </button> -->
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <nav aria-label="...">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item disabled"><span class="page-link">Prev</span></li>
+                                <li class="page-item active"><span class="page-link">1</span></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts Fragment -->
+<!-- <th:block layout:fragment="scripts">
+    <script th:src="@{/js/document-modal.js}"></script>
+</th:block> -->
+</body>
+</html>
