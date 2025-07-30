@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{layouts/home}">
+	layout:decorate="~{layouts/dashboard}">
 
 <head>
 	<title>Dashboard</title>
@@ -13,11 +13,10 @@
 				<div class="d-flex align-items-left align-items-md-center flex-column flex-md-row">
 					<div>
 						<h2 class="text-white pb-2 fw-bold">Dashboard</h2>
-						<h5 class="text-white op-7 mb-2">Free Bootstrap 4 Admin Dashboard</h5>
+						<h5 class="text-white op-7 mb-2">Maintenance Overview</h5>
 					</div>
 					<div class="ml-md-auto py-2 py-md-0">
-						<a href="#" class="btn btn-white btn-border btn-round mr-2">Manage</a>
-						<a href="#" class="btn btn-secondary btn-round">Add Customer</a>
+						<a href="#" class="btn btn-info btn-round">Generate Report</a>
 					</div>
 				</div>
 			</div>
@@ -27,9 +26,9 @@
 				<div class="col-md-6">
 					<div class="card full-height">
 						<div class="card-body">
-							<div class="card-title">Overall statistics</div>
+							<div class="card-title">Overall Statistics</div>
 							<div class="card-category">Daily information about complaint status</div>
-							<div class="d-flex flex-wrap justify-content-around pb-2 pt-4">
+							<div class="d-flex flex-wrap justify-content-around pb-2 pt-5">
 								<div class="px-2 pb-2 pb-md-0 text-center">
 									<div id="circles-1"></div>
 									<h6 class="fw-bold mt-1 mb-3">Closed</h6>
@@ -53,7 +52,7 @@
 				<div class="col-md-6">
 					<div class="card full-height">
 						<div class="card-body">
-							<div class="card-title">Complaints of the week</div>
+							<div class="card-title">Complaints of The Week</div>
 							<div class="row py-3">
 
 								<div class="col-md-12">
@@ -89,7 +88,7 @@
 					<div class="card">
 						<div class="card-header">
 							<div class="card-head-row card-tools-still-right">
-								<h4 class="card-title">Users Geolocation</h4>
+								<h4 class="card-title">Engineers Responsibility</h4>
 								<div class="card-tools">
 									<button class="btn btn-icon btn-link btn-primary btn-xs"><span
 											class="fa fa-angle-down"></span></button>
@@ -99,7 +98,7 @@
 								</div>
 							</div>
 							<p class="card-category">
-								Map of the distribution of users around the world</p>
+								Map of the distribution of engineers responsibility</p>
 						</div>
 						<div class="card-body">
 
@@ -121,10 +120,10 @@
 												</div>
 											</td>
 											<td>Fahad</td>
-											<td class="text-right">
+											<td>
 												23
 											</td>
-											<td class="text-right">
+											<td>
 												12
 											</td>
 										</tr>
@@ -135,10 +134,10 @@
 												</div>
 											</td>
 											<td>Aqeel</td>
-											<td class="text-right">
+											<td>
 												24
 											</td>
-											<td class="text-right">
+											<td>
 												4
 											</td>
 										</tr>
@@ -149,10 +148,10 @@
 												</div>
 											</td>
 											<td>Rahool</td>
-											<td class="text-right">
+											<td>
 												11
 											</td>
-											<td class="text-right">
+											<td>
 												2
 											</td>
 										</tr>
@@ -163,10 +162,10 @@
 												</div>
 											</td>
 											<td>Waleed</td>
-											<td class="text-right">
+											<td>
 												1
 											</td>
-											<td class="text-right">
+											<td>
 												19
 											</td>
 										</tr>
@@ -177,10 +176,10 @@
 												</div>
 											</td>
 											<td>Viney</td>
-											<td class="text-right">
+											<td>
 												1
 											</td>
-											<td class="text-right">
+											<td>
 												2
 											</td>
 										</tr>
@@ -191,10 +190,10 @@
 												</div>
 											</td>
 											<td>Khaled</td>
-											<td class="text-right">
+											<td>
 												64
 											</td>
-											<td class="text-right">
+											<td>
 												11
 											</td>
 										</tr>
@@ -207,7 +206,7 @@
 				<div class="col-md-4">
 					<div class="card">
 						<div class="card-header">
-							<div class="card-title">Top locations</div>
+							<div class="card-title">Top Area</div>
 						</div>
 						<div class="card-body pb-0">
 							<div class="d-flex">
@@ -298,7 +297,7 @@
 					<div class="card">
 						<div class="card-header">
 							<div class="card-head-row">
-								<div class="card-title">User Statistics</div>
+								<div class="card-title">Equipment Statistics</div>
 								<div class="card-tools">
 									<a href="#" class="btn btn-info btn-border btn-round btn-sm mr-2">
 										<span class="btn-label">

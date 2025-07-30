@@ -2,28 +2,36 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/home}">
+      layout:decorate="~{layouts/dashboard}">
 <head>
     <title>Documents</title>
 </head>
 <body>
 <div layout:fragment="content">
-    <div class="panel-header bg-primary-gradient">
+    <div class="panel-header">
         <div class="page-inner py-5">
-            <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row">
-                <div>
-                    <h2 class="text-white pb-2 fw-bold">Documents</h2>
-                    <h5 class="text-white op-7 mb-2">Manage your documents</h5>
-                </div>
-                <div class="ml-md-auto py-2 py-md-0">
-                    <!-- Only MEMBERS can add -->
-                    <!-- <button sec:authorize="hasAnyRole('MEMBER','ADMIN','SUPERADMIN')"
-                            class="btn btn-white btn-border btn-round ml-auto"
-                            data-toggle="modal" data-target="#addRowModal">
-                        <i class="fa fa-plus"></i> Add Document
-                    </button> -->
-                </div>
-            </div>
+            <div class="page-header">
+            <h4 class="page-title" th:text="${title}"></h4>
+            <ul class="breadcrumbs pt-4">
+                <li class="nav-home">
+                    <p>
+                        <i class="flaticon-home"></i>
+                    </p>
+                </li>
+                <li class="separator">
+                    <i class="flaticon-right-arrow"></i>
+                </li>
+                <li class="nav-item">
+                    <p>Menu</p>
+                </li>
+                <li class="separator">
+                    <i class="flaticon-right-arrow"></i>
+                </li>
+                <li class="nav-item">
+                    <p th:text="${title}"></p>
+                </li>
+            </ul>
+        </div>
         </div>
     </div>
 
@@ -33,7 +41,7 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="d-flex align-items-center">
-                            <h4 class="card-title">Documents</h4>
+                            <h4 class="card-title" th:text="${title}"></h4>
                             <form class="form-inline ml-auto">
                                 <div class="input-icon">
                                     <input type="text" id="tableSearchInput" class="form-control" placeholder="Search...">
@@ -52,13 +60,18 @@
                             <table id="document-table" class="display table table-striped table-hover">
                                 <thead>
                                 <tr>
-                                    <th>Image</th>
-                                    <th>Document Name</th>
-                                    <th>File Number</th>
-                                    <th>Cabinet</th>
-                                    <th>Row</th>
-                                    <th>Category</th>
-                                    <th>Location</th>
+                                    <th>Date</th>
+                                    <th>Area</th>
+                                    <th>Machine</th>
+                                    <th>Reporter</th>
+                                    <th>Subject</th>
+                                    <th>Description</th>
+                                    <th>Assignee</th>
+                                    <th>Action</th>
+                                    <th>Part List</th>
+                                    <th>Status</th>
+                                    <th>Close Time</th>
+                                    <th>Total Time</th>
                                     <th>Action</th>
                                 </tr>
                                 </thead>

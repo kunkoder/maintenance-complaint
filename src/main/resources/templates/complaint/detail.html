@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layouts/dashboard}">
+
+<head>
+    <title>Documents</title>
+    <style>
+        .badge-status {
+            padding: 0.3em 0.6em;
+            border-radius: 0.25rem;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="panel-header">
+            <div class="page-inner py-5">
+                <div class="page-header">
+                    <h4 class="page-title" th:text="${title}"></h4>
+                    <ul class="breadcrumbs pt-4">
+                        <li class="nav-home">
+                            <p>
+                                <i class="flaticon-home"></i>
+                            </p>
+                        </li>
+                        <li class="separator">
+                            <i class="flaticon-right-arrow"></i>
+                        </li>
+                        <li class="nav-item">
+                            <p>Menu</p>
+                        </li>
+                        <li class="separator">
+                            <i class="flaticon-right-arrow"></i>
+                        </li>
+                        <li class="nav-item">
+                            <p th:text="${title}"></p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-inner mt--5">
+            <div class="row">
+                <div class="col-md-12 ml-auto mr-auto">
+                    <div class="card card-profile">
+                        <div class="card-header"
+                            style="background-image: url('/assets/img/blogpost.jpg'); height: 145px;">
+                            <div class="profile-picture">
+                                <div class="avatar avatar-xxl">
+                                    <!-- Default image -->
+                                    <img id="profileImagePreview" src="/assets/img/arashmil.jpg"
+                                        alt="Foto Profil Default" class="avatar-img rounded-circle mt--5">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tabs Navigation -->
+                        <ul class="nav nav-tabs nav-line nav-color-primary" id="profileTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="profile-tab" data-toggle="tab" href="#profile" role="tab"
+                                    aria-controls="profile" aria-selected="true">Profil</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="records-tab" data-toggle="tab" href="#records" role="tab"
+                                    aria-controls="records" aria-selected="false">Riwayat
+                                    Peminjaman</a>
+                            </li>
+                        </ul>
+
+                        <!-- Tab Content -->
+                        <div class="tab-content" id="profileTabContent">
+                            <!-- Profile Tab -->
+                            <div class="tab-pane fade show active" id="profile" role="tabpanel"
+                                aria-labelledby="profile-tab">
+
+                                <div class="card-body">
+
+                                    <!-- Header: ID & Status -->
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="mb-0" id="complaint-key">COM-fX9aB2kLmN</h5>
+                                        <span class="badge badge-success" id="status-field" contenteditable="true"
+                                            data-original="CLOSED">CLOSED</span>
+                                    </div>
+
+                                    <!-- Subject -->
+                                    <h3 class="mb-3" id="subject-field" contenteditable="true"
+                                        data-original="Motor Overheating and Noise">
+                                        Motor Overheating and Noise
+                                    </h3>
+
+                                    <!-- Badges: Type, Priority, Category -->
+                                    <div class="mb-4">
+                                        <span class="badge badge-info">Maintenance</span>
+                                        <span class="badge badge-danger" id="priority-field" contenteditable="true"
+                                            data-original="High Priority">High Priority</span>
+                                        <span class="badge badge-dark" id="category-field" contenteditable="true"
+                                            data-original="Mechanical">Mechanical</span>
+                                    </div>
+
+                                    <!-- Details Grid -->
+                                    <div class="row mb-4">
+                                        <div class="col-md-6">
+                                            <p><strong>Reporter:</strong>
+                                                <span id="reporter-field" contenteditable="true"
+                                                    data-original="John Doe (Operator)">John Doe (Operator)</span>
+                                            </p>
+                                            <p><strong>Assignee:</strong>
+                                                <span id="assignee-field" contenteditable="true"
+                                                    data-original="Alice (Maintenance)">Alice (Maintenance)</span>
+                                            </p>
+                                            <p><strong>Area:</strong>
+                                                <span id="area-field" contenteditable="true"
+                                                    data-original="Production Floor A">Production Floor A</span>
+                                            </p>
+                                            <p><strong>Machine:</strong>
+                                                <span id="machine-field" contenteditable="true"
+                                                    data-original="Conveyor-5">Conveyor-5</span>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Report Date:</strong>
+                                                <span id="report-date-field" contenteditable="true"
+                                                    data-original="Apr 5, 2025 10:30">Apr 5, 2025 10:30</span>
+                                            </p>
+                                            <p><strong>Close Time:</strong>
+                                                <span id="close-time-field" contenteditable="true"
+                                                    data-original="Apr 5, 2025 14:45">Apr 5, 2025 14:45</span>
+                                            </p>
+                                            <p><strong>Resolution Time:</strong>
+                                                <span id="resolution-time-field" contenteditable="true"
+                                                    data-original="255 minutes">255 minutes</span>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Description -->
+                                    <div class="mb-4">
+                                        <h5>Description</h5>
+                                        <div class="alert alert-light" id="description-field" contenteditable="true"
+                                            data-original="The main drive motor is making loud grinding noise and temperature exceeds 90°C. Vibration levels are high during startup.">
+                                            The main drive motor is making loud grinding noise and temperature exceeds
+                                            90°C. Vibration levels are high during startup.
+                                        </div>
+                                    </div>
+
+                                    <!-- Action Taken -->
+                                    <div class="mb-4">
+                                        <h5>Action Taken</h5>
+                                        <div class="alert alert-success" id="action-taken-field" contenteditable="true"
+                                            data-original="Replaced AC motor (MTR-2001) and two ball bearings (BRG-8890). Realigned coupling and tested under load for 1 hour.">
+                                            Replaced AC motor (MTR-2001) and two ball bearings (BRG-8890). Realigned
+                                            coupling and tested under load for 1 hour.
+                                        </div>
+                                    </div>
+
+                                    <!-- Parts Used -->
+                                    <div class="mb-4">
+                                        <h5>Parts Used</h5>
+                                        <table class="table table-striped table-sm">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th>Part Code</th>
+                                                    <th>Name</th>
+                                                    <th>Category</th>
+                                                    <th>Quantity</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><code>MTR-2001</code></td>
+                                                    <td>AC Motor 1.5kW</td>
+                                                    <td>Mechanical</td>
+                                                    <td class="font-weight-bold">1</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><code>BRG-8890</code></td>
+                                                    <td>Ball Bearing 6205</td>
+                                                    <td>Mechanical</td>
+                                                    <td class="font-weight-bold">2</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- Footer -->
+                                    <div class="text-muted small border-top pt-3">
+                                        Last updated: <span id="updated-at-field" contenteditable="true"
+                                            data-original="Apr 5, 2025 14:45">Apr 5, 2025 14:45</span>
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+
+                            <!-- Borrow Records Tab -->
+                            <div class="tab-pane fade" id="records" role="tabpanel" aria-labelledby="records-tab">
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table id="borrow-records-table"
+                                            class="display table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Buku</th>
+                                                    <th>Tanggal Pinjam</th>
+                                                    <th>Tanggal Jatuh Tempo</th>
+                                                    <th>Tanggal Kembali</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Introduction to Algorithms</td>
+                                                    <td>2025-04-01</td>
+                                                    <td>2025-04-15</td>
+                                                    <td>-</td>
+                                                    <td><span class="badge badge-warning">Dipinjam</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Harry Potter</td>
+                                                    <td>2025-03-20</td>
+                                                    <td>2025-04-03</td>
+                                                    <td>2025-04-05</td>
+                                                    <td><span class="badge badge-success">Dikembalikan</span>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts Fragment -->
+    <th:block layout:fragment="scripts">
+        <!-- <script th:src="@{/js/document-modal.js}"></script> -->
+        <script>
+            // Save original value on focus
+            document.querySelectorAll('[contenteditable="true"]').forEach(field => {
+                field.addEventListener('focus', function () {
+                    this.setAttribute('data-original', this.innerText);
+                    this.style.outline = '2px solid #007bff';
+                    this.style.borderRadius = '4px';
+                }, true);
+
+                field.addEventListener('blur', function () {
+                    const original = this.getAttribute('data-original');
+                    const current = this.innerText.trim();
+
+                    // Only "save" if changed (in real app, send to backend)
+                    if (current !== original) {
+                        console.log(`Updated: ${this.id} → "${original}" → "${current}"`);
+                        // TODO: Send update via AJAX to backend
+                        // Example: updateComplaintField('subject', current);
+                    }
+
+                    this.setAttribute('data-original', current);
+                    this.style.outline = 'none';
+                });
+            });
+
+            // Optional: Allow pressing ESC to revert
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    const active = document.activeElement;
+                    if (active && active.hasAttribute('contenteditable')) {
+                        const original = active.getAttribute('data-original');
+                        active.innerText = original;
+                        active.blur();
+                    }
+                }
+            });
+        </script>
+    </th:block>
+
+</body>
+
+</html>
