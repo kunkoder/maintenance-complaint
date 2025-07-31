@@ -4,14 +4,6 @@
 
 <head>
     <title>Documents</title>
-    <style>
-        .badge-status {
-            padding: 0.3em 0.6em;
-            border-radius: 0.25rem;
-            font-size: 0.85em;
-            font-weight: 500;
-        }
-    </style>
 </head>
 
 <body>
@@ -47,190 +39,199 @@
             <div class="row">
                 <div class="col-md-12 ml-auto mr-auto">
                     <div class="card card-profile">
-                        <div class="card-header"
-                            style="background-image: url('/assets/img/blogpost.jpg'); height: 145px;">
-                            <div class="profile-picture">
-                                <div class="avatar avatar-xxl">
-                                    <!-- Default image -->
-                                    <img id="profileImagePreview" src="/assets/img/arashmil.jpg"
-                                        alt="Foto Profil Default" class="avatar-img rounded-circle mt--5">
+                        <div class="card-body">
+                            <!-- Header: ID & Status -->
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="mb-0 text-muted" id="complaint-key">COM-fX9aB2kLmN</h5>
+                                <span class="badge badge-success text-uppercase" id="status-field" 
+                                      style="cursor: pointer; font-weight: 600;" 
+                                      title="Click to change status">
+                                    CLOSED
+                                </span>
+                            </div>
+                        
+                            <!-- Subject (Editable) -->
+                            <h3 class="mb-3" id="subject-field" 
+                                contenteditable="true" 
+                                data-original="Motor Overheating and Noise"
+                                style="cursor: text; border-bottom: 2px dashed transparent; transition: border-color 0.2s;"
+                                onfocus="this.style.borderBottom='2px dashed #007bff';"
+                                onblur="this.style.borderBottom='2px dashed transparent';">
+                                Motor Overheating and Noise
+                            </h3>
+                        
+                            <!-- Badges: Type, Priority, Category -->
+                            <div class="mb-4">
+                                <span class="badge badge-info">Maintenance</span>
+                                <span class="badge badge-danger" id="priority-field" 
+                                      style="cursor: pointer;" 
+                                      title="Click to edit">High Priority</span>
+                                <span class="badge badge-dark" id="category-field" 
+                                      style="cursor: pointer;" 
+                                      title="Click to edit">Mechanical</span>
+                            </div>
+                        
+                            <!-- Details Grid -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <p class="mb-2">
+                                        <strong>Reporter:</strong>
+                                        <span id="reporter-field"
+                                              data-original="John Doe (Operator)"
+                                              style="cursor: text; border-bottom: 1px dashed #ccc;">
+                                            John Doe (Operator)
+                                        </span>
+                                    </p>
+                                    <p class="mb-2">
+                                        <strong>Assignee:</strong>
+                                        <span id="assignee-field" contenteditable="true" 
+                                              data-original="Alice (Maintenance)"
+                                              style="cursor: text; border-bottom: 1px dashed #ccc;">
+                                            Alice (Maintenance)
+                                        </span>
+                                    </p>
+                                    <p class="mb-2">
+                                        <strong>Area:</strong>
+                                        <span id="area-field" contenteditable="true" 
+                                              data-original="Production Floor A"
+                                              style="cursor: text; border-bottom: 1px dashed #ccc;">
+                                            Production Floor A
+                                        </span>
+                                    </p>
+                                    <p class="mb-2">
+                                        <strong>Machine:</strong>
+                                        <span id="machine-field" contenteditable="true" 
+                                              data-original="Conveyor-5"
+                                              style="cursor: text; border-bottom: 1px dashed #ccc;">
+                                            Conveyor-5
+                                        </span>
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-2">
+                                        <strong>Report Date:</strong>
+                                        <span id="report-date-field"
+                                              data-original="Apr 5, 2025 10:30"
+                                              style="cursor: text; border-bottom: 1px dashed #ccc;">
+                                            Apr 5, 2025 10:30
+                                        </span>
+                                    </p>
+                                    <p class="mb-2">
+                                        <strong>Close Time:</strong>
+                                        <span id="close-time-field"
+                                              data-original="Apr 5, 2025 14:45"
+                                              style="cursor: text; border-bottom: 1px dashed #ccc;">
+                                            Apr 5, 2025 14:45
+                                        </span>
+                                    </p>
+                                    <p class="mb-2">
+                                        <strong>Resolution Time:</strong>
+                                        <span id="resolution-time-field"
+                                              data-original="255 minutes"
+                                              style="cursor: text; border-bottom: 1px dashed #ccc;">
+                                            255 minutes
+                                        </span>
+                                    </p>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- Tabs Navigation -->
-                        <ul class="nav nav-tabs nav-line nav-color-primary" id="profileTab" role="tablist">
-                            <li class="nav-item">
-                                <a class="nav-link active" id="profile-tab" data-toggle="tab" href="#profile" role="tab"
-                                    aria-controls="profile" aria-selected="true">Profil</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" id="records-tab" data-toggle="tab" href="#records" role="tab"
-                                    aria-controls="records" aria-selected="false">Riwayat
-                                    Peminjaman</a>
-                            </li>
-                        </ul>
-
-                        <!-- Tab Content -->
-                        <div class="tab-content" id="profileTabContent">
-                            <!-- Profile Tab -->
-                            <div class="tab-pane fade show active" id="profile" role="tabpanel"
-                                aria-labelledby="profile-tab">
-
-                                <div class="card-body">
-
-                                    <!-- Header: ID & Status -->
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h5 class="mb-0" id="complaint-key">COM-fX9aB2kLmN</h5>
-                                        <span class="badge badge-success" id="status-field" contenteditable="true"
-                                            data-original="CLOSED">CLOSED</span>
-                                    </div>
-
-                                    <!-- Subject -->
-                                    <h3 class="mb-3" id="subject-field" contenteditable="true"
-                                        data-original="Motor Overheating and Noise">
-                                        Motor Overheating and Noise
-                                    </h3>
-
-                                    <!-- Badges: Type, Priority, Category -->
-                                    <div class="mb-4">
-                                        <span class="badge badge-info">Maintenance</span>
-                                        <span class="badge badge-danger" id="priority-field" contenteditable="true"
-                                            data-original="High Priority">High Priority</span>
-                                        <span class="badge badge-dark" id="category-field" contenteditable="true"
-                                            data-original="Mechanical">Mechanical</span>
-                                    </div>
-
-                                    <!-- Details Grid -->
-                                    <div class="row mb-4">
-                                        <div class="col-md-6">
-                                            <p><strong>Reporter:</strong>
-                                                <span id="reporter-field" contenteditable="true"
-                                                    data-original="John Doe (Operator)">John Doe (Operator)</span>
-                                            </p>
-                                            <p><strong>Assignee:</strong>
-                                                <span id="assignee-field" contenteditable="true"
-                                                    data-original="Alice (Maintenance)">Alice (Maintenance)</span>
-                                            </p>
-                                            <p><strong>Area:</strong>
-                                                <span id="area-field" contenteditable="true"
-                                                    data-original="Production Floor A">Production Floor A</span>
-                                            </p>
-                                            <p><strong>Machine:</strong>
-                                                <span id="machine-field" contenteditable="true"
-                                                    data-original="Conveyor-5">Conveyor-5</span>
-                                            </p>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <p><strong>Report Date:</strong>
-                                                <span id="report-date-field" contenteditable="true"
-                                                    data-original="Apr 5, 2025 10:30">Apr 5, 2025 10:30</span>
-                                            </p>
-                                            <p><strong>Close Time:</strong>
-                                                <span id="close-time-field" contenteditable="true"
-                                                    data-original="Apr 5, 2025 14:45">Apr 5, 2025 14:45</span>
-                                            </p>
-                                            <p><strong>Resolution Time:</strong>
-                                                <span id="resolution-time-field" contenteditable="true"
-                                                    data-original="255 minutes">255 minutes</span>
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <!-- Description -->
-                                    <div class="mb-4">
-                                        <h5>Description</h5>
-                                        <div class="alert alert-light" id="description-field" contenteditable="true"
-                                            data-original="The main drive motor is making loud grinding noise and temperature exceeds 90°C. Vibration levels are high during startup.">
-                                            The main drive motor is making loud grinding noise and temperature exceeds
-                                            90°C. Vibration levels are high during startup.
-                                        </div>
-                                    </div>
-
-                                    <!-- Action Taken -->
-                                    <div class="mb-4">
-                                        <h5>Action Taken</h5>
-                                        <div class="alert alert-success" id="action-taken-field" contenteditable="true"
-                                            data-original="Replaced AC motor (MTR-2001) and two ball bearings (BRG-8890). Realigned coupling and tested under load for 1 hour.">
-                                            Replaced AC motor (MTR-2001) and two ball bearings (BRG-8890). Realigned
-                                            coupling and tested under load for 1 hour.
-                                        </div>
-                                    </div>
-
-                                    <!-- Parts Used -->
-                                    <div class="mb-4">
-                                        <h5>Parts Used</h5>
-                                        <table class="table table-striped table-sm">
-                                            <thead class="thead-light">
-                                                <tr>
-                                                    <th>Part Code</th>
-                                                    <th>Name</th>
-                                                    <th>Category</th>
-                                                    <th>Quantity</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td><code>MTR-2001</code></td>
-                                                    <td>AC Motor 1.5kW</td>
-                                                    <td>Mechanical</td>
-                                                    <td class="font-weight-bold">1</td>
-                                                </tr>
-                                                <tr>
-                                                    <td><code>BRG-8890</code></td>
-                                                    <td>Ball Bearing 6205</td>
-                                                    <td>Mechanical</td>
-                                                    <td class="font-weight-bold">2</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                    <!-- Footer -->
-                                    <div class="text-muted small border-top pt-3">
-                                        Last updated: <span id="updated-at-field" contenteditable="true"
-                                            data-original="Apr 5, 2025 14:45">Apr 5, 2025 14:45</span>
-                                    </div>
-
-                                </div>
-
-
+                        
+                            <!-- Description -->
+                            <div class="mb-4">
+                                <h5 class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-align-left mr-2 text-primary"></i> Description
+                                </h5>
+                                <textarea 
+                                    id="description-field" 
+                                    class="form-control" 
+                                    rows="6" 
+                                    readonly
+                                    data-original="The main drive motor is making loud grinding noise and temperature exceeds 90°C. Vibration levels are high during startup."
+                                    style="background-color: #f9f9fb; border: 1px solid #e9ecef; border-radius: 8px; padding: 12px; font-family: 'Segoe UI', sans-serif; cursor: pointer;"
+                                    onclick="this.readOnly = false; this.style.backgroundColor = '#fff'; this.style.boxShadow = '0 0 0 0.2rem rgba(0,123,255,.1)'; this.focus();">
+The main drive motor is making loud grinding noise and temperature exceeds 90°C. Vibration levels are high during startup.
+                                </textarea>
                             </div>
-
-                            <!-- Borrow Records Tab -->
-                            <div class="tab-pane fade" id="records" role="tabpanel" aria-labelledby="records-tab">
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table id="borrow-records-table"
-                                            class="display table table-striped table-hover">
-                                            <thead>
-                                                <tr>
-                                                    <th>Buku</th>
-                                                    <th>Tanggal Pinjam</th>
-                                                    <th>Tanggal Jatuh Tempo</th>
-                                                    <th>Tanggal Kembali</th>
-                                                    <th>Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>Introduction to Algorithms</td>
-                                                    <td>2025-04-01</td>
-                                                    <td>2025-04-15</td>
-                                                    <td>-</td>
-                                                    <td><span class="badge badge-warning">Dipinjam</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Harry Potter</td>
-                                                    <td>2025-03-20</td>
-                                                    <td>2025-04-03</td>
-                                                    <td>2025-04-05</td>
-                                                    <td><span class="badge badge-success">Dikembalikan</span>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
+                        
+                            <!-- Action Taken -->
+                            <div class="mb-4">
+                                <h5 class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-wrench mr-2 text-success"></i> Action Taken
+                                </h5>
+                                <textarea 
+                                    id="action-taken-field" 
+                                    class="form-control" 
+                                    rows="6" 
+                                    readonly
+                                    data-original="Replaced AC motor (MTR-2001) and two ball bearings (BRG-8890). Realigned coupling and tested under load for 1 hour."
+                                    style="background-color: #f9f9fb; border: 1px solid #e9ecef; border-radius: 8px; padding: 12px; font-family: 'Segoe UI', sans-serif; cursor: pointer;"
+                                    onclick="this.readOnly = false; this.style.backgroundColor = '#fff'; this.style.boxShadow = '0 0 0 0.2rem rgba(0,123,255,.1)'; this.focus();">
+Replaced AC motor (MTR-2001) and two ball bearings (BRG-8890). Realigned coupling and tested under load for 1 hour.
+                                </textarea>
+                            </div>
+                        
+                            <!-- Parts Used -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="d-flex align-items-center mb-0">
+                                        <i class="fas fa-cogs mr-2 text-secondary"></i> Parts Used
+                                    </h5>
+                                    <button type="button" class="btn btn-primary btn-sm btn-round" id="addPartBtn">
+                                        <i class="fas fa-plus"></i> Add Part
+                                    </button>
+                                </div>
+                            
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-sm rounded overflow-hidden" id="partsTable">
+                                        <thead class="thead-light" style="background-color: #f8f9fa;">
+                                            <tr>
+                                                <th class="pl-3">Part Code</th>
+                                                <th>Name</th>
+                                                <th>Category</th>
+                                                <th class="text-center">Qty</th>
+                                                <th class="text-center" style="width: 80px;">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="pl-3"><code class="bg-light px-2 py-1 rounded">MTR-2001</code></td>
+                                                <td>AC Motor 1.5kW</td>
+                                                <td>Mechanical</td>
+                                                <td class="text-center font-weight-bold" contenteditable="true" data-original="1">1</td>
+                                                <td class="text-center">
+                                                    <button class="btn btn-link text-danger btn-sm delete-row"><i class="fas fa-trash-alt"></i></button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="pl-3"><code class="bg-light px-2 py-1 rounded">BRG-8890</code></td>
+                                                <td>Ball Bearing 6205</td>
+                                                <td>Mechanical</td>
+                                                <td class="text-center font-weight-bold" contenteditable="true" data-original="2">2</td>
+                                                <td class="text-center">
+                                                    <button class="btn btn-link text-danger btn-sm delete-row"><i class="fas fa-trash-alt"></i></button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        
+                            <!-- Action Buttons -->
+                            <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-4">
+                                <small class="text-muted">
+                                    Last updated: 
+                                    <span id="updated-at-field" contenteditable="true" 
+                                          data-original="Apr 5, 2025 14:45"
+                                          style="font-weight: 500;">
+                                        Apr 5, 2025 14:45
+                                    </span>
+                                </small>
+                                <div>
+                                    <button type="button" class="btn btn-danger btn-border btn-round mr-2" data-toggle="modal" data-target="#deleteConfirmModal">
+                                        <i class="fas fa-trash-alt"></i> Delete
+                                    </button>
+                                    <button type="button" class="btn btn-primary btn-round" id="saveChangesBtn">
+                                        <i class="fas fa-save"></i> Save Changes
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -242,42 +243,218 @@
 
     <!-- Scripts Fragment -->
     <th:block layout:fragment="scripts">
-        <!-- <script th:src="@{/js/document-modal.js}"></script> -->
         <script>
-            // Save original value on focus
-            document.querySelectorAll('[contenteditable="true"]').forEach(field => {
-                field.addEventListener('focus', function () {
-                    this.setAttribute('data-original', this.innerText);
-                    this.style.outline = '2px solid #007bff';
-                    this.style.borderRadius = '4px';
-                }, true);
+            document.addEventListener("DOMContentLoaded", function () {
 
-                field.addEventListener('blur', function () {
-                    const original = this.getAttribute('data-original');
-                    const current = this.innerText.trim();
+                function makeTextareaEditable(fieldId) {
+                    const textarea = document.getElementById(fieldId);
+                    if (!textarea) return;
 
-                    // Only "save" if changed (in real app, send to backend)
-                    if (current !== original) {
-                        console.log(`Updated: ${this.id} → "${original}" → "${current}"`);
-                        // TODO: Send update via AJAX to backend
-                        // Example: updateComplaintField('subject', current);
-                    }
+                    // Style when readonly (static appearance)
+                    const readonlyStyle = {
+                        backgroundColor: '#f8f9fa',
+                        border: '1px solid #ddd',
+                        opacity: '0.8',
+                        cursor: 'pointer'
+                    };
 
-                    this.setAttribute('data-original', current);
-                    this.style.outline = 'none';
-                });
-            });
+                    // Style when editing
+                    const editingStyle = {
+                        backgroundColor: '#fff',
+                        border: '1px solid #007bff',
+                        opacity: '1',
+                        boxShadow: '0 0 0 0.2rem rgba(0,123,255,.1)'
+                    };
 
-            // Optional: Allow pressing ESC to revert
-            document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') {
-                    const active = document.activeElement;
-                    if (active && active.hasAttribute('contenteditable')) {
-                        const original = active.getAttribute('data-original');
-                        active.innerText = original;
-                        active.blur();
+                    // Apply readonly visual style
+                    Object.assign(textarea.style, readonlyStyle);
+
+                    textarea.addEventListener('click', function () {
+                        if (textarea.readOnly) {
+                            // Enable editing
+                            textarea.readOnly = false;
+                            Object.assign(textarea.style, editingStyle);
+                            textarea.focus();
+                        }
+                    });
+
+                    // Save on blur
+                    textarea.addEventListener('blur', function () {
+                        const original = textarea.getAttribute('data-original');
+                        const current = textarea.value.trim();
+
+                        if (current !== original) {
+                            console.log(`Updated: ${fieldId} → "${original}" → "${current}"`);
+                            // Here you can send update via AJAX
+                            // Example: fetch('/api/update-complaint', { method: 'POST', body: JSON.stringify({ field: fieldId, value: current }) })
+                            textarea.setAttribute('data-original', current);
+                        }
+
+                        // Reapply readonly state and style
+                        textarea.readOnly = true;
+                        Object.assign(textarea.style, readonlyStyle);
+                    });
+
+                    // Allow Enter to save, Escape to cancel
+                    textarea.addEventListener('keydown', function (e) {
+                        if (e.key === 'Enter' && e.ctrlKey) {
+                            // Ctrl+Enter to save
+                            textarea.blur();
+                        } else if (e.key === 'Escape') {
+                            // Revert to original value
+                            textarea.value = textarea.getAttribute('data-original');
+                            textarea.blur();
+                        }
+                    });
+                }
+
+                // Initialize editable textareas
+                makeTextareaEditable('description-field');
+                makeTextareaEditable('action-taken-field');
+
+                // Function to turn field into input on click
+                function makeEditable(fieldId, type = 'text', options = null, dynamicOptionsFn = null) {
+                    const field = document.getElementById(fieldId);
+                    if (!field) return;
+
+                    const originalValue = field.getAttribute('data-original') || field.innerText.trim();
+                    field.setAttribute('data-original', originalValue);
+                    let input;
+
+                    field.style.cursor = 'pointer';
+                    field.title = 'Click to edit';
+
+                    field.addEventListener('click', function (e) {
+                        if (field.querySelector('input, select')) return; // Already editing
+
+                        let availableOptions = [];
+                        if (dynamicOptionsFn && typeof dynamicOptionsFn === 'function') {
+                            availableOptions = dynamicOptionsFn(field.innerText.trim());
+                        } else {
+                            availableOptions = Array.isArray(options) ? options : [];
+                        }
+
+                        if (availableOptions.length === 0) return;
+
+                        input = document.createElement('select');
+                        input.className = 'form-control form-control-sm';
+
+                        availableOptions.forEach(opt => {
+                            const option = document.createElement('option');
+                            option.value = opt;
+                            option.textContent = opt;
+                            if (opt === field.innerText.trim()) option.selected = true;
+                            input.appendChild(option);
+                        });
+
+                        // 🔴 Apply badge-like styling to the select
+                        const computedStyle = window.getComputedStyle(field);
+                        input.style.backgroundColor = computedStyle.backgroundColor;
+                        input.style.color = computedStyle.color;
+                        input.style.borderColor = computedStyle.color;
+                        input.style.borderWidth = '2px';
+                        input.style.borderStyle = 'solid';
+                        input.style.borderRadius = '0.25rem';
+                        input.style.padding = '0.3em 0.6em';
+                        input.style.fontSize = computedStyle.fontSize;
+                        input.style.fontWeight = computedStyle.fontWeight;
+                        input.style.height = 'auto';
+                        input.style.minHeight = 'unset';
+
+                        // Replace field content
+                        field.innerHTML = '';
+                        field.appendChild(input);
+                        input.focus();
+                    });
+
+                    // Save on blur
+                    field.addEventListener('blur', function (e) {
+                        const target = e.relatedTarget || document.activeElement;
+                        if (field.contains(target)) return; // Still in the field
+
+                        const select = field.querySelector('select');
+                        if (!select) return;
+
+                        const newValue = select.options[select.selectedIndex].text;
+                        const oldValue = field.getAttribute('data-original');
+
+                        if (newValue && newValue !== oldValue) {
+                            console.log(`Updated: ${fieldId} → "${oldValue}" → "${newValue}"`);
+                            field.innerHTML = newValue;
+                            field.setAttribute('data-original', newValue);
+
+                            // Update badge class if applicable
+                            if (field.classList.contains('badge')) {
+                                field.className = getStatusBadgeClass(newValue); // Reapply correct badge class
+                            }
+                        } else {
+                            field.innerHTML = oldValue;
+                        }
+                    }, true);
+
+                    // Handle Enter and Escape
+                    field.addEventListener('keydown', function (e) {
+                        const select = field.querySelector('select');
+                        if (!select) return;
+
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            field.blur();
+                        } else if (e.key === 'Escape') {
+                            field.innerHTML = originalValue;
+                        }
+                    });
+                }
+
+
+                // Helper to get correct Bootstrap badge class
+                function getStatusBadgeClass(status) {
+                    switch (status) {
+                        case 'OPEN': return 'badge badge-danger';
+                        case 'INPROGRESS': return 'badge badge-primary';
+                        case 'PENDING': return 'badge badge-warning';
+                        case 'CLOSED': return 'badge badge-success';
+                        default: return 'badge badge-secondary';
                     }
                 }
+
+                // Dynamic options generator for status-field
+                function getStatusOptions(currentStatus) {
+                    switch (currentStatus) {
+                        case 'OPEN':
+                            return ['OPEN', 'INPROGRESS'];
+                        case 'INPROGRESS':
+                            return ['INPROGRESS', 'PENDING', 'CLOSED'];
+                        case 'PENDING':
+                            return ['PENDING', 'INPROGRESS', 'CLOSED'];
+                        case 'CLOSED':
+                            return ['CLOSED', 'INPROGRESS'];
+                        default:
+                            return [];
+                    }
+                }
+
+                // Initialize editable fields
+                makeEditable('subject-field', 'text');
+                makeEditable('status-field', 'select', null, getStatusOptions); // Dynamic options
+                makeEditable('priority-field', 'select', ['Low Priority', 'Medium Priority', 'High Priority']);
+                makeEditable('category-field', 'select', ['Mechanical', 'Electrical', 'Software', 'Safety']);
+                makeEditable('assignee-field', 'select', ['Budi', 'Nina', 'Joko', 'Dono']);
+                makeEditable('area-field', 'select', ['Budi', 'Nina', 'Joko', 'Dono']);
+                makeEditable('machine-field', 'select', ['Budi', 'Nina', 'Joko', 'Dono']);
+
+                // Optional: Format datetime-local fields on load (if needed)
+                document.querySelectorAll("span[id*='date'], span[id*='time']").forEach(span => {
+                    const text = span.innerText.trim();
+                    if (!text || text === '-') return;
+
+                    const d = new Date(text);
+                    if (isNaN(d)) return;
+
+                    const pad = x => x.toString().padStart(2, '0');
+                    const dtLocal = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                    span.setAttribute('data-datetime-value', dtLocal); // Store for later use
+                });
             });
         </script>
     </th:block>

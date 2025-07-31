@@ -6,18 +6,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @Controller
-public class ComplaintController {
+public class UserController {
 
-    @GetMapping("/complaints")
+    @GetMapping("/users")
     public String index(Model model) {
-        model.addAttribute("title", "Complaint List");
-        return "complaint/index";
+        model.addAttribute("title", "User Management");
+        return "user/index";
     }
-    
-    @GetMapping("/complaints/{id}")
+
+    @GetMapping("/users/{id}")
     public String detail(@PathVariable("id") String id, Model model) {
         model.addAttribute("title", "Complaint Detail");
-        model.addAttribute("complaintId", id);
-        return "complaint/detail";
+        model.addAttribute("userId", id);
+        return "user/profile";
     }
 }

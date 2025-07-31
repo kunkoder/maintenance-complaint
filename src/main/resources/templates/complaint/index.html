@@ -1,146 +1,414 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/dashboard}">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layouts/dashboard}">
+
 <head>
     <title>Documents</title>
 </head>
+
 <body>
-<div layout:fragment="content">
-    <div class="panel-header">
-        <div class="page-inner py-5">
+    <div layout:fragment="content">
+        <div class="page-inner">
             <div class="page-header">
-            <h4 class="page-title" th:text="${title}"></h4>
-            <ul class="breadcrumbs pt-4">
-                <li class="nav-home">
-                    <p>
-                        <i class="flaticon-home"></i>
-                    </p>
-                </li>
-                <li class="separator">
-                    <i class="flaticon-right-arrow"></i>
-                </li>
-                <li class="nav-item">
-                    <p>Menu</p>
-                </li>
-                <li class="separator">
-                    <i class="flaticon-right-arrow"></i>
-                </li>
-                <li class="nav-item">
-                    <p th:text="${title}"></p>
-                </li>
-            </ul>
-        </div>
-        </div>
-    </div>
+                <h4 class="page-title" th:text="${title}"></h4>
+                <ul class="breadcrumbs">
+                    <li class="nav-home">
+                        <a>
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </a>
+                    </li>
+                    <li class="separator">
+                        <i class="flaticon-right-arrow"></i>
+                    </li>
+                    <li class="nav-item">
+                        <a>Menu</a>
+                    </li>
+                    <li class="separator">
+                        <i class="flaticon-right-arrow"></i>
+                    </li>
+                    <li class="nav-item">
+                        <a th:text="${title}"></a>
+                    </li>
+                </ul>
+                <button class="btn btn-primary btn-round ml-auto" data-toggle="modal" data-target="#addRowModal">
+                    <i class="fa fa-plus-circle mr-2"></i> New Report
+                </button>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="d-flex align-items-center">
+                                <h4 class="card-title" th:text="${title}"></h4>
+                                <form class="form-inline ml-auto" th:action="@{/users}" method="get">
+                                    <div class="input-icon mr-2"> <!-- Added margin for spacing -->
+                                        <input type="text" name="keyword" th:value="${keyword}" id="userSearchInput"
+                                            class="form-control" placeholder="Search...">
+                                        <span class="input-icon-addon"><i class="fa fa-search"></i></span>
+                                    </div>
+                                    <!-- Size Dropdown -->
+                                    <div class="form-group mr-2"> <!-- Added margin for spacing -->
+                                        <label for="pageSizeSelect" class="sr-only">Items per page:</label>
+                                        <!-- Accessible label -->
+                                        <select name="size" id="pageSizeSelect" class="form-control"
+                                            onchange="this.form.submit()">
+                                            <option value="10" th:selected="${currentSize == 10}">10</option>
+                                            <option value="30" th:selected="${currentSize == 30}">30</option>
+                                            <option value="50" th:selected="${currentSize == 50}">50</option>
+                                            <option value="100" th:selected="${currentSize == 100}">100</option>
+                                        </select>
+                                    </div>
+                                    <!-- Filter Dropdown Button (Filter Icon Only) -->
+                                    <div class="dropdown ml-2">
+                                        <button class="btn btn-primary dropdown-toggle" type="button"
+                                            id="filterDropdown" data-toggle="dropdown" aria-haspopup="true"
+                                            aria-expanded="false" style="padding: 0.375rem 0.5rem;">
+                                            <i class="fa fa-filter"></i>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="filterDropdown"
+                                            style="min-width: 200px;">
+                                            <!-- Section 1: Column Selection -->
+                                            <h6 class="dropdown-header">Sort Column</h6>
+                                            <a class="dropdown-item" href="#" data-column="complaintNo">Complaint
+                                                No.</a>
+                                            <a class="dropdown-item" href="#" data-column="date">Date</a>
+                                            <a class="dropdown-item" href="#" data-column="area">Area</a>
+                                            <a class="dropdown-item" href="#" data-column="machine">Machine</a>
+                                            <a class="dropdown-item" href="#" data-column="subject">Subject</a>
+                                            <a class="dropdown-item" href="#" data-column="assignee">Assignee</a>
+                                            <a class="dropdown-item" href="#" data-column="status">Status</a>
+                                            <a class="dropdown-item" href="#" data-column="totalTime">Total Time</a>
 
-    <div class="page-inner mt--5">
-        <div class="row row-card-no-pd">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="d-flex align-items-center">
-                            <h4 class="card-title" th:text="${title}"></h4>
-                            <form class="form-inline ml-auto">
-                                <div class="input-icon">
-                                    <input type="text" id="tableSearchInput" class="form-control" placeholder="Search...">
-                                    <span class="input-icon-addon"><i class="fa fa-search"></i></span>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-                    <div class="card-body">
-                        <!-- Include modals -->
-                        <!-- <div th:replace="documents/partials :: modals"></div> -->
-
-                        <!-- Table -->
-                        <div class="table-responsive">
-                            <table id="document-table" class="display table table-striped table-hover">
-                                <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Area</th>
-                                    <th>Machine</th>
-                                    <th>Reporter</th>
-                                    <th>Subject</th>
-                                    <th>Description</th>
-                                    <th>Assignee</th>
-                                    <th>Action</th>
-                                    <th>Part List</th>
-                                    <th>Status</th>
-                                    <th>Close Time</th>
-                                    <th>Total Time</th>
-                                    <th>Action</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <!-- <tr th:each="doc : ${documents}"> -->
-                                    <!-- Visible Columns -->
-                                    <td>
-                                        <!-- <img th:src="${doc.imageUrl} ?: '/assets/img/arashmil.jpg'"
-                                             width="50" class="rounded" alt="Doc"/> -->
-                                    </td>
-                                    <!-- <td><a href="#" class="show-detail" th:data-id="${doc.id}" th:text="${doc.name}"></a></td>
-                                    <td th:text="${doc.fileNumber}">SK-001</td>
-                                    <td th:text="${doc.cabinet}">A</td>
-                                    <td th:text="${doc.row}">1</td>
-                                    <td th:text="${doc.category}">HR</td>
-                                    <td th:text="${doc.location}">Rak A1</td> -->
-
-                                    <!-- Hidden Data (for modal fill) -->
-                                    <!-- <td style="display:none" th:text="${doc.status}">Aktif</td>
-                                    <td style="display:none" th:text="${doc.owner}">Owner</td>
-                                    <td style="display:none" th:text="${doc.location}">Loc</td>
-                                    <td style="display:none" th:text="${#dates.format(doc.insertedAt, 'yyyy-MM-dd')}">Date</td>
-                                    <td style="display:none" th:text="${#dates.format(doc.updatedAt, 'yyyy-MM-dd')}">Date</td>
-                                    <td style="display:none" th:text="${#dates.format(doc.expiredAt, 'yyyy-MM-dd')}">2026-01-15</td>
-                                    <td style="display:none" th:text="${doc.remark} ?: '-'">Remark</td> -->
-
-                                    <!-- Action Buttons -->
-                                    <td>
-                                        <div class="form-button-action">
-                                            <!-- <button type="button"
-                                                    class="btn btn-link btn-primary btn-lg edit-row"
-                                                    sec:authorize="hasAnyRole('MEMBER','ADMIN','SUPERADMIN')"
-                                                    th:data-id="${doc.id}">
-                                                <i class="fa fa-edit"></i>
-                                            </button>
-                                            <button type="button"
-                                                    class="btn btn-link btn-danger delete-row"
-                                                    sec:authorize="hasRole('ADMIN')"
-                                                    th:data-id="${doc.id}"
-                                                    th:data-name="${doc.name}">
-                                                <i class="fa fa-times"></i>
-                                            </button> -->
+                                            <div class="dropdown-divider"></div>
+                                            <!-- Section 2: Sort Order -->
+                                            <h6 class="dropdown-header">Sort Order</h6>
+                                            <a class="dropdown-item" href="#" data-order="asc">Ascending</a>
+                                            <a class="dropdown-item" href="#" data-order="desc">Descending</a>
                                         </div>
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
+                                    </div>
+                                    <!-- Optional: Hidden input for page to reset to 0 on new search/size change -->
+                                    <!-- <input type="hidden" name="page" value="0" /> -->
+                                </form>
+                            </div>
                         </div>
 
-                        <!-- Pagination -->
-                        <nav aria-label="...">
-                            <ul class="pagination justify-content-center">
-                                <li class="page-item disabled"><span class="page-link">Prev</span></li>
-                                <li class="page-item active"><span class="page-link">1</span></li>
-                                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                <li class="page-item"><a class="page-link" href="#">Next</a></li>
-                            </ul>
-                        </nav>
+                        <div class="card-body">
+                            <!-- Modal Add -->
+                            <div class="modal fade" id="addRowModal" tabindex="-1" role="dialog" aria-hidden="true">
+                                <div class="modal-dialog modal-lg" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-primary text-white no-bd">
+                                            <h5 class="modal-title">
+                                                Report New Issue
+                                            </h5>
+                                            <button type="button" class="close text-white" data-dismiss="modal"
+                                                aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body p-4">
+                                            <form id="formAdd">
+                                                <!-- Subject -->
+                                                <div class="form-group">
+                                                    <label for="addSubject">Subject <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" id="addSubject"
+                                                        placeholder="e.g. Motor Overheating" required>
+                                                    <div class="invalid-feedback">Please enter a subject.</div>
+                                                </div>
+
+                                                <!-- Row 2: Area & Machine -->
+                                                <div class="form-row">
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label for="addArea">Area <span
+                                                                    class="text-danger">*</span></label>
+                                                            <select class="form-control" id="addArea" required>
+                                                                <option value="" disabled selected>Select Area</option>
+                                                                <option value="Production Floor A">Production Floor A
+                                                                </option>
+                                                                <option value="Assembly Line 3">Assembly Line 3</option>
+                                                                <option value="Paint Booth B">Paint Booth B</option>
+                                                                <option value="Warehouse">Warehouse</option>
+                                                                <option value="Packaging Zone">Packaging Zone</option>
+                                                                <option value="Quality Control">Quality Control</option>
+                                                            </select>
+                                                            <div class="invalid-feedback">Please select an area.</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label for="addMachine">Machine</label>
+                                                            <select class="form-control" id="addMachine">
+                                                                <option value="" disabled selected>Select Machine
+                                                                    (optional)</option>
+                                                                <option value="Conveyor-5">Conveyor-5</option>
+                                                                <option value="Press-Machine-2">Press-Machine-2</option>
+                                                                <option value="Spray-Robot-7">Spray-Robot-7</option>
+                                                                <option value="Forklift-EV12">Forklift-EV12</option>
+                                                                <option value="Sealer-Machine-9">Sealer-Machine-9
+                                                                </option>
+                                                                <option value="Inspection-Cam-4">Inspection-Cam-4
+                                                                </option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+
+                                                <!-- Row 3: Assignee & Priority -->
+                                                <div class="form-row">
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label for="addAssignee">Assignee</label>
+                                                            <select class="form-control" id="addAssignee">
+                                                                <option value="" disabled selected>Select Assignee
+                                                                    (optional)</option>
+                                                                <option value="Alice (Maintenance)">Alice (Maintenance)
+                                                                </option>
+                                                                <option value="Bob (Mechanic)">Bob (Mechanic)</option>
+                                                                <option value="Carol (Technician)">Carol (Technician)
+                                                                </option>
+                                                                <option value="Dan (Electrical)">Dan (Electrical)
+                                                                </option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label for="addPriority">Priority <span
+                                                                    class="text-danger">*</span></label>
+                                                            <select class="form-control" id="addPriority" required>
+                                                                <option value="" disabled selected>Select Priority
+                                                                </option>
+                                                                <option value="LOW">Low</option>
+                                                                <option value="MEDIUM">Medium</option>
+                                                                <option value="HIGH">High</option>
+                                                            </select>
+                                                            <div class="invalid-feedback">Please select a priority.
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Row 4: Category -->
+                                                <div class="form-group">
+                                                    <label for="addCategory">Category <span
+                                                            class="text-danger">*</span></label>
+                                                    <select class="form-control" id="addCategory" required>
+                                                        <option value="" disabled selected>Select Category</option>
+                                                        <option value="MECHANICAL">Mechanical</option>
+                                                        <option value="ELECTRICAL">Electrical</option>
+                                                        <option value="IT">IT</option>
+                                                    </select>
+                                                    <div class="invalid-feedback">Please select a category.</div>
+                                                </div>
+
+                                                <!-- Description -->
+                                                <div class="form-group mb-3">
+                                                    <label for="addDescription">Description <span
+                                                            class="text-muted">(optional)</span></label>
+                                                    <textarea class="form-control" id="addDescription" rows="4"
+                                                        placeholder="Describe the issue in detail..."></textarea>
+                                                </div>
+
+                                                <!-- Image Upload -->
+                                                <div class="form-group mb-0">
+                                                    <label for="addImageInput">Image <span
+                                                            class="text-muted">(optional)</span></label>
+                                                    <div class="custom-file">
+                                                        <input type="file" class="custom-file-input" id="addImageInput"
+                                                            accept="image/*">
+                                                        <label class="custom-file-label" for="addImageInput">Choose
+                                                            file</label>
+                                                    </div>
+                                                    <div class="mt-2">
+                                                        <img id="addImagePreview" src="" alt="Image Preview"
+                                                            class="img-thumbnail"
+                                                            style="max-height: 150px; display: none;">
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div
+                                            class="modal-footer border-0 pt-2 pb-4 px-4 d-flex justify-content-between">
+                                            <small class="text-muted">
+                                                <i class="fas fa-asterisk text-danger mr-1"></i> Required fields
+                                            </small>
+                                            <div>
+                                                <button type="button" class="btn btn-danger btn-border"
+                                                    data-dismiss="modal">
+                                                    Cancel
+                                                </button>
+                                                <button type="button" class="btn btn-primary ml-2"
+                                                    id="addComplaintButton">
+                                                    Create Report
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Table -->
+                            <div class="table-responsive">
+                                <table id="document-table" class="display table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th width="12%">Code</th>
+                                            <th width="12%">Date</th>
+                                            <th width="14%">Area</th>
+                                            <th width="12%">Machine</th>
+                                            <th width="20%">Subject</th>
+                                            <th width="14%">Assignee</th>
+                                            <th width="10%">Status</th>
+                                            <th width="10%">Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="table-row-hover" data-id="fX9aB2kLmN">
+                                            <td><a href="/complaints/fX9aB2kLmN"
+                                                    class="font-weight-bold">COM-fX9aB2kLmN</a>
+                                            </td>
+                                            <td>Apr 5, 2025</td>
+                                            <td>Production Floor A</td>
+                                            <td>Conveyor-5</td>
+                                            <td>Motor Overheating and Noise</td>
+                                            <td>Alice (Maintenance)</td>
+                                            <td><span class="badge badge-success badge-pill px-3 py-2">CLOSED</span>
+                                            </td>
+                                            <td>255 min</td>
+                                        </tr>
+                                        <tr class="table-row-hover" data-id="aB3cD5eF78">
+                                            <td><a href="/complaints/aB3cD5eF78"
+                                                    class="font-weight-bold">COM-aB3cD5eF78</a>
+                                            </td>
+                                            <td>Apr 4, 2025</td>
+                                            <td>Assembly Line 3</td>
+                                            <td>Press-Machine-2</td>
+                                            <td>Hydraulic Leak Detected</td>
+                                            <td>Bob (Mechanic)</td>
+                                            <td><span class="badge badge-warning badge-pill px-3 py-2">PENDING</span>
+                                            </td>
+                                            <td>180 min</td>
+                                        </tr>
+                                        <tr class="table-row-hover" data-id="xY7zR1wQ90">
+                                            <td><a href="/complaints/xY7zR1wQ90"
+                                                    class="font-weight-bold">COM-xY7zR1wQ90</a>
+                                            </td>
+                                            <td>Apr 3, 2025</td>
+                                            <td>Paint Booth B</td>
+                                            <td>Spray-Robot-7</td>
+                                            <td>Software Crash on Startup</td>
+                                            <td>Carol (Technician)</td>
+                                            <td><span class="badge badge-primary badge-pill px-3 py-2">INPROGRESS</span>
+                                            </td>
+                                            <td>120 min</td>
+                                        </tr>
+                                        <tr class="table-row-hover" data-id="kL4mN8oP21">
+                                            <td><a href="/complaints/kL4mN8oP21"
+                                                    class="font-weight-bold">COM-kL4mN8oP21</a>
+                                            </td>
+                                            <td>Apr 2, 2025</td>
+                                            <td>Warehouse</td>
+                                            <td>Forklift-EV12</td>
+                                            <td>Battery Not Charging</td>
+                                            <td>Dan (Electrical)</td>
+                                            <td><span class="badge badge-danger badge-pill px-3 py-2">OPEN</span></td>
+                                            <td>45 min</td>
+                                        </tr>
+                                        <tr class="table-row-hover" data-id="rT6uV3xZ44">
+                                            <td><a href="/complaints/rT6uV3xZ44"
+                                                    class="font-weight-bold">COM-rT6uV3xZ44</a>
+                                            </td>
+                                            <td>Apr 1, 2025</td>
+                                            <td>Packaging Zone</td>
+                                            <td>Sealer-Machine-9</td>
+                                            <td>Overheating and Belt Slippage</td>
+                                            <td>Alice (Maintenance)</td>
+                                            <td><span class="badge badge-success badge-pill px-3 py-2">CLOSED</span>
+                                            </td>
+                                            <td>310 min</td>
+                                        </tr>
+                                        <tr class="table-row-hover" data-id="pQ2sM9nL55">
+                                            <td><a href="/complaints/pQ2sM9nL55"
+                                                    class="font-weight-bold">COM-pQ2sM9nL55</a>
+                                            </td>
+                                            <td>Mar 30, 2025</td>
+                                            <td>Quality Control</td>
+                                            <td>Inspection-Cam-4</td>
+                                            <td>Faulty Image Recognition</td>
+                                            <td>Carol (Technician)</td>
+                                            <td><span class="badge badge-warning badge-pill px-3 py-2">PENDING</span>
+                                            </td>
+                                            <td>95 min</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Pagination & Info -->
+                            <div class="row mt-3 align-items-center">
+                                <!-- Page Info (Left) -->
+                                <div class="col-md-6 col-sm-12">
+                                    <p class="text-muted mb-0">
+                                        Showing <span id="startRecord">1</span> - <span id="endRecord">10</span>
+                                        of <span id="totalRecords">100</span> entries
+                                    </p>
+                                </div>
+
+                                <!-- Pagination (Right) -->
+                                <div class="col-md-6 col-sm-12">
+                                    <nav aria-label="User list pagination" class="d-flex justify-content-end">
+                                        <ul class="pagination mb-0">
+                                            <!-- Previous Button -->
+                                            <li class="page-item">
+                                                <a class="page-link" href="#" aria-label="Previous">
+                                                    <span aria-hidden="true">Prev</span>
+                                                </a>
+                                            </li>
+
+                                            <!-- Page Numbers (Example: Current page 1) -->
+                                            <li class="page-item active">
+                                                <a class="page-link" href="#">
+                                                    1 <span class="sr-only">(current)</span>
+                                                </a>
+                                            </li>
+                                            <li class="page-item">
+                                                <a class="page-link" href="#">2</a>
+                                            </li>
+                                            <li class="page-item">
+                                                <a class="page-link" href="#">3</a>
+                                            </li>
+                                            <li class="page-item disabled">
+                                                <span class="page-link">...</span>
+                                            </li>
+                                            <li class="page-item">
+                                                <a class="page-link" href="#">10</a>
+                                            </li>
+
+                                            <!-- Next Button -->
+                                            <li class="page-item">
+                                                <a class="page-link" href="#" aria-label="Next">
+                                                    <span aria-hidden="true">Next</span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Scripts Fragment -->
-<!-- <th:block layout:fragment="scripts">
+    <!-- Scripts Fragment -->
+    <!-- <th:block layout:fragment="scripts">
     <script th:src="@{/js/document-modal.js}"></script>
 </th:block> -->
+
 </body>
+
 </html>
