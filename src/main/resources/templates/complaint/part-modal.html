@@ -100,9 +100,25 @@
     </div>
     <script>
         $(document).ready(function () {
-            let partsInUse = []; // Store parts added to the table
+            // === Initialize parts list from existing table rows ===
+            let partsInUse = {};
 
-            // === SEARCH FUNCTIONALITY ===
+            function loadExistingParts() {
+                $('#partsTable tbody tr').each(function () {
+                    const code = $(this).attr('data-code');
+                    if (code) {
+                        partsInUse[code] = {
+                            code: code,
+                            name: $(this).attr('data-name'),
+                            category: $(this).attr('data-category'),
+                            qty: $(this).find('td:eq(3)').text().trim()
+                        };
+                    }
+                });
+            }
+            loadExistingParts();
+
+            // === SEARCH in Add Part Modal ===
             $('#partSearch').on('keyup', function () {
                 const value = $(this).val().toLowerCase();
                 $('#availablePartsTable tbody tr').filter(function () {
@@ -112,98 +128,116 @@
                 });
             });
 
-            // === SELECT PART FROM MODAL ===
-            $('.select-part-btn').on('click', function () {
+            // === ADD Part from Modal ===
+            $('#availablePartsTable').on('click', '.select-part-btn', function () {
                 const row = $(this).closest('tr');
-                const code = row.data('code');
-                const name = row.data('name');
-                const category = row.data('category');
+                const code = row.attr('data-code');
+                const name = row.attr('data-name');
+                const category = row.attr('data-category');
 
-                // Check if already added
-                if (partsInUse.includes(code)) {
-                    alert('This part is already added.');
+                // Prevent duplicates
+                if (partsInUse[code]) {
+                    toastr.warning('Part already added.');
                     return;
                 }
 
-                // Prompt for quantity
-                const qty = prompt(`Enter quantity for ${name}:`, '1');
-                if (!qty || isNaN(qty) || qty <= 0) {
-                    alert('Please enter a valid quantity.');
-                    return;
-                }
+                // Default quantity
+                const qty = '1';
 
-                // Add to table
-                const newRow = `
-            <tr data-code="${code}">
+                // Create new row with data attributes
+                const $newRow = $(`
+            <tr data-code="${code}" data-name="${name}" data-category="${category}">
                 <td class="pl-3"><code class="bg-light px-2 py-1 rounded">${code}</code></td>
                 <td>${name}</td>
                 <td>${category}</td>
                 <td class="text-center font-weight-bold" contenteditable="true" data-original="${qty}">${qty}</td>
                 <td class="text-center">
-                    <button class="btn btn-link text-danger btn-sm delete-row"><i class="fas fa-trash-alt"></i></button>
+                    <button class="btn btn-link text-danger btn-sm delete-row" type="button">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
                 </td>
-            </tr>`;
-                $('#partsTable tbody').append(newRow);
-                partsInUse.push(code);
+            </tr>
+        `);
 
-                // Update hidden input
+                // Add to table and tracking
+                $('#partsTable tbody').append($newRow);
+                partsInUse[code] = { code, name, category, qty };
+
+                // Update hidden field
                 updatePartsUsedField();
 
-                // Notify user
-                toastr.success(`${name} added to list.`);
+                // Notify
+                toastr.success(`${name} added.`);
+
+                // Close modal if desired
+                // $('#addPartModal').modal('hide');
             });
 
-            // === DELETE PART CONFIRMATION ===
-            $('#partsTable').on('click', '.delete-row', function () {
+            // === DELETE Confirmation Modal Trigger ===
+            $('#partsTable').on('click', '.delete-row', function (e) {
+                e.preventDefault();
                 const row = $(this).closest('tr');
-                const partName = row.find('td:eq(1)').text();
-                const partCode = row.data('code');
+                const code = row.attr('data-code');
+                const name = row.attr('data-name');
 
-                $('#partToRemove').text(`${partName} (${partCode})`);
-                $('#deletePartModal').data('row', row); // Store reference
+                if (!code) {
+                    console.error('Missing data-code in row');
+                    return;
+                }
+
+                // Set modal info
+                $('#partToRemove').text(`${name} (${code})`);
+                $('#deletePartModal').data('code', code); // Store code for removal
                 $('#deletePartModal').modal('show');
             });
 
-            // Confirm deletion
+            // === CONFIRM DELETE ===
             $('#confirmRemovePart').on('click', function () {
-                const modal = $('#deletePartModal');
-                const row = modal.data('row');
-                const code = row.data('code');
+                const code = $('#deletePartModal').data('code');
+                const row = $(`#partsTable tbody tr[data-code="${code}"]`);
 
-                row.remove();
-                partsInUse = partsInUse.filter(c => c !== code);
-                updatePartsUsedField();
+                if (row.length) {
+                    row.remove();
+                    delete partsInUse[code];
+                    updatePartsUsedField();
+                    toastr.info('Part removed.');
+                }
 
-                modal.modal('hide');
-                toastr.info('Part removed.');
+                $('#deletePartModal').modal('hide');
             });
 
-            // === UPDATE HIDDEN FIELD (for form submission) ===
-            function updatePartsUsedField() {
-                const partsData = [];
-                $('#partsTable tbody tr').each(function () {
-                    const code = $(this).data('code');
-                    const name = $(this).find('td:eq(1)').text();
-                    const category = $(this).find('td:eq(2)').text();
-                    const qty = $(this).find('td:eq(3)').text().trim();
-                    partsData.push({ code, name, category, qty });
-                });
-                $('#partsUsedData').val(JSON.stringify(partsData));
-            }
+            // === EDIT Quantity (inline editable) ===
+            $('#partsTable').on('focus', 'td[contenteditable]', function () {
+                $(this).data('previous', $(this).text());
+            });
 
-            // === MAKE QUANTITY EDITABLE & SYNC ===
             $('#partsTable').on('blur', 'td[contenteditable]', function () {
-                const oldVal = $(this).data('original');
-                const newVal = $(this).text().trim();
-                if (isNaN(newVal) || newVal <= 0) {
-                    $(this).text(oldVal);
+                const $cell = $(this);
+                const $row = $cell.closest('tr');
+                const code = $row.attr('data-code');
+                const newValue = $cell.text().trim();
+
+                if (!code) return;
+
+                if (!newValue || isNaN(newValue) || newValue <= 0) {
+                    // Revert
+                    $cell.text($cell.data('previous'));
+                    toastr.error('Quantity must be a positive number.');
                 } else {
-                    $(this).data('original', newVal);
+                    $cell.text(newValue);
+                    $cell.data('original', newValue);
+                    partsInUse[code].qty = newValue;
                     updatePartsUsedField();
                 }
             });
 
-            // === OPEN ADD PART MODAL ===
+            // === Sync to Hidden Input ===
+            function updatePartsUsedField() {
+                const partsArray = Object.values(partsInUse);
+                $('#partsUsedData').val(JSON.stringify(partsArray));
+            }
+
+            // === Open Add Modal Button ===
             $('#addPartBtn').on('click', function () {
                 $('#partSearch').val('');
                 $('#availablePartsTable tbody tr').show(); // Reset filter
