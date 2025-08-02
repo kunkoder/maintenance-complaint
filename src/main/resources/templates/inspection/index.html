@@ -4,8 +4,256 @@
 
 <body>
     <div layout:fragment="content">
-        
+        <div class="page-inner">
+            <div class="page-header">
+                <h4 class="page-title" th:text="${title}">Inspection Reports</h4>
+                <ul class="breadcrumbs">
+                    <li class="nav-home">
+                        <a><i class="fas fa-clipboard-check"></i></a>
+                    </li>
+                    <li class="separator"><i class="flaticon-right-arrow"></i></li>
+                    <li class="nav-item"><a>Menu</a></li>
+                    <li class="separator"><i class="flaticon-right-arrow"></i></li>
+                    <li class="nav-item"><a th:text="${title}">Inspection Reports</a></li>
+                </ul>
+                <div class="header-action-group d-flex align-items-center ml-auto">
+                    <button class="btn btn-primary dropdown-toggle mt-2 mr-2" type="button" id="importDropdown"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-upload mr-1"></i> Import
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="importDropdown">
+                        <a class="dropdown-item" href="#"><i class="fa fa-file-excel mr-2 text-success"></i>
+                            Excel</a>
+                        <a class="dropdown-item" href="#"><i class="fa fa-file-pdf mr-2 text-danger"></i> PDF</a>
+                    </div>
+                    <button class="btn btn-primary dropdown-toggle mt-2 mr-2" type="button" id="exportDropdown"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-download mr-1"></i> Export
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="exportDropdown">
+                        <a class="dropdown-item" href="#"><i class="fa fa-file-excel mr-2 text-success"></i>
+                            Excel</a>
+                        <a class="dropdown-item" href="#"><i class="fa fa-file-pdf mr-2 text-danger"></i> PDF</a>
+                    </div>
+                    <button class="btn btn-primary ml-auto mt-2" data-toggle="modal" data-target="#addRowModal">
+                        <i class="fa fa-plus-circle mr-2"></i> Add
+                    </button>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="d-flex align-items-center">
+                                <h4 class="card-title" th:text="${title}">Inspection Reports</h4>
+                                <form class="form-inline ml-auto" th:action="@{/${#request.getRequestURI()}}"
+                                    method="get">
+                                    <div class="input-icon mr-2">
+                                        <input type="text" name="keyword" th:value="${keyword}" class="form-control"
+                                            placeholder="Search...">
+                                        <span class="input-icon-addon"><i class="fa fa-search"></i></span>
+                                    </div>
+                                    <div class="form-group mr-2">
+                                        <label for="pageSizeSelect" class="sr-only">Items per page</label>
+                                        <select name="size" id="pageSizeSelect" class="form-control"
+                                            onchange="this.form.submit()">
+                                            <option value="10" th:selected="${currentSize == 10}">10</option>
+                                            <option value="30" th:selected="${currentSize == 30}">30</option>
+                                            <option value="50" th:selected="${currentSize == 50}">50</option>
+                                            <option value="100" th:selected="${currentSize == 100}">100</option>
+                                        </select>
+                                    </div>
+                                    <div class="dropdown ml-2">
+                                        <button class="btn btn-primary dropdown-toggle" type="button"
+                                            id="filterDropdown" data-toggle="dropdown" aria-haspopup="true"
+                                            aria-expanded="false" style="padding: 0.375rem 0.5rem;">
+                                            <i class="fa fa-filter"></i>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="filterDropdown"
+                                            style="min-width: 200px;">
+                                            <!-- Section 1: Column Selection -->
+                                            <h6 class="dropdown-header">Sort Column</h6>
+                                            <a class="dropdown-item" href="#" data-column="complaintNo">Complaint
+                                                No.</a>
+                                            <a class="dropdown-item" href="#" data-column="date">Date</a>
+                                            <a class="dropdown-item" href="#" data-column="area">Area</a>
+                                            <a class="dropdown-item" href="#" data-column="machine">Machine</a>
+                                            <a class="dropdown-item" href="#" data-column="subject">Subject</a>
+                                            <a class="dropdown-item" href="#" data-column="assignee">Assignee</a>
+                                            <a class="dropdown-item" href="#" data-column="status">Status</a>
+                                            <a class="dropdown-item" href="#" data-column="totalTime">Total Time</a>
+
+                                            <div class="dropdown-divider"></div>
+                                            <!-- Section 2: Sort Order -->
+                                            <h6 class="dropdown-header">Sort Order</h6>
+                                            <a class="dropdown-item" href="#" data-order="asc">Ascending</a>
+                                            <a class="dropdown-item" href="#" data-order="desc">Descending</a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <!-- Include Modals -->
+                            <div th:replace="~{inspection/modal :: modal}"></div>
+
+                            <!-- Table -->
+                            <div class="table-responsive">
+                                <table id="inspection-table" class="display table table-striped table-hover">
+                                    <thead class="bg-primary text-white">
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Shift</th>
+                                            <th>Machine Name</th>
+                                            <th>Category</th>
+                                            <th>Problem Description</th>
+                                            <th>Solution & Parts</th>
+                                            <th>Start Time</th>
+                                            <th>Stop Time</th>
+                                            <th>Total Time</th>
+                                            <th>Technician Name</th>
+                                            <th>Supervisor</th>
+                                            <th>Status</th>
+                                            <!-- <th>Complaint Code</th> -->
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="table-row-hover" data-id="INS-001">
+                                            <td data-field="date">Apr 5, 2025</td>
+                                            <td data-field="shift">Day</td>
+                                            <td data-field="machineName">Conveyor-5</td>
+                                            <td data-field="category">Mechanical</td>
+                                            <td data-field="problemDescription">Motor Overheating, High temp detected
+                                                during operation</td>
+                                            <td data-field="solutionParts">Cleaned fan, replaced bearing</td>
+                                            <td data-field="startTime">08:15</td>
+                                            <td data-field="stopTime">08:45</td>
+                                            <td data-field="totalTime">30 min</td>
+                                            <td data-field="technicianName">Alice (Maintenance)</td>
+                                            <td data-field="supervisor">John Smith</td>
+                                            <td>
+                                                <span data-field="status" class="badge badge-success">DONE</span>
+                                            </td>
+                                            <!-- <td><span data-field="complaintCode">COMP-001</span></td> -->
+                                            <td>
+                                                <div class="form-button-action">
+                                                    <button type="button"
+                                                        class="btn btn-link btn-primary btn-lg edit-row"
+                                                        data-id="INS-001" data-name="Conveyor-5">
+                                                        <i class="fa fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-link btn-danger delete-row"
+                                                        data-id="INS-001" data-name="Conveyor-5">
+                                                        <i class="fa fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr class="table-row-hover" data-id="INS-002">
+                                            <td data-field="date">Apr 4, 2025</td>
+                                            <td data-field="shift">Night</td>
+                                            <td data-field="machineName">Press-Machine-2</td>
+                                            <td data-field="category">Mechanical</td>
+                                            <td data-field="problemDescription">Hydraulic Leak, Oil leakage from seal
+                                            </td>
+                                            <td data-field="solutionParts">Replaced seal, refilled oil</td>
+                                            <td data-field="startTime">22:10</td>
+                                            <td data-field="stopTime">23:05</td>
+                                            <td data-field="totalTime">55 min</td>
+                                            <td data-field="technicianName">Bob (Mechanic)</td>
+                                            <td data-field="supervisor">John Smith</td>
+                                            <td>
+                                                <span data-field="status" class="badge badge-warning">PENDING</span>
+                                            </td>
+                                            <!-- <td><span data-field="complaintCode">COMP-002</span></td> -->
+                                            <td>
+                                                <div class="form-button-action">
+                                                    <button type="button"
+                                                        class="btn btn-link btn-primary btn-lg edit-row"
+                                                        data-id="INS-002" data-name="Press-Machine-2">
+                                                        <i class="fa fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-link btn-danger delete-row"
+                                                        data-id="INS-002" data-name="Press-Machine-2">
+                                                        <i class="fa fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Pagination -->
+                            <div class="row mt-3 align-items-center">
+                                <div class="col-md-6 col-sm-12">
+                                    <p class="text-muted mb-0">
+                                        Showing <span id="startRecord">1</span> - <span id="endRecord">10</span>
+                                        of <span id="totalRecords">100</span> entries
+                                    </p>
+                                </div>
+                                <div class="col-md-6 col-sm-12">
+                                    <nav class="d-flex justify-content-end">
+                                        <ul class="pagination mb-0">
+                                            <li class="page-item"><a class="page-link" href="#">Prev</a></li>
+                                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                                            <li class="page-item"><a class="page-link" href="#">10</a></li>
+                                            <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Scripts -->
+    <th:block layout:fragment="scripts">
+        <script>
+            $(document).ready(function () {
+                // Edit Modal Trigger
+                $('.edit-row').on('click', function () {
+                    const row = $(this).closest('tr');
+                    const currentId = $(this).data('id');
+
+                    // Populate fields
+                    $('#editId').val(currentId);
+                    $('#editDate').val(row.find('[data-field="date"]').text().trim());
+                    $('#editShift').val(row.find('[data-field="shift"]').text().trim());
+                    $('#editMachineName').val(row.find('[data-field="machineName"]').text().trim());
+                    $('#editCategory').val(row.find('[data-field="category"]').text().trim());
+                    $('#editProblemDescription').val(row.find('[data-field="problemDescription"]').text().trim());
+                    $('#editSolutionParts').val(row.find('[data-field="solutionParts"]').text().trim());
+                    $('#editStartTime').val(row.find('[data-field="startTime"]').text().trim());
+                    $('#editStopTime').val(row.find('[data-field="stopTime"]').text().trim());
+                    $('#editTotalTime').val(row.find('[data-field="totalTime"]').text().trim());
+                    $('#editTechnicianName').val(row.find('[data-field="technicianName"]').text().trim());
+                    $('#editSupervisor').val(row.find('[data-field="supervisor"]').text().trim());
+                    $('#editStatus').val(row.find('[data-field="status"]').text().trim());
+                    // $('#editComplaintCode').val(row.find('[data-field="complaintCode"]').text().trim());
+
+                    $('#editRowModal').modal('show');
+                });
+
+                // Delete Modal Trigger
+                $('.delete-row').on('click', function () {
+                    const name = $(this).data('name');
+                    $('#deleteDocName').text(name);
+                    window.currentId = $(this).data('id');
+                    $('#deleteRowModal').modal('show');
+                });
+            });
+        </script>
+    </th:block>
 </body>
 
 </html>

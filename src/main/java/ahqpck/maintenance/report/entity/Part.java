@@ -39,6 +39,8 @@ public class Part {
 
     private String supplier;
 
+    private String image;
+
     @Builder.Default
     private Integer stockQuantity = 0;
 

@@ -16,7 +16,7 @@ public class UserController {
 
     @GetMapping("/users/{id}")
     public String detail(@PathVariable("id") String id, Model model) {
-        model.addAttribute("title", "Complaint Detail");
+        model.addAttribute("title", "My Profile");
         model.addAttribute("userId", id);
         return "user/profile";
     }

@@ -68,6 +68,10 @@ public class Complaint {
     @Column(name = "action_taken", columnDefinition = "TEXT", nullable = true)
     private String actionTaken;
 
+    private String imageBefore;
+
+    private String imageAfter;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status;

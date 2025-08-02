@@ -4,8 +4,317 @@
 
 <body>
     <div layout:fragment="content">
-        
+        <div class="page-inner">
+            <div class="page-header">
+                <h4 class="page-title" th:text="${title}"></h4>
+                <ul class="breadcrumbs">
+                    <li class="nav-home">
+                        <a>
+                            <i class="fas fa-cogs"></i>
+                        </a>
+                    </li>
+                    <li class="separator">
+                        <i class="flaticon-right-arrow"></i>
+                    </li>
+                    <li class="nav-item">
+                        <a>Menu</a>
+                    </li>
+                    <li class="separator">
+                        <i class="flaticon-right-arrow"></i>
+                    </li>
+                    <li class="nav-item">
+                        <a th:text="${title}"></a>
+                    </li>
+                </ul>
+                <div class="header-action-group d-flex align-items-center ml-auto">
+                    <button class="btn btn-primary dropdown-toggle mt-2 mr-2" type="button" id="importDropdown"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-upload mr-1"></i> Import
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="importDropdown">
+                        <a class="dropdown-item" href="#"><i class="fa fa-file-excel mr-2 text-success"></i>
+                            Excel</a>
+                        <a class="dropdown-item" href="#"><i class="fa fa-file-pdf mr-2 text-danger"></i> PDF</a>
+                    </div>
+                    <button class="btn btn-primary dropdown-toggle mt-2 mr-2" type="button" id="exportDropdown"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-download mr-1"></i> Export
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="exportDropdown">
+                        <a class="dropdown-item" href="#"><i class="fa fa-file-excel mr-2 text-success"></i>
+                            Excel</a>
+                        <a class="dropdown-item" href="#"><i class="fa fa-file-pdf mr-2 text-danger"></i> PDF</a>
+                    </div>
+                    <button class="btn btn-primary ml-auto mt-2" data-toggle="modal" data-target="#addRowModal">
+                        <i class="fa fa-plus-circle mr-2"></i> Add
+                    </button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="d-flex align-items-center">
+                                <h4 class="card-title" th:text="${title}"></h4>
+                                <form class="form-inline ml-auto" th:action="@{/users}" method="get">
+                                    <div class="input-icon mr-2"> <!-- Added margin for spacing -->
+                                        <input type="text" name="keyword" th:value="${keyword}" id="userSearchInput"
+                                            class="form-control" placeholder="Search...">
+                                        <span class="input-icon-addon"><i class="fa fa-search"></i></span>
+                                    </div>
+                                    <!-- Size Dropdown -->
+                                    <div class="form-group mr-2"> <!-- Added margin for spacing -->
+                                        <label for="pageSizeSelect" class="sr-only">Items per page:</label>
+                                        <!-- Accessible label -->
+                                        <select name="size" id="pageSizeSelect" class="form-control"
+                                            onchange="this.form.submit()">
+                                            <option value="10" th:selected="${currentSize == 10}">10</option>
+                                            <option value="30" th:selected="${currentSize == 30}">30</option>
+                                            <option value="50" th:selected="${currentSize == 50}">50</option>
+                                            <option value="100" th:selected="${currentSize == 100}">100</option>
+                                        </select>
+                                    </div>
+                                    <!-- Filter Dropdown Button (Filter Icon Only) -->
+                                    <div class="dropdown ml-2">
+                                        <button class="btn btn-primary dropdown-toggle" type="button"
+                                            id="filterDropdown" data-toggle="dropdown" aria-haspopup="true"
+                                            aria-expanded="false" style="padding: 0.375rem 0.5rem;">
+                                            <i class="fa fa-filter"></i>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="filterDropdown"
+                                            style="min-width: 200px;">
+                                            <!-- Section 1: Column Selection -->
+                                            <h6 class="dropdown-header">Sort Column</h6>
+                                            <a class="dropdown-item" href="#" data-column="complaintNo">Complaint
+                                                No.</a>
+                                            <a class="dropdown-item" href="#" data-column="date">Date</a>
+                                            <a class="dropdown-item" href="#" data-column="area">Area</a>
+                                            <a class="dropdown-item" href="#" data-column="machine">Machine</a>
+                                            <a class="dropdown-item" href="#" data-column="subject">Subject</a>
+                                            <a class="dropdown-item" href="#" data-column="assignee">Assignee</a>
+                                            <a class="dropdown-item" href="#" data-column="status">Status</a>
+                                            <a class="dropdown-item" href="#" data-column="totalTime">Total Time</a>
+
+                                            <div class="dropdown-divider"></div>
+                                            <!-- Section 2: Sort Order -->
+                                            <h6 class="dropdown-header">Sort Order</h6>
+                                            <a class="dropdown-item" href="#" data-order="asc">Ascending</a>
+                                            <a class="dropdown-item" href="#" data-order="desc">Descending</a>
+                                        </div>
+                                    </div>
+                                    <!-- Optional: Hidden input for page to reset to 0 on new search/size change -->
+                                    <!-- <input type="hidden" name="page" value="0" /> -->
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <!-- Include Modals -->
+                            <div th:replace="~{machine/modal :: modal}"></div>
+
+                            <!-- Table -->
+                            <div class="table-responsive">
+                                <table id="item-table" class="display table table-striped table-hover">
+                                    <thead class="bg-primary text-white">
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Name</th>
+                                            <th>Model</th>
+                                            <th>Unit</th>
+                                            <th>Qty</th>
+                                            <th>Manufacturer</th>
+                                            <th>Serial No.</th>
+                                            <th>Manufactured Date</th>
+                                            <th>Commissioned Date</th>
+                                            <th>Capacity</th>
+                                            <th>Remarks</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Sample Row 1 -->
+                                        <tr class="table-row-hover" data-id="ITM001">
+                                            <td data-field="code">INV-2025-001</td>
+                                            <td data-field="name">Industrial Motor</td>
+                                            <td data-field="model">IM-750X</td>
+                                            <td data-field="unit">set</td>
+                                            <td data-field="qty">2</td>
+                                            <td data-field="manufacturer">ABC Engineering Co.</td>
+                                            <td data-field="serialNo">SN-MTR-88123</td>
+                                            <td data-field="manufacturedDate">Jan 15, 2023</td>
+                                            <td data-field="commissionedDate">Feb 3, 2023</td>
+                                            <td data-field="capacity">7.5 kW</td>
+                                            <td data-field="remarks">Primary motor for Line A</td>
+                                            <td>
+                                                <div class="form-button-action">
+                                                    <button type="button"
+                                                        class="btn btn-link btn-primary btn-lg edit-row"
+                                                        data-id="ITM001" data-name="Industrial Motor">
+                                                        <i class="fa fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-link btn-danger delete-row"
+                                                        data-id="ITM001" data-name="Industrial Motor">
+                                                        <i class="fa fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Sample Row 2 -->
+                                        <tr class="table-row-hover" data-id="ITM002">
+                                            <td data-field="code">INV-2025-002</td>
+                                            <td data-field="name">Hydraulic Press</td>
+                                            <td data-field="model">HP-200T</td>
+                                            <td data-field="unit">set</td>
+                                            <td data-field="qty">1</td>
+                                            <td data-field="manufacturer">Global Machinery Ltd.</td>
+                                            <td data-field="serialNo">SN-HP-2024-045</td>
+                                            <td data-field="manufacturedDate">Mar 10, 2024</td>
+                                            <td data-field="commissionedDate">Apr 1, 2024</td>
+                                            <td data-field="capacity">200 Ton</td>
+                                            <td data-field="remarks">Used in Assembly Line 3</td>
+                                            <td>
+                                                <div class="form-button-action">
+                                                    <button type="button"
+                                                        class="btn btn-link btn-primary btn-lg edit-row"
+                                                        data-id="ITM002" data-name="Hydraulic Press">
+                                                        <i class="fa fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-link btn-danger delete-row"
+                                                        data-id="ITM002" data-name="Hydraulic Press">
+                                                        <i class="fa fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Sample Row 3 -->
+                                        <tr class="table-row-hover" data-id="ITM003">
+                                            <td data-field="code">INV-2025-003</td>
+                                            <td data-field="name">Control Panel</td>
+                                            <td data-field="model">CP-DIGI-5</td>
+                                            <td data-field="unit">set</td>
+                                            <td data-field="qty">3</td>
+                                            <td data-field="manufacturer">TechCircuit Inc.</td>
+                                            <td data-field="serialNo">SN-CP-77201</td>
+                                            <td data-field="manufacturedDate">Nov 5, 2022</td>
+                                            <td data-field="commissionedDate">Dec 12, 2022</td>
+                                            <td data-field="capacity">24V DC</td>
+                                            <td data-field="remarks">Backup units available</td>
+                                            <td>
+                                                <div class="form-button-action">
+                                                    <button type="button"
+                                                        class="btn btn-link btn-primary btn-lg edit-row"
+                                                        data-id="ITM003" data-name="Control Panel">
+                                                        <i class="fa fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-link btn-danger delete-row"
+                                                        data-id="ITM003" data-name="Control Panel">
+                                                        <i class="fa fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Pagination & Info -->
+                            <div class="row mt-3 align-items-center">
+                                <!-- Page Info (Left) -->
+                                <div class="col-md-6 col-sm-12">
+                                    <p class="text-muted mb-0">
+                                        Showing <span id="startRecord">1</span> - <span id="endRecord">10</span>
+                                        of <span id="totalRecords">100</span> entries
+                                    </p>
+                                </div>
+
+                                <!-- Pagination (Right) -->
+                                <div class="col-md-6 col-sm-12">
+                                    <nav aria-label="User list pagination" class="d-flex justify-content-end">
+                                        <ul class="pagination mb-0">
+                                            <!-- Previous Button -->
+                                            <li class="page-item">
+                                                <a class="page-link" href="#" aria-label="Previous">
+                                                    <span aria-hidden="true">Prev</span>
+                                                </a>
+                                            </li>
+
+                                            <!-- Page Numbers (Example: Current page 1) -->
+                                            <li class="page-item active">
+                                                <a class="page-link" href="#">
+                                                    1 <span class="sr-only">(current)</span>
+                                                </a>
+                                            </li>
+                                            <li class="page-item">
+                                                <a class="page-link" href="#">2</a>
+                                            </li>
+                                            <li class="page-item">
+                                                <a class="page-link" href="#">3</a>
+                                            </li>
+                                            <li class="page-item disabled">
+                                                <span class="page-link">...</span>
+                                            </li>
+                                            <li class="page-item">
+                                                <a class="page-link" href="#">10</a>
+                                            </li>
+
+                                            <!-- Next Button -->
+                                            <li class="page-item">
+                                                <a class="page-link" href="#" aria-label="Next">
+                                                    <span aria-hidden="true">Next</span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Scripts Fragment -->
+    <th:block layout:fragment="scripts">
+        <script>
+            $(document).ready(function () {
+                // --- Edit Modal Trigger ---
+                $('.edit-row').on('click', function () {
+                    const row = $(this).closest('tr');
+                    const currentId = $(this).data('id');
+
+                    // Populate fields
+                    $('#editId').val(currentId);
+                    $('#editCode').val(row.find('[data-field="code"]').text().trim());
+                    $('#editName').val(row.find('[data-field="name"]').text().trim());
+                    $('#editModel').val(row.find('[data-field="model"]').text().trim());
+                    $('#editUnit').val(row.find('[data-field="unit"]').text().trim());
+                    $('#editQty').val(row.find('[data-field="qty"]').text().trim() || '');
+                    $('#editManufacturer').val(row.find('[data-field="manufacturer"]').text().trim());
+                    $('#editSerialNo').val(row.find('[data-field="serialNo"]').text().trim());
+                    $('#editManufacturedDate').val(row.find('[data-field="manufacturedDate"]').text().trim());
+                    $('#editCommissionedDate').val(row.find('[data-field="commissionedDate"]').text().trim());
+                    $('#editCapacity').val(row.find('[data-field="capacity"]').text().trim());
+                    $('#editRemarks').val(row.find('[data-field="remarks"]').text().trim());
+
+                    // Show modal
+                    $('#editRowModal').modal('show');
+                });
+
+                // --- Delete Modal Trigger ---
+                $('.delete-row').on('click', function () {
+                    const name = $(this).data('name');
+                    $('#deleteDocName').text(name);
+                    window.currentId = $(this).data('id'); // Store for deletion
+                    $('#deleteRowModal').modal('show');
+                });
+            });
+        </script>
+        </script>
+    </th:block>
+
 </body>
 
 </html>

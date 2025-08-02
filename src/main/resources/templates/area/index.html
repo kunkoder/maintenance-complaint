@@ -4,8 +4,268 @@
 
 <body>
     <div layout:fragment="content">
-        
+        <div class="page-inner">
+            <div class="page-header">
+                <h4 class="page-title" th:text="${title}"></h4>
+                <ul class="breadcrumbs">
+                    <li class="nav-home">
+                        <a>
+                            <i class="fas fa-industry"></i>
+                        </a>
+                    </li>
+                    <li class="separator">
+                        <i class="flaticon-right-arrow"></i>
+                    </li>
+                    <li class="nav-item">
+                        <a>Menu</a>
+                    </li>
+                    <li class="separator">
+                        <i class="flaticon-right-arrow"></i>
+                    </li>
+                    <li class="nav-item">
+                        <a th:text="${title}"></a>
+                    </li>
+                </ul>
+                <div class="header-action-group d-flex align-items-center ml-auto">
+                    <button class="btn btn-primary dropdown-toggle mt-2 mr-2" type="button" id="importDropdown"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-upload mr-1"></i> Import
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="importDropdown">
+                            <a class="dropdown-item" href="#"><i class="fa fa-file-excel mr-2 text-success"></i>
+                                Excel</a>
+                            <a class="dropdown-item" href="#"><i class="fa fa-file-pdf mr-2 text-danger"></i> PDF</a>
+                        </div>
+                        <button class="btn btn-primary dropdown-toggle mt-2 mr-2" type="button" id="exportDropdown"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-download mr-1"></i> Export
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="exportDropdown">
+                            <a class="dropdown-item" href="#"><i class="fa fa-file-excel mr-2 text-success"></i>
+                                Excel</a>
+                            <a class="dropdown-item" href="#"><i class="fa fa-file-pdf mr-2 text-danger"></i> PDF</a>
+                        </div>
+                    <button class="btn btn-primary ml-auto mt-2" data-toggle="modal" data-target="#addRowModal">
+                        <i class="fa fa-plus-circle mr-2"></i> Add
+                    </button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="d-flex align-items-center">
+                                <h4 class="card-title" th:text="${title}"></h4>
+                                <form class="form-inline ml-auto" th:action="@{/${#request.getRequestURI()}}"
+                                    method="get">
+                                    <div class="input-icon mr-2">
+                                        <input type="text" name="keyword" th:value="${keyword}" class="form-control"
+                                            placeholder="Search...">
+                                        <span class="input-icon-addon"><i class="fa fa-search"></i></span>
+                                    </div>
+                                    <div class="form-group mr-2">
+                                        <label for="pageSizeSelect" class="sr-only">Items per page</label>
+                                        <select name="size" id="pageSizeSelect" class="form-control"
+                                            onchange="this.form.submit()">
+                                            <option value="10" th:selected="${currentSize == 10}">10</option>
+                                            <option value="30" th:selected="${currentSize == 30}">30</option>
+                                            <option value="50" th:selected="${currentSize == 50}">50</option>
+                                            <option value="100" th:selected="${currentSize == 100}">100</option>
+                                        </select>
+                                    </div>
+                                    <div class="dropdown ml-2">
+                                        <button class="btn btn-primary dropdown-toggle" type="button"
+                                            id="filterDropdown" data-toggle="dropdown" aria-haspopup="true"
+                                            aria-expanded="false" style="padding: 0.375rem 0.5rem;">
+                                            <i class="fa fa-filter"></i>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="filterDropdown"
+                                            style="min-width: 200px;">
+                                            <!-- Section 1: Column Selection -->
+                                            <h6 class="dropdown-header">Sort Column</h6>
+                                            <a class="dropdown-item" href="#" data-column="complaintNo">Complaint
+                                                No.</a>
+                                            <a class="dropdown-item" href="#" data-column="date">Date</a>
+                                            <a class="dropdown-item" href="#" data-column="area">Area</a>
+                                            <a class="dropdown-item" href="#" data-column="machine">Machine</a>
+                                            <a class="dropdown-item" href="#" data-column="subject">Subject</a>
+                                            <a class="dropdown-item" href="#" data-column="assignee">Assignee</a>
+                                            <a class="dropdown-item" href="#" data-column="status">Status</a>
+                                            <a class="dropdown-item" href="#" data-column="totalTime">Total Time</a>
+
+                                            <div class="dropdown-divider"></div>
+                                            <!-- Section 2: Sort Order -->
+                                            <h6 class="dropdown-header">Sort Order</h6>
+                                            <a class="dropdown-item" href="#" data-order="asc">Ascending</a>
+                                            <a class="dropdown-item" href="#" data-order="desc">Descending</a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Include Modals -->
+                            <div th:replace="~{area/modal :: modal}"></div>
+
+                            <!-- Table -->
+                            <div class="table-responsive">
+                                <table id="entity-table" class="display table table-striped table-hover">
+                                    <thead class="bg-primary text-white">
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Name</th>
+                                            <th>Description</th>
+                                            <th>Status</th>
+                                            <th>Responsible Person</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Sample Row 1 -->
+                                        <tr class="table-row-hover" data-id="AREA-001">
+                                            <td data-field="code">AREA-001</td>
+                                            <td data-field="name">Production Floor A</td>
+                                            <td data-field="description">Main production area for Line 1 & 2</td>
+                                            <td>
+                                                <span data-field="status" class="badge badge-success">ACTIVE</span>
+                                            </td>
+                                            <td data-field="responsiblePerson">John Smith (Manager)</td>
+                                            <td>
+                                                <div class="form-button-action">
+                                                    <button type="button"
+                                                        class="btn btn-link btn-primary btn-lg edit-row"
+                                                        data-id="AREA-001" data-name="Production Floor A">
+                                                        <i class="fa fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-link btn-danger delete-row"
+                                                        data-id="AREA-001" data-name="Production Floor A">
+                                                        <i class="fa fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Sample Row 2 -->
+                                        <tr class="table-row-hover" data-id="AREA-002">
+                                            <td data-field="code">AREA-002</td>
+                                            <td data-field="name">Assembly Line 3</td>
+                                            <td data-field="description">Automated assembly and testing station</td>
+                                            <td>
+                                                <span data-field="status"
+                                                    class="badge badge-primary">UNDER_MAINTENANCE</span>
+                                            </td>
+                                            <td data-field="responsiblePerson">Alice Johnson (Lead)</td>
+                                            <td>
+                                                <div class="form-button-action">
+                                                    <button type="button"
+                                                        class="btn btn-link btn-primary btn-lg edit-row"
+                                                        data-id="AREA-002" data-name="Assembly Line 3">
+                                                        <i class="fa fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-link btn-danger delete-row"
+                                                        data-id="AREA-002" data-name="Assembly Line 3">
+                                                        <i class="fa fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Sample Row 3 -->
+                                        <tr class="table-row-hover" data-id="AREA-003">
+                                            <td data-field="code">AREA-003</td>
+                                            <td data-field="name">Paint Booth B</td>
+                                            <td data-field="description">Secondary paint and coating facility</td>
+                                            <td>
+                                                <span data-field="status" class="badge badge-secondary">INACTIVE</span>
+                                            </td>
+                                            <td data-field="responsiblePerson">Bob Lee (Technician)</td>
+                                            <td>
+                                                <div class="form-button-action">
+                                                    <button type="button"
+                                                        class="btn btn-link btn-primary btn-lg edit-row"
+                                                        data-id="AREA-003" data-name="Paint Booth B">
+                                                        <i class="fa fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-link btn-danger delete-row"
+                                                        data-id="AREA-003" data-name="Paint Booth B">
+                                                        <i class="fa fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Pagination & Info -->
+                            <div class="row mt-3 align-items-center">
+                                <div class="col-md-6 col-sm-12">
+                                    <p class="text-muted mb-0">
+                                        Showing <span id="startRecord">1</span> - <span id="endRecord">10</span>
+                                        of <span id="totalRecords">100</span> entries
+                                    </p>
+                                </div>
+                                <div class="col-md-6 col-sm-12">
+                                    <nav aria-label="Pagination" class="d-flex justify-content-end">
+                                        <ul class="pagination mb-0">
+                                            <li class="page-item"><a class="page-link" href="#">Prev</a></li>
+                                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                                            <li class="page-item"><a class="page-link" href="#">10</a></li>
+                                            <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Scripts Fragment -->
+    <th:block layout:fragment="scripts">
+        <script>
+            $(document).ready(function () {
+                // --- Edit Modal Trigger ---
+                $('.edit-row').on('click', function () {
+                    const row = $(this).closest('tr');
+                    const currentId = $(this).data('id');
+
+                    // Populate fields
+                    $('#editId').val(currentId);
+                    $('#editCode').val(row.find('[data-field="code"]').text().trim());
+                    $('#editName').val(row.find('[data-field="name"]').text().trim());
+                    $('#editDescription').val(row.find('[data-field="description"]').text().trim());
+                    $('#editResponsiblePerson').val(row.find('[data-field="responsiblePerson"]').text().trim());
+
+                    // Set status (convert badge text to enum)
+                    const statusText = row.find('[data-field="status"]').text().trim().toUpperCase();
+                    $('#editStatus').val(statusText);
+
+                    // Update switch and hidden input
+                    const isActive = statusText === 'ACTIVE';
+                    $('#editStatusSwitch').prop('checked', isActive);
+                    $('#editStatusText').text(isActive ? 'ACTIVE' : 'INACTIVE');
+                    $('#editStatusValue').val(isActive ? 'ACTIVE' : 'INACTIVE');
+
+                    // Show modal
+                    $('#editRowModal').modal('show');
+                });
+
+                // --- Delete Modal Trigger ---
+                $('.delete-row').on('click', function () {
+                    const name = $(this).data('name');
+                    $('#deleteDocName').text(name);
+                    window.currentId = $(this).data('id');
+                    $('#deleteRowModal').modal('show');
+                });
+            });
+        </script>
+    </th:block>
 </body>
 
 </html>

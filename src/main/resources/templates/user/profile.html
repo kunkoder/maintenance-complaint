@@ -4,8 +4,191 @@
 
 <body>
     <div layout:fragment="content">
-        
+        <div class="page-inner">
+            <!-- Breadcrumbs -->
+            <div class="page-header">
+                <h4 class="page-title" th:text="${title}"></h4>
+                <ul class="breadcrumbs">
+                    <li class="nav-home">
+                        <i class="fas fa-user-circle mr-2"></i>
+                    </li>
+                    <li class="separator">
+                        <i class="flaticon-right-arrow"></i>
+                    </li>
+                    <li class="nav-item">
+                        <a>Menu</a>
+                    </li>
+                    <li class="separator">
+                        <i class="flaticon-right-arrow"></i>
+                    </li>
+                    <li class="nav-item">
+                        <a th:text="${title}"></a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-md-10">
+                    <div class="card card-profile">
+                        <!-- Cover Image & Profile Picture -->
+                        <div class="card-header"
+                            style="background-image: url('/assets/img/blogpost.jpg'); background-size: cover; height: 160px; position: relative;">
+                            <div class="profile-picture"
+                                style="position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); z-index: 2;">
+                                <div class="avatar avatar-xxl">
+                                    <img id="profileImagePreview" src="/assets/img/profile.jpg" alt="Foto Profil"
+                                        class="avatar-img rounded-circle border border-white border-3">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tabs -->
+                        <ul class="nav nav-tabs nav-line nav-color-primary nav-justified mt-4" id="profileTab"
+                            role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="profile-tab" data-toggle="tab" href="#profile" role="tab"
+                                    aria-controls="profile" aria-selected="true">
+                                    <i class="fas fa-user mr-1"></i> Profil
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="records-tab" data-toggle="tab" href="#records" role="tab"
+                                    aria-controls="records" aria-selected="false">
+                                    <i class="fas fa-book-open mr-1"></i> Borrowing History
+                                </a>
+                            </li>
+                        </ul>
+
+                        <!-- Tab Content -->
+                        <div class="tab-content" id="profileTabContent">
+                            <!-- Profile Tab -->
+                            <div class="tab-pane fade show active" id="profile" role="tabpanel"
+                                aria-labelledby="profile-tab">
+                                <div class="card-body pt-4">
+                                    <form class="contact-form" action="/icbsstaff/profile" method="POST"
+                                        enctype="multipart/form-data">
+                                        <input type="hidden" name="pk" id="pk" value="12345">
+
+                                        <div class="form-row">
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="name">Nama <span class="text-danger">*</span></label>
+                                                    <input name="name" id="name" type="text" class="form-control"
+                                                        value="John Doe" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="employeeId">Employee ID <span
+                                                            class="text-danger">*</span></label>
+                                                    <input name="employeeId" id="employeeId" type="text"
+                                                        class="form-control" value="12345" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="email">Email <span class="text-danger">*</span></label>
+                                                    <input name="email" id="email" type="email" class="form-control"
+                                                        value="john@example.com" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="role">Role <span class="text-danger">*</span></label>
+                                                    <select name="role" class="form-control" id="role" disabled>
+                                                        <option value="Staff">Staff</option>
+                                                        <option value="Admin" selected>Admin</option>
+                                                        <option value="Librarian">Librarian</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="avatar">Foto Profil</label>
+                                                    <div class="custom-file">
+                                                        <input type="file" class="custom-file-input" id="avatar"
+                                                            name="avatar" accept="image/*">
+                                                        <label class="custom-file-label" for="avatar">Pilih file</label>
+                                                    </div>
+                                                    <small class="form-text text-muted mt-1">Maksimal ukuran file
+                                                        5MB</small>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="text-center mt-4 mb-3">
+                                            <button type="submit" class="btn btn-primary btn-round px-4">
+                                                <i class="fas fa-save mr-1"></i> Save Changes
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Borrow Records Tab -->
+                            <div class="tab-pane fade" id="records" role="tabpanel" aria-labelledby="records-tab">
+                                <div class="card-body pt-4">
+                                    <h5 class="card-title mb-3">Borrowing History</h5>
+                                    <div class="table-responsive">
+                                        <table id="borrow-records-table"
+                                            class="display table table-striped table-hover">
+                                            <thead class="bg-primary text-white">
+                                                <tr>
+                                                    <th>Book</th>
+                                                    <th>Borrow Date</th>
+                                                    <th>Due Date</th>
+                                                    <th>Return Date</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Introduction to Algorithms</td>
+                                                    <td>2025-04-01</td>
+                                                    <td>2025-04-15</td>
+                                                    <td>-</td>
+                                                    <td><span class="badge badge-warning badge-shadow">Borrowed</span>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Harry Potter</td>
+                                                    <td>2025-03-20</td>
+                                                    <td>2025-04-03</td>
+                                                    <td>2025-04-05</td>
+                                                    <td><span class="badge badge-success badge-shadow">Returned</span>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Scripts -->
+    <th:block layout:fragment="scripts">
+        <!-- Update file input label -->
+        <script>
+            $('#avatar').on('change', function () {
+                const fileName = $(this).val().split('\\').pop();
+                $(this).next('.custom-file-label').text(fileName || 'Pilih file');
+            });
+
+            // Optional: Image preview on upload
+            document.getElementById('avatar').onchange = function (e) {
+                const reader = new FileReader();
+                reader.onload = function () {
+                    document.getElementById('profileImagePreview').src = reader.result;
+                };
+                if (e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
+            };
+        </script>
+    </th:block>
 </body>
 
 </html>
