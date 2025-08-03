@@ -11,22 +11,27 @@
                     </button>
                 </div>
                 <div class="modal-body p-4">
-                    <form th:action="@{/items}" th:object="${item}" method="post" enctype="multipart/form-data"
+                    <form th:action="@{/parts}" th:object="${partDTO}" method="post" enctype="multipart/form-data"
                         id="formAdd">
-                        <!-- Code & Name -->
+
+                        <!-- Code -->
                         <div class="form-row">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Code <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="addCode" name="code" required>
-                                    <div class="invalid-feedback">Please enter a unique code.</div>
+                                    <input type="text" class="form-control" th:field="*{code}" required>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('code')}"
+                                        th:errors="*{code}">Error</div>
                                 </div>
                             </div>
+
+                            <!-- Name -->
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="addName" name="name" required>
-                                    <div class="invalid-feedback">Please enter a name.</div>
+                                    <input type="text" class="form-control" th:field="*{name}" required>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}"
+                                        th:errors="*{name}">Error</div>
                                 </div>
                             </div>
                         </div>
@@ -36,13 +41,13 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Category</label>
-                                    <input type="text" class="form-control" id="addCategory" name="category">
+                                    <input type="text" class="form-control" th:field="*{category}">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Supplier</label>
-                                    <input type="text" class="form-control" id="addSupplier" name="supplier">
+                                    <input type="text" class="form-control" th:field="*{supplier}">
                                 </div>
                             </div>
                         </div>
@@ -50,25 +55,38 @@
                         <!-- Description -->
                         <div class="form-group">
                             <label>Description</label>
-                            <textarea class="form-control" id="addDescription" name="description" rows="3"
+                            <textarea class="form-control" th:field="*{description}" rows="3"
                                 placeholder="Enter item description..."></textarea>
                         </div>
 
                         <!-- Image Upload -->
-                        <div class="form-group mb-0">
-                            <label>Image <span class="text-muted">(optional)</span></label>
-                            <div class="custom-file">
-                                <input type="file" class="custom-file-input" id="addImageInput" name="imageFile"
-                                    accept="image/*">
-                                <label class="custom-file-label" for="addImageInput">Choose file</label>
+                        <div class="form-row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Image <span class="text-muted">(optional)</span></label>
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="addImageInput" name="imageFile"
+                                            accept="image/*">
+                                        <label class="custom-file-label" for="addImageInput">Choose file</label>
+                                    </div>
+                                    <div class="mt-2">
+                                        <img id="addImagePreview" src="" alt="Image Preview" class="img-thumbnail"
+                                            style="max-height: 150px; display: none;">
+                                    </div>
+                                </div>
                             </div>
-                            <div class="mt-2">
-                                <img id="addImagePreview" src="" alt="Image Preview" class="img-thumbnail"
-                                    style="max-height: 150px; display: none;">
+
+                            <!-- Stock Quantity -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Stock Quantity</label>
+                                    <input type="number" class="form-control" th:field="*{stockQuantity}">
+                                </div>
                             </div>
                         </div>
                     </form>
                 </div>
+
                 <div class="modal-footer border-0 pt-2 pb-4 px-4 d-flex justify-content-between">
                     <small class="text-muted">
                         <i class="fas fa-asterisk text-danger mr-1"></i> Required fields
@@ -155,6 +173,13 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Stock Quantity</label>
+                                    <input type="number" class="form-control" id="editStockQuantity"
+                                        name="stockQuantity">
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -194,4 +219,31 @@
             </div>
         </div>
     </div>
+    <script>
+        document.getElementById('addImageInput').onchange = function (evt) {
+            const preview = document.getElementById('addImagePreview');
+            const file = evt.target.files[0];
+            if (file && file.type.match('image.*')) {
+                const reader = new FileReader();
+                reader.onload = function () {
+                    preview.src = reader.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        document.getElementById('editImageInput').onchange = function (evt) {
+            const preview = document.getElementById('editImagePreview');
+            const file = evt.target.files[0];
+            if (file && file.type.match('image.*')) {
+                const reader = new FileReader();
+                reader.onload = function () {
+                    preview.src = reader.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
 </div>

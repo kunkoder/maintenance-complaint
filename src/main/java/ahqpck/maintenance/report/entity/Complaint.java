@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import ahqpck.maintenance.report.util.Base62;
+import ahqpck.maintenance.report.util.ZeroPaddedIdGenerator;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -114,6 +115,7 @@ public class Complaint {
     @PrePersist
     public void prePersist() {
         if (this.id == null) {
+            // this.id = ZeroPaddedIdGenerator.generate("CMP");
             this.id = Base62.encode(UUID.randomUUID());
         }
         LocalDateTime now = LocalDateTime.now();

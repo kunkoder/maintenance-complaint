@@ -10,24 +10,24 @@ public class AuthController {
     @GetMapping("/register")
     public String register(Model model) {
         model.addAttribute("title", "Register");
-        return "area/index";
+        return "auth/register";
     }
 
     @GetMapping("/login")
     public String login(Model model) {
         model.addAttribute("title", "Login");
-        return "area/index";
+        return "auth/login";
     }
 
     @GetMapping("/forgot-password")
     public String forgotPassword(Model model) {
-        model.addAttribute("title", "Areas");
-        return "area/index";
+        model.addAttribute("title", "Forgot Password");
+        return "auth/forgot-password";
     }
 
     @GetMapping("/reset-password")
     public String resetPassword(Model model) {
-        model.addAttribute("title", "Areas");
-        return "area/index";
+        model.addAttribute("title", "Reset Password");
+        return "auth/reset-password";
     }
 }

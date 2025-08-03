@@ -66,7 +66,7 @@ public class DataLoader implements CommandLineRunner {
 
         // Save parts only if not already present
         Arrays.asList(motor, bearing, sensor, fuse).forEach(part -> {
-            if (!partRepository.existsByCode(part.getCode())) {
+            if (!partRepository.existsByCodeIgnoreCase(part.getCode())) {
                 partRepository.save(part);
                 log.info("Saved part: {} (Code: {})", part.getName(), part.getCode());
             } else {
