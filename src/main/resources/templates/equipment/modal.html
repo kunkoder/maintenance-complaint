@@ -5,58 +5,102 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white no-bd">
-                    <h5 class="modal-title" id="addRowModalLabel">Add New Item</h5>
+                    <h5 class="modal-title" id="addRowModalLabel">Add New Equipment</h5>
                     <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body p-4">
-                    <form th:action="@{/parts}" th:object="${partDTO}" method="post" enctype="multipart/form-data"
+                    <form th:action="@{/equipments}" th:object="${equipmentDTO}" method="post" enctype="multipart/form-data"
                         id="formAdd">
 
-                        <!-- Code -->
+                        <!-- Code & Model -->
                         <div class="form-row">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Code <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" th:field="*{code}">
                                     <div class="invalid-feedback" th:if="${#fields.hasErrors('code')}"
-                                        th:errors="*{code}">Error</div>
+                                        th:errors="*{code}">Please enter a unique code.</div>
                                 </div>
                             </div>
-
-                            <!-- Name -->
                             <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Model</label>
+                                    <input type="text" class="form-control" th:field="*{model}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Name -->
+                        <div class="form-row">
+                            <div class="col-md-12">
                                 <div class="form-group">
                                     <label>Name <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" th:field="*{name}">
                                     <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}"
-                                        th:errors="*{name}">Error</div>
+                                        th:errors="*{name}">Please enter a name.</div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Category & Supplier -->
+                        <!-- Manufacturer -->
+                        <div class="form-row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>Manufacturer</label>
+                                    <input type="text" class="form-control" th:field="*{manufacturer}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Unit & Qty -->
                         <div class="form-row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Category</label>
-                                    <input type="text" class="form-control" th:field="*{category}">
+                                    <label>Unit</label>
+                                    <input type="text" class="form-control" th:field="*{unit}">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Supplier</label>
-                                    <input type="text" class="form-control" th:field="*{supplier}">
+                                    <label>Qty</label>
+                                    <input type="number" class="form-control" th:field="*{qty}" min="0">
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Description -->
-                        <div class="form-group">
-                            <label>Description</label>
-                            <textarea class="form-control" th:field="*{description}" rows="3"
-                                placeholder="Enter item description..."></textarea>
+                        <!-- Capacity & Serial No -->
+                        <div class="form-row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Capacity</label>
+                                    <input type="text" class="form-control" th:field="*{capacity}"
+                                        placeholder="e.g. 7.5 kW, 200 Ton">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Serial No.</label>
+                                    <input type="text" class="form-control" th:field="*{serialNo}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Manufactured & Commissioned Date -->
+                        <div class="form-row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Manufactured Date</label>
+                                    <input type="date" class="form-control" th:field="*{manufacturedDate}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Commissioned Date</label>
+                                    <input type="date" class="form-control" th:field="*{commissionedDate}">
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Image Upload -->
@@ -75,25 +119,23 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Stock Quantity -->
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Stock Quantity</label>
-                                    <input type="number" class="form-control" th:field="*{stockQuantity}">
-                                </div>
-                            </div>
+                        <!-- Remarks -->
+                        <div class="form-group">
+                            <label>Remarks</label>
+                            <textarea class="form-control" th:field="*{remarks}" rows="5"
+                                placeholder="Enter detailed remarks..."></textarea>
                         </div>
                     </form>
                 </div>
-
                 <div class="modal-footer border-0 pt-2 pb-4 px-4 d-flex justify-content-between">
                     <small class="text-muted">
                         <i class="fas fa-asterisk text-danger mr-1"></i> Required fields
                     </small>
                     <div>
                         <button type="button" class="btn btn-danger btn-border" data-dismiss="modal">Cancel</button>
-                        <button type="submit" form="formAdd" class="btn btn-primary ml-2">Save Item</button>
+                        <button type="submit" form="formAdd" class="btn btn-primary ml-2">Save Equipment</button>
                     </div>
                 </div>
             </div>
@@ -106,65 +148,110 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white no-bd">
-                    <h5 class="modal-title" id="editRowModalLabel">Edit Item</h5>
+                    <h5 class="modal-title" id="editRowModalLabel">Edit Equipment</h5>
                     <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body p-4">
-                    <form th:action="@{/parts/update}" th:object="${partDTO}" method="post"
-                        enctype="multipart/form-data" id="formEdit">
-                        <input type="hidden" name="id" id="editId">
+                    <form th:action="@{/equipments/update}" th:object="${equipmentDTO}" method="post" enctype="multipart/form-data"
+                        id="formEdit">
+                        <input type="hidden" th:field="*{id}" />
 
-                        <!-- Code & Name -->
+                        <!-- Code & Model -->
                         <div class="form-row">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Code <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="editCode" name="code" required>
-                                    <div class="invalid-feedback">Please enter a unique code.</div>
+                                    <input type="text" class="form-control" th:field="*{code}">
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('code')}"
+                                        th:errors="*{code}">Please enter a unique code.</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="editName" name="name" required>
-                                    <div class="invalid-feedback">Please enter a name.</div>
+                                    <label>Model</label>
+                                    <input type="text" class="form-control" th:field="*{model}">
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Category & Supplier -->
+                        <!-- Name -->
+                        <div class="form-row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" th:field="*{name}">
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}"
+                                        th:errors="*{name}">Please enter a name.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Manufacturer -->
+                        <div class="form-row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>Manufacturer</label>
+                                    <input type="text" class="form-control" th:field="*{manufacturer}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Unit & Qty -->
                         <div class="form-row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Category</label>
-                                    <input type="text" class="form-control" id="editCategory" name="category">
+                                    <label>Unit</label>
+                                    <input type="text" class="form-control" th:field="*{unit}">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Supplier</label>
-                                    <input type="text" class="form-control" id="editSupplier" name="supplier">
+                                    <label>Qty</label>
+                                    <input type="number" class="form-control" th:field="*{qty}" min="0">
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Description -->
-                        <div class="form-group">
-                            <label>Description</label>
-                            <textarea class="form-control" id="editDescription" name="description" rows="3"
-                                placeholder="Enter item description..."></textarea>
+                        <!-- Capacity & Serial No -->
+                        <div class="form-row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Capacity</label>
+                                    <input type="text" class="form-control" th:field="*{capacity}"
+                                        placeholder="e.g. 7.5 kW, 200 Ton">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Serial No.</label>
+                                    <input type="text" class="form-control" th:field="*{serialNo}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Manufactured & Commissioned Date -->
+                        <div class="form-row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Manufactured Date</label>
+                                    <input type="date" class="form-control" th:field="*{manufacturedDate}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Commissioned Date</label>
+                                    <input type="date" class="form-control" th:field="*{commissionedDate}">
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Image Upload & Management -->
                         <div class="form-row">
-                            <!-- Current Image Preview + Delete Option -->
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Current Image <span class="text-muted">(optional)</span></label>
-
-                                    <!-- Image Preview -->
                                     <div class="mb-2">
                                         <img id="editImagePreview" src="" alt="No image" class="img-thumbnail"
                                             style="max-height: 150px; display: none;">
@@ -179,7 +266,6 @@
                                         </label>
                                     </div>
 
-                                    <!-- File Upload -->
                                     <div class="custom-file">
                                         <input type="file" class="custom-file-input" id="editImageInput"
                                             name="imageFile" accept="image/*">
@@ -187,15 +273,13 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Stock Quantity -->
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Stock Quantity</label>
-                                    <input type="number" class="form-control" id="editStockQuantity"
-                                        name="stockQuantity">
-                                </div>
-                            </div>
+                        <!-- Remarks -->
+                        <div class="form-group">
+                            <label>Remarks</label>
+                            <textarea class="form-control" th:field="*{remarks}" rows="5"
+                                placeholder="Enter detailed remarks..."></textarea>
                         </div>
                     </form>
                 </div>
@@ -218,13 +302,13 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white no-bd">
-                    <h5 class="modal-title" id="deleteRowModalLabel">Delete Item</h5>
+                    <h5 class="modal-title" id="deleteRowModalLabel">Delete Equipment</h5>
                     <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body p-4">
-                    <p>Are you sure you want to delete this item?</p>
+                    <p>Are you sure you want to delete this equipment?</p>
                     <strong id="deleteDocName" class="text-dark"></strong>
                     <p class="text-muted mt-2 mb-0">This action cannot be undone.</p>
                 </div>
@@ -241,36 +325,28 @@
         <div class="modal fade" id="flashMessageModal" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
-                    <!-- Modal Header: Red for error, Green for success -->
                     <div class="modal-header"
                         th:classappend="${error} ? 'bg-danger text-white' : 'bg-success text-white'">
                         <h5 class="modal-title">
-                            <i th:class="${error} ? 'fas fa-exclamation-triangle mr-2' : 'fas fa-check-circle mr-2'"
-                                th:style="${error} ? 'margin-left: 2px;' : ''"></i>
+                            <i th:class="${error} ? 'fas fa-exclamation-triangle mr-2' : 'fas fa-check-circle mr-2'"></i>
                             <span th:text="${error} ? 'Error' : 'Success'">Status</span>
                         </h5>
                         <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-
-                    <!-- Modal Body -->
                     <div class="modal-body py-4">
                         <div th:if="${error}" class="text-center">
                             <ul class="list-unstyled">
                                 <li th:each="err : ${#strings.listSplit(error, '|')}">
-                                    <p class="text-danger mb-2" th:text="${err}">Error message</p>
+                                    <p class="text-danger mb-2" th:text="${err.trim()}">Error</p>
                                 </li>
                             </ul>
                         </div>
                         <div th:if="${success}" class="text-center">
-                            <p class="text-success" th:text="${success}">
-                                Success message will appear here.
-                            </p>
+                            <p class="text-success" th:text="${success}">Success</p>
                         </div>
                     </div>
-
-                    <!-- Modal Footer -->
                     <div class="modal-footer">
                         <button type="button"
                             class="btn"
@@ -282,7 +358,9 @@
         </div>
     </div>
 
+    <!-- JavaScript -->
     <script>
+        // Image Preview for Add
         document.getElementById('addImageInput').onchange = function (evt) {
             const preview = document.getElementById('addImagePreview');
             const file = evt.target.files[0];
@@ -294,8 +372,9 @@
                 };
                 reader.readAsDataURL(file);
             }
-        }
+        };
 
+        // Image Preview for Edit
         document.getElementById('editImageInput').onchange = function (evt) {
             const preview = document.getElementById('editImagePreview');
             const file = evt.target.files[0];
@@ -307,12 +386,11 @@
                 };
                 reader.readAsDataURL(file);
             }
-        }
+        };
 
+        // Auto-show Flash Modal
         $(document).ready(function () {
-            // Check if the modal container exists (meaning a flash message was present)
             if ($('#flashMessageModalContainer').length) {
-                // Show the modal using Bootstrap's modal function
                 $('#flashMessageModal').modal('show');
             }
         });

@@ -3,7 +3,7 @@ package ahqpck.maintenance.report.specification;
 import ahqpck.maintenance.report.entity.Part;
 import org.springframework.data.jpa.domain.Specification;
 
-public class PartSpecifications {
+public class PartSpecification {
 
     public static Specification<Part> search(String keyword) {
         return (root, query, cb) -> {

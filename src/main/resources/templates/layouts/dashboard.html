@@ -157,11 +157,11 @@
 							</a>
 						</li>
 
-						<!-- Machines -->
-						<li class="nav-item" th:classappend="${title == 'Machines'} ? 'active' : ''">
-							<a th:href="@{/machines}">
+						<!-- Equipments -->
+						<li class="nav-item" th:classappend="${title == 'Equipments'} ? 'active' : ''">
+							<a th:href="@{/equipments}">
 								<i class="fas fa-cogs"></i>
-								<p class="nav-label">Machines</p>
+								<p class="nav-label">Equipments</p>
 							</a>
 						</li>
 
@@ -205,6 +205,7 @@
 		</div>
 	</div>
 
+	
 
 	<!--   Core JS Files   -->
 	<script src="/assets/js/core/jquery.3.2.1.min.js"></script>
@@ -243,7 +244,8 @@
 	<script src="/assets/js/demo.js"></script>
 
 	<!-- Page-specific scripts -->
-	<th:block layout:fragment="scripts"></th:block>
+	<th:block layout:fragment="scripts">
+	</th:block>
 
 </body>
 

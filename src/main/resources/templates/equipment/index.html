@@ -10,7 +10,7 @@
                 <ul class="breadcrumbs">
                     <li class="nav-home">
                         <a>
-                            <i class="fas fa-toolbox"></i>
+                            <i class="fas fa-cogs"></i>
                         </a>
                     </li>
                     <li class="separator">
@@ -56,7 +56,8 @@
                         <div class="card-header">
                             <div class="d-flex align-items-center">
                                 <h4 class="card-title" th:text="${title}"></h4>
-                                <form class="form-inline ml-auto" th:action="@{/parts}" method="get" id="partsForm">
+                                <form class="form-inline ml-auto" th:action="@{/equipments}" method="get"
+                                    id="equipmentForm">
                                     <div class="input-icon">
                                         <input type="text" name="keyword" th:value="${keyword}" id="userSearchInput"
                                             class="form-control" placeholder="Search...">
@@ -84,8 +85,7 @@
                                         </button>
                                         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="filterDropdown"
                                             style="min-width: 200px;">
-
-                                            <!-- Hidden inputs -->
+                                            <!-- Hidden inputs for sort state -->
                                             <input type="hidden" name="sortBy" id="sortByInput" th:value="${sortBy}" />
                                             <input type="hidden" name="asc" id="ascInput" th:value="${asc}" />
 
@@ -100,7 +100,7 @@
 
                                             <div class="dropdown-divider"></div>
 
-                                            <!-- Sort Order (using asc=true/false) -->
+                                            <!-- Sort Order -->
                                             <h6 class="dropdown-header">Sort Order</h6>
                                             <a class="dropdown-item" href="#" data-asc="true"
                                                 th:classappend="${asc == true} ? 'active' : ''">Ascending</a>
@@ -108,16 +108,13 @@
                                                 th:classappend="${asc == false} ? 'active' : ''">Descending</a>
                                         </div>
                                     </div>
-
-                                    <!-- Optional: reset page to 0 on change -->
-                                    <!-- <input type="hidden" name="page" value="0" /> -->
                                 </form>
                             </div>
                         </div>
 
                         <div class="card-body">
                             <!-- Include Modals -->
-                            <div th:replace="~{part/modal :: modal}"></div>
+                            <div th:replace="~{equipment/modal :: modal}"></div>
 
                             <!-- Table -->
                             <div class="table-responsive">
@@ -126,90 +123,96 @@
                                         <tr>
                                             <th>Code</th>
                                             <th>Name</th>
-                                            <th>Category</th>
-                                            <th>Supplier</th>
-                                            <th>Quantity</th>
-                                            <th>Description</th>
+                                            <th>Model</th>
+                                            <th>Unit</th>
+                                            <th>Qty</th>
+                                            <th>Manufacturer</th>
+                                            <th>Serial No.</th>
+                                            <th>Manufactured Date</th>
+                                            <th>Commissioned Date</th>
+                                            <th>Capacity</th>
                                             <th>Image</th>
+                                            <th>Remarks</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <!-- Sample Row 1 -->
-                                        <tr th:each="part : ${parts.content}" class="table-row-hover"
-                                            th:if="${parts.totalElements > 0}">
-                                            <td data-field="code" th:text="${part.code}"></td>
-                                            <td data-field="name" th:text="${part.name}"></td>
-                                            <td data-field="category" th:text="${part.category}"></td>
-                                            <td data-field="supplier" th:text="${part.supplier}">
+                                        <tr th:each="equipment : ${equipments.content}" class="table-row-hover">
+                                            <td data-field="code" th:text="${equipment.code}"></td>
+                                            <td data-field="name" th:text="${equipment.name}"></td>
+                                            <td data-field="model" th:text="${equipment.model}"></td>
+                                            <td data-field="unit" th:text="${equipment.unit}"></td>
+                                            <td data-field="qty" class="text-center" th:text="${equipment.qty}"></td>
+                                            <td data-field="manufacturer" th:text="${equipment.manufacturer}"></td>
+                                            <td data-field="serialNo" th:text="${equipment.serialNo}"></td>
+                                            <td data-field="manufacturedDate"
+                                                th:text="${#temporals.format(equipment.manufacturedDate, 'MMM dd, yyyy')} ?: '-'">
                                             </td>
-                                            <td data-field="stockQuantity" class="text-center"
-                                                th:text="${part.stockQuantity}">
+                                            <td data-field="commissionedDate"
+                                                th:text="${#temporals.format(equipment.commissionedDate, 'MMM dd, yyyy')} ?: '-'">
                                             </td>
-                                            <td data-field="description" class="text-center"
-                                                th:text="${part.description}">
-                                            </td>
+                                            <td data-field="capacity" th:text="${equipment.capacity}"></td>
                                             <td data-field="image">
-                                                <div class="avatar-lg my-2" th:if="${part.image}">
-                                                    <img th:src="@{/upload/part/image/__${part.image}__}"
-                                                        class="rounded avatar-img" alt="Part Image" />
+                                                <div class="avatar-lg my-2" th:if="${equipment.image}">
+                                                    <img th:src="@{/upload/equipment/image/__${equipment.image}__}"
+                                                        class="rounded avatar-img" alt="Equipment Image" />
                                                 </div>
                                             </td>
+                                            <td data-field="remarks" th:text="${equipment.remarks}"></td>
                                             <td>
                                                 <div class="form-button-action">
                                                     <button type="button"
                                                         class="btn btn-link btn-primary btn-lg edit-row"
-                                                        th:data-id="${part.id}" th:data-name="${part.name}">
+                                                        th:data-id="${equipment.id}" th:data-name="${equipment.name}">
                                                         <i class="fa fa-edit"></i>
                                                     </button>
                                                     <button type="button" class="btn btn-link btn-danger delete-row"
-                                                        th:data-id="${part.id}" th:data-name="${part.name}">
+                                                        th:data-id="${equipment.id}" th:data-name="${equipment.name}">
                                                         <i class="fa fa-times"></i>
                                                     </button>
                                                 </div>
                                             </td>
                                         </tr>
-                                        <tr th:if="${parts.totalElements == 0}">
-                                            <td colspan="7" class="text-center">No parts found</td>
+                                        <tr th:if="${equipments.totalElements == 0}">
+                                            <td colspan="13" class="text-center">No equipment found</td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
 
-                            <!-- Pagination -->
+                            <!-- Pagination & Info -->
                             <div class="row mt-3 align-items-center">
                                 <div class="col-md-6 col-sm-12">
                                     <p class="text-muted mb-0">
                                         Showing
-                                        <span th:text="${parts.number * parts.size + 1} ?: 0"></span>
+                                        <span th:text="${equipments.number * equipments.size + 1} ?: 0"></span>
                                         -
                                         <span
-                                            th:text="${parts.number * parts.size + parts.numberOfElements} ?: 0"></span>
-                                        of <span th:text="${parts.totalElements} ?: 0"></span> entries
+                                            th:text="${equipments.number * equipments.size + equipments.numberOfElements} ?: 0"></span>
+                                        of <span th:text="${equipments.totalElements} ?: 0"></span> entries
                                     </p>
                                 </div>
                                 <div class="col-md-6 col-sm-12">
                                     <nav class="d-flex justify-content-end">
                                         <ul class="pagination mb-0">
-                                            <li class="page-item" th:classappend="${!parts.hasPrevious} ? 'disabled'">
+                                            <li class="page-item"
+                                                th:classappend="${!equipments.hasPrevious} ? 'disabled'">
                                                 <a class="page-link"
-                                                    th:href="@{/parts(keyword=${keyword}, page=${parts.number - 1}, size=${pageSize}, sortBy=${sortBy}, asc=${asc})}"
-                                                    th:if="${parts.hasPrevious}">Prev</a>
-                                                <span class="page-link" th:if="${!parts.hasPrevious}">Prev</span>
+                                                    th:href="@{/equipments(keyword=${keyword}, page=${equipments.number - 1}, size=${pageSize}, sortBy=${sortBy}, asc=${asc})}"
+                                                    th:if="${equipments.hasPrevious}">Prev</a>
+                                                <span class="page-link" th:if="${!equipments.hasPrevious}">Prev</span>
                                             </li>
-
-                                            <li class="page-item" th:classappend="${p == parts.number} ? 'active'"
-                                                th:each="p : ${#numbers.sequence(0, parts.totalPages - 1)}">
+                                            <li class="page-item" th:classappend="${p == equipments.number} ? 'active'"
+                                                th:each="p : ${#numbers.sequence(0, equipments.totalPages - 1)}">
                                                 <a class="page-link"
-                                                    th:href="@{/parts(keyword=${keyword}, page=${p}, size=${pageSize}, sortBy=${sortBy}, asc=${asc})}"
+                                                    th:href="@{/equipments(keyword=${keyword}, page=${p}, size=${pageSize}, sortBy=${sortBy}, asc=${asc})}"
                                                     th:text="${p + 1}"></a>
                                             </li>
-
-                                            <li class="page-item" th:classappend="${!parts.hasNext} ? 'disabled'">
+                                            <li class="page-item" th:classappend="${!equipments.hasNext} ? 'disabled'">
                                                 <a class="page-link"
-                                                    th:href="@{/parts(keyword=${keyword}, page=${parts.number + 1}, size=${pageSize}, sortBy=${sortBy}, asc=${asc})}"
-                                                    th:if="${parts.hasNext}">Next</a>
-                                                <span class="page-link" th:if="${!parts.hasNext}">Next</span>
+                                                    th:href="@{/equipments(keyword=${keyword}, page=${equipments.number + 1}, size=${pageSize}, sortBy=${sortBy}, asc=${asc})}"
+                                                    th:if="${equipments.hasNext}">Next</a>
+                                                <span class="page-link" th:if="${!equipments.hasNext}">Next</span>
                                             </li>
                                         </ul>
                                     </nav>
@@ -273,22 +276,19 @@
                     const row = $(this).closest('tr');
                     const currentId = $(this).data('id');
 
-                    // Populate form fields
+                    // Populate fields
                     $('#editId').val(currentId);
                     $('#editCode').val(row.find('[data-field="code"]').text().trim());
                     $('#editName').val(row.find('[data-field="name"]').text().trim());
-                    $('#editCategory').val(row.find('[data-field="category"]').text().trim());
-                    $('#editSupplier').val(row.find('[data-field="supplier"]').text().trim());
-                    $('#editStockQuantity').val(row.find('[data-field="stockQuantity"]').text().trim());
-                    $('#editDescription').val(row.find('[data-field="description"]').text().trim());
-
-                    // Set image preview if exists
-                    const imgSrc = row.find('[data-field="image"] img').attr('src');
-                    if (imgSrc) {
-                        $('#editImagePreview').attr('src', imgSrc).show();
-                    } else {
-                        $('#editImagePreview').hide();
-                    }
+                    $('#editModel').val(row.find('[data-field="model"]').text().trim());
+                    $('#editUnit').val(row.find('[data-field="unit"]').text().trim());
+                    $('#editQty').val(row.find('[data-field="qty"]').text().trim() || '');
+                    $('#editManufacturer').val(row.find('[data-field="manufacturer"]').text().trim());
+                    $('#editSerialNo').val(row.find('[data-field="serialNo"]').text().trim());
+                    $('#editManufacturedDate').val(row.find('[data-field="manufacturedDate"]').text().trim());
+                    $('#editCommissionedDate').val(row.find('[data-field="commissionedDate"]').text().trim());
+                    $('#editCapacity').val(row.find('[data-field="capacity"]').text().trim());
+                    $('#editRemarks').val(row.find('[data-field="remarks"]').text().trim());
 
                     // Show modal
                     $('#editRowModal').modal('show');
@@ -297,10 +297,8 @@
                 // --- Delete Modal Trigger ---
                 $('.delete-row').on('click', function () {
                     const name = $(this).data('name');
-                    const id = $(this).data('id');
-
                     $('#deleteDocName').text(name);
-                    $('#confirmDeleteButton').attr('href', '/parts/delete/' + encodeURIComponent(id));
+                    $('#confirmDeleteButton').attr('href', '/equipments/delete/' + encodeURIComponent(id));
                     $('#deleteRowModal').modal('show');
                 });
             });

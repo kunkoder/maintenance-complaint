@@ -1,14 +1,12 @@
 package ahqpck.maintenance.report.service;
 
+import ahqpck.maintenance.report.dto.EquipmentDTO;
 import ahqpck.maintenance.report.dto.PartDTO;
+import ahqpck.maintenance.report.entity.Equipment;
 import ahqpck.maintenance.report.entity.Part;
-import ahqpck.maintenance.report.exception.FileStorageException;
-import ahqpck.maintenance.report.exception.ImageTooLargeException;
-import ahqpck.maintenance.report.exception.InvalidImageException;
-import ahqpck.maintenance.report.exception.PartNotFoundException;
-import ahqpck.maintenance.report.exception.ValidationException;
+import ahqpck.maintenance.report.exception.NotFoundException;
 import ahqpck.maintenance.report.repository.PartRepository;
-import ahqpck.maintenance.report.specification.PartSpecifications;
+import ahqpck.maintenance.report.specification.PartSpecification;
 import ahqpck.maintenance.report.util.FileUploadUtil;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -21,15 +19,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.*;
-import java.time.LocalDateTime;
-import java.util.Objects;
-import java.util.UUID;
 
 @Service
 public class PartService {
 
-    @Value("${app.upload.dir:uploads/parts}")
+    @Value("${app.upload-part-image.dir:src/main/resources/static/upload/part/image}")
     private String uploadDir;
 
     private final PartRepository partRepository;
@@ -38,26 +32,24 @@ public class PartService {
         this.partRepository = partRepository;
     }
 
-    // === GET ALL WITH PAGINATION, SEARCH, SORT ===
     public Page<PartDTO> getAllParts(String keyword, int page, int size, String sortBy, boolean asc) {
         Sort sort = asc ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Specification<Part> spec = PartSpecifications.search(keyword);
+        Specification<Part> spec = PartSpecification.search(keyword);
         Page<Part> partPage = partRepository.findAll(spec, pageable);
 
         return partPage.map(this::toDTO);
     }
 
-    // === GET BY ID ===
     public PartDTO getPartById(String id) {
         Part part = partRepository.findById(id)
-                .orElseThrow(() -> new PartNotFoundException("Part not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Part not found with ID: " + id));
         return toDTO(part);
     }
 
-     public void createPart(PartDTO dto, MultipartFile imageFile) {
-        // 1. Check if code already exists
+    public void createPart(PartDTO dto, MultipartFile imageFile) {
+
         if (partRepository.existsByCodeIgnoreCase(dto.getCode())) {
             throw new IllegalArgumentException("Part with this code already exists.");
         }
@@ -70,10 +62,9 @@ public class PartService {
         part.setSupplier(dto.getSupplier());
         part.setStockQuantity(dto.getStockQuantity() != null ? dto.getStockQuantity() : 0);
 
-        // 2. Save image if provided
         if (imageFile != null && !imageFile.isEmpty()) {
             try {
-                String fileName = FileUploadUtil.saveFile(uploadDir, imageFile);
+                String fileName = FileUploadUtil.saveFile(uploadDir, imageFile, "image");
                 part.setImage(fileName);
             } catch (IOException e) {
                 throw new IllegalArgumentException("Failed to save image: " + e.getMessage());
@@ -83,49 +74,57 @@ public class PartService {
         partRepository.save(part);
     }
 
-    // === UPDATE ===
-    public void updatePart(String id, PartDTO dto, MultipartFile imageFile, boolean deleteImage) {
+    public void updatePart(PartDTO dto, MultipartFile imageFile, boolean deleteImage) {
+        String id = dto.getId();
         Part part = partRepository.findById(id)
-                .orElseThrow(() -> new PartNotFoundException("Part not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Part not found with ID: " + id));
 
-        validatePart(dto, imageFile);
+        if (partRepository.existsByCodeIgnoreCase(dto.getCode())) {
+            throw new IllegalArgumentException("Part with this code already exists.");
+        }
 
-        part.setCode(dto.getCode().trim());
-        part.setName(dto.getName().trim());
-        part.setDescription(dto.getDescription());
-        part.setCategory(dto.getCategory());
-        part.setSupplier(dto.getSupplier());
-        part.setStockQuantity(dto.getStockQuantity());
+        mapToEntity(part, dto);
 
-        // Handle image
         String oldImage = part.getImage();
-        if (deleteImage) {
-            if (oldImage != null) {
-                deleteImage(oldImage);
-                part.setImage(null);
-            }
+
+        if (deleteImage && oldImage != null) {
+            FileUploadUtil.deleteFile(uploadDir, oldImage);
+            part.setImage(null);
         } else if (imageFile != null && !imageFile.isEmpty()) {
-            if (oldImage != null) {
-                deleteImage(oldImage);
+
+            try {
+                String newImage = FileUploadUtil.saveFile(uploadDir, imageFile, "image");
+                if (oldImage != null) {
+                    FileUploadUtil.deleteFile(uploadDir, oldImage);
+                }
+                part.setImage(newImage);
+            } catch (IOException e) {
+                throw new IllegalArgumentException("Failed to save image: " + e.getMessage());
             }
-            part.setImage(saveImage(imageFile));
         }
 
         partRepository.save(part);
     }
 
-    // === DELETE ===
     public void deletePart(String id) {
         Part part = partRepository.findById(id)
-                .orElseThrow(() -> new PartNotFoundException("Part not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Part not found with ID: " + id));
 
         if (part.getImage() != null) {
-            deleteImage(part.getImage());
+            FileUploadUtil.deleteFile(uploadDir, part.getImage());
         }
         partRepository.delete(part);
     }
 
-    // === HELPER: Convert to DTO ===
+    private void mapToEntity(Part part, PartDTO dto) {
+        part.setCode(dto.getCode().trim());
+        part.setName(dto.getName().trim());
+        part.setDescription(dto.getDescription());
+        part.setCategory(dto.getCategory());
+        part.setSupplier(dto.getSupplier());
+        part.setStockQuantity(dto.getStockQuantity() != null ? dto.getStockQuantity() : 0);
+    }
+
     private PartDTO toDTO(Part part) {
         PartDTO dto = new PartDTO();
         dto.setId(part.getId());
@@ -137,60 +136,5 @@ public class PartService {
         dto.setImage(part.getImage());
         dto.setStockQuantity(part.getStockQuantity());
         return dto;
-    }
-
-    // === IMAGE HANDLING ===
-    private String saveImage(MultipartFile file) {
-        if (file == null || file.isEmpty()) return null;
-
-        if (file.getSize() > 1_000_000) {
-            throw new ImageTooLargeException("Image must be less than 1MB");
-        }
-
-        if (!Objects.requireNonNull(file.getContentType()).startsWith("image/")) {
-            throw new InvalidImageException("Only image files are allowed");
-        }
-
-        String ext = getFileExtension(file.getOriginalFilename());
-        String filename = UUID.randomUUID() + "." + ext;
-
-        try {
-            Path uploadPath = Paths.get(uploadDir);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-            Files.copy(file.getInputStream(), uploadPath.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
-            return filename;
-        } catch (IOException e) {
-            throw new FileStorageException("Failed to store image: " + e.getMessage());
-        }
-    }
-
-    private void deleteImage(String filename) {
-        try {
-            Path filePath = Paths.get(uploadDir).resolve(filename);
-            Files.deleteIfExists(filePath);
-        } catch (IOException e) {
-            // Log error, but don't block deletion
-            System.err.println("Failed to delete image: " + filename);
-        }
-    }
-
-    private String getFileExtension(String filename) {
-        if (filename == null || !filename.contains(".")) return "jpg";
-        return filename.substring(filename.lastIndexOf(".") + 1);
-    }
-
-    // === VALIDATION ===
-    private void validatePart(PartDTO dto, MultipartFile imageFile) {
-        if (dto.getCode() == null || dto.getCode().trim().isEmpty()) {
-            throw new ValidationException("Code is required");
-        }
-        if (dto.getName() == null || dto.getName().trim().isEmpty()) {
-            throw new ValidationException("Name is required");
-        }
-
-        // Optional: Check for duplicate code (except self in update)
-        // Add service param for update case
     }
 }

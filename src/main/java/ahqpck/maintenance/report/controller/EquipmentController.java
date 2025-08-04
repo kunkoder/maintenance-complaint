@@ -1,11 +1,13 @@
+// src/main/java/ahqpck/maintenance/report/controller/EquipmentController.java
 package ahqpck.maintenance.report.controller;
 
-import ahqpck.maintenance.report.dto.PartDTO;
-import ahqpck.maintenance.report.service.PartService;
+import ahqpck.maintenance.report.dto.EquipmentDTO;
+import ahqpck.maintenance.report.service.EquipmentService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -17,14 +19,17 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/parts")
+@RequestMapping("/equipments")
 @RequiredArgsConstructor
-public class PartController {
+public class EquipmentController {
 
-    private final PartService partService;
+    private final EquipmentService equipmentService;
+
+    @Value("${app.upload-equipment-image.dir:src/main/resources/static/upload/equipment/image}")
+    private String uploadDir;
 
     @GetMapping
-    public String listParts(
+    public String listEquipments(
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "10") @Min(1) int size,
@@ -33,28 +38,30 @@ public class PartController {
             Model model) {
 
         try {
-            var partsPage = partService.getAllParts(keyword, page, size, sortBy, asc);
-            model.addAttribute("parts", partsPage);
+            var equipmentPage = equipmentService.getAllEquipments(keyword, page, size, sortBy, asc);
+            model.addAttribute("equipments", equipmentPage);
             model.addAttribute("keyword", keyword);
             model.addAttribute("currentPage", page);
             model.addAttribute("pageSize", size);
             model.addAttribute("sortBy", sortBy);
             model.addAttribute("asc", asc);
 
-            model.addAttribute("title", "Parts Inventory");
-            model.addAttribute("sortFields", new String[] { "code", "name", "category", "supplier", "stockQuantity" });
-            model.addAttribute("partDTO", new PartDTO());
+            model.addAttribute("title", "Equipments");
+            model.addAttribute("sortFields", new String[]{
+                "code", "name", "model", "manufacturer", "serialNo", "qty", "capacity", "manufacturedDate", "commissionedDate"
+            });
+            model.addAttribute("equipmentDTO", new EquipmentDTO());
 
         } catch (Exception e) {
-            model.addAttribute("error", "Failed to load parts: " + e.getMessage());
+            model.addAttribute("error", "Failed to load equipment: " + e.getMessage());
         }
 
-        return "part/index";
+        return "equipment/index";
     }
 
     @PostMapping
-    public String createPart(
-            @Valid @ModelAttribute PartDTO partDTO,
+    public String createEquipment(
+            @Valid @ModelAttribute EquipmentDTO equipmentDTO,
             BindingResult bindingResult,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
             RedirectAttributes ra) {
@@ -69,24 +76,25 @@ public class PartController {
                     .collect(Collectors.joining(" | "));
 
             ra.addFlashAttribute("error", errorMessage.isEmpty() ? "Invalid input" : errorMessage);
-            return "redirect:/parts";
+            ra.addFlashAttribute("equipmentDTO", equipmentDTO);
+            return "redirect:/equipments";
         }
 
         try {
-            partService.createPart(partDTO, imageFile);
-            ra.addFlashAttribute("success", "Part created successfully.");
-            return "redirect:/parts";
+            equipmentService.createEquipment(equipmentDTO, imageFile);
+            ra.addFlashAttribute("success", "Equipment created successfully.");
+            return "redirect:/equipments";
 
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
-            return "redirect:/parts";
+            ra.addFlashAttribute("equipmentDTO", equipmentDTO);
+            return "redirect:/equipments";
         }
     }
 
-    // === UPDATE ===
     @PostMapping("/update")
-    public String updatePart(
-            @Valid @ModelAttribute PartDTO partDTO,
+    public String updateEquipment(
+            @Valid @ModelAttribute EquipmentDTO equipmentDTO,
             BindingResult bindingResult,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
             @RequestParam(value = "deleteImage", required = false, defaultValue = "false") boolean deleteImage,
@@ -102,27 +110,30 @@ public class PartController {
                     .collect(Collectors.joining(" | "));
 
             ra.addFlashAttribute("error", errorMessage.isEmpty() ? "Invalid input" : errorMessage);
-            return "redirect:/parts";
+            ra.addFlashAttribute("equipmentDTO", equipmentDTO);
+            return "redirect:/equipments";
         }
 
         try {
-            partService.updatePart(partDTO, imageFile, deleteImage);
-            ra.addFlashAttribute("success", "Part updated successfully.");
-            return "redirect:/parts";
+            equipmentService.updateEquipment(equipmentDTO, imageFile, deleteImage);
+            ra.addFlashAttribute("success", "Equipment updated successfully.");
+            return "redirect:/equipments";
+
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
-            return "redirect:/parts";
+            ra.addFlashAttribute("equipmentDTO", equipmentDTO);
+            return "redirect:/equipments";
         }
     }
 
     @GetMapping("/delete/{id}")
-    public String deletePart(@PathVariable String id, RedirectAttributes ra) {
+    public String deleteEquipment(@PathVariable String id, RedirectAttributes ra) {
         try {
-            partService.deletePart(id);
-            ra.addFlashAttribute("success", "Part deleted successfully.");
+            equipmentService.deleteEquipment(id);
+            ra.addFlashAttribute("success", "Equipment deleted successfully.");
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/parts";
+        return "redirect:/equipments";
     }
 }
