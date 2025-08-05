@@ -2,10 +2,14 @@ package ahqpck.maintenance.report.service;
 
 import ahqpck.maintenance.report.dto.EquipmentDTO;
 import ahqpck.maintenance.report.entity.Equipment;
+import ahqpck.maintenance.report.exception.ImportException;
 import ahqpck.maintenance.report.exception.NotFoundException;
 import ahqpck.maintenance.report.repository.EquipmentRepository;
 import ahqpck.maintenance.report.specification.EquipmentSpecification;
 import ahqpck.maintenance.report.util.FileUploadUtil;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validator;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -17,6 +21,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class EquipmentService {
@@ -25,9 +41,11 @@ public class EquipmentService {
     private String uploadDir;
 
     private final EquipmentRepository equipmentRepository;
+    private final Validator validator; // Make sure this is autowired
 
-    public EquipmentService(EquipmentRepository equipmentRepository) {
+    public EquipmentService(EquipmentRepository equipmentRepository, Validator validator) {
         this.equipmentRepository = equipmentRepository;
+        this.validator = validator;
     }
 
     public Page<EquipmentDTO> getAllEquipments(String keyword, int page, int size, String sortBy, boolean asc) {
@@ -71,10 +89,6 @@ public class EquipmentService {
         Equipment equipment = equipmentRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Equipment not found with ID: " + id));
 
-        if (equipmentRepository.existsByCodeIgnoreCaseAndIdNot(dto.getCode(), id)) {
-            throw new IllegalArgumentException("Equipment with this code already exists.");
-        }
-
         mapToEntity(equipment, dto);
 
         String oldImage = equipment.getImage();
@@ -105,6 +119,131 @@ public class EquipmentService {
         }
         equipmentRepository.delete(equipment);
     }
+
+    // Add this method to EquipmentService
+    public ImportResult importEquipmentsFromExcel(List<Map<String, Object>> data) {
+    List<String> errorMessages = new ArrayList<>();
+    int importedCount = 0;
+
+    if (data == null || data.isEmpty()) {
+        throw new IllegalArgumentException("No data to import.");
+    }
+
+    for (int i = 0; i < data.size(); i++) {
+        Map<String, Object> row = data.get(i);
+        try {
+            EquipmentDTO dto = new EquipmentDTO();
+
+            dto.setCode(toString(row.get("code")));
+            dto.setName(toString(row.get("name")));
+            dto.setModel(toString(row.get("model")));
+            dto.setUnit(toString(row.get("unit")));
+            dto.setQty(parseInteger(row.get("qty")));
+            dto.setManufacturer(toString(row.get("manufacturer")));
+            dto.setSerialNo(toString(row.get("serialNo")));
+            dto.setManufacturedDate(toLocalDate(row.get("manufacturedDate")));
+            dto.setCommissionedDate(toLocalDate(row.get("commissionedDate")));
+            dto.setCapacity(toString(row.get("capacity")));
+            dto.setRemarks(toString(row.get("remarks")));
+
+            // Use injected validator
+            Set<ConstraintViolation<EquipmentDTO>> violations = validator.validate(dto);
+            if (!violations.isEmpty()) {
+                String msg = violations.stream()
+                        .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                        .collect(Collectors.joining(", "));
+                throw new IllegalArgumentException("Validation failed: " + msg);
+            }
+
+            if (dto.getCode() == null || dto.getCode().isEmpty()) {
+                throw new IllegalArgumentException("Code is required");
+            }
+
+            if (equipmentRepository.existsByCodeIgnoreCase(dto.getCode())) {
+                throw new IllegalArgumentException("Duplicate equipment code: " + dto.getCode());
+            }
+
+            createEquipment(dto, null);
+            importedCount++;
+
+        } catch (Exception e) {
+            String message = e.getMessage() != null ? e.getMessage() : "Unknown error";
+            errorMessages.add("Row " + (i + 1) + ": " + message);
+        }
+    }
+
+    return new ImportResult(importedCount, errorMessages);
+}
+
+// === Utility Methods (copy inside EquipmentService) ===
+
+private String toString(Object obj) {
+    return obj != null ? obj.toString().trim() : null;
+}
+
+private Integer parseInteger(Object obj) {
+    if (obj == null || obj.toString().trim().isEmpty()) return null;
+    try {
+        return Integer.parseInt(obj.toString().trim());
+    } catch (NumberFormatException e) {
+        throw new IllegalArgumentException("Invalid number format: " + obj);
+    }
+}
+
+private LocalDate toLocalDate(Object obj) {
+    if (obj == null || obj.toString().trim().isEmpty()) return null;
+
+    String str = obj.toString().trim();
+
+    // Handle Excel serial date
+    if (str.matches("\\d+(\\.\\d+)?")) {
+        double serial = Double.parseDouble(str);
+        return convertExcelDate(serial);
+    }
+
+    // Try multiple formats
+    return Stream.of("yyyy-MM-dd", "dd/MM/yyyy", "MM/dd/yyyy", "dd-MM-yyyy", "MM-dd-yyyy")
+            .map(DateTimeFormatter::ofPattern)
+            .map(fmt -> {
+                try {
+                    return LocalDate.parse(str, fmt);
+                } catch (DateTimeParseException ignored) {
+                    return null;
+                }
+            })
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("Invalid date format: " + str));
+}
+
+private LocalDate convertExcelDate(double serial) {
+    int n = (int) serial;
+    if (n >= 60) n--; // Fix Excel 1900 leap year bug
+    return LocalDate.of(1899, 12, 30).plusDays(n);
+}
+
+// === Result Holder Class (static inner class) ===
+public static class ImportResult {
+    private final int importedCount;
+    private final List<String> errorMessages;
+
+    public ImportResult(int importedCount, List<String> errorMessages) {
+        this.importedCount = importedCount;
+        this.errorMessages = errorMessages;
+    }
+
+    public int getImportedCount() {
+        return importedCount;
+    }
+
+    public List<String> getErrorMessages() {
+        return errorMessages;
+    }
+
+    public boolean hasErrors() {
+        return !errorMessages.isEmpty();
+    }
+}
 
     private void mapToEntity(Equipment equipment, EquipmentDTO dto) {
         equipment.setCode(dto.getCode().trim());
@@ -137,4 +276,5 @@ public class EquipmentService {
         dto.setImage(equipment.getImage());
         return dto;
     }
+
 }

@@ -156,14 +156,14 @@
                 <div class="modal-body p-4">
                     <form th:action="@{/equipments/update}" th:object="${equipmentDTO}" method="post" enctype="multipart/form-data"
                         id="formEdit">
-                        <input type="hidden" th:field="*{id}" />
+                        <input type="hidden" name="id" id="editId">
 
                         <!-- Code & Model -->
                         <div class="form-row">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Code <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" th:field="*{code}">
+                                    <input type="text" class="form-control" id="editCode" name="code">
                                     <div class="invalid-feedback" th:if="${#fields.hasErrors('code')}"
                                         th:errors="*{code}">Please enter a unique code.</div>
                                 </div>
@@ -171,7 +171,7 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Model</label>
-                                    <input type="text" class="form-control" th:field="*{model}">
+                                    <input type="text" class="form-control" id="editModel" name="model">
                                 </div>
                             </div>
                         </div>
@@ -181,7 +181,7 @@
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label>Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" th:field="*{name}">
+                                    <input type="text" class="form-control" id="editName" name="name">
                                     <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}"
                                         th:errors="*{name}">Please enter a name.</div>
                                 </div>
@@ -193,7 +193,7 @@
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label>Manufacturer</label>
-                                    <input type="text" class="form-control" th:field="*{manufacturer}">
+                                    <input type="text" class="form-control" id="editManufacturer" name="manufacturer">
                                 </div>
                             </div>
                         </div>
@@ -203,13 +203,13 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Unit</label>
-                                    <input type="text" class="form-control" th:field="*{unit}">
+                                    <input type="text" class="form-control" id="editUnit" name="unit">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Qty</label>
-                                    <input type="number" class="form-control" th:field="*{qty}" min="0">
+                                    <input type="number" class="form-control" id="editQty" name="qty">
                                 </div>
                             </div>
                         </div>
@@ -219,14 +219,14 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Capacity</label>
-                                    <input type="text" class="form-control" th:field="*{capacity}"
+                                    <input type="text" class="form-control" id="editCapacity" name="capacity"
                                         placeholder="e.g. 7.5 kW, 200 Ton">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Serial No.</label>
-                                    <input type="text" class="form-control" th:field="*{serialNo}">
+                                    <input type="text" class="form-control" id="editSerialNo" name="serialNo">
                                 </div>
                             </div>
                         </div>
@@ -236,13 +236,13 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Manufactured Date</label>
-                                    <input type="date" class="form-control" th:field="*{manufacturedDate}">
+                                    <input type="date" class="form-control" id="editManufacturedDate" name="manufacturedDate">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Commissioned Date</label>
-                                    <input type="date" class="form-control" th:field="*{commissionedDate}">
+                                    <input type="date" class="form-control" id="editCommissionedDate" name="commissionedDate">
                                 </div>
                             </div>
                         </div>
@@ -278,7 +278,7 @@
                         <!-- Remarks -->
                         <div class="form-group">
                             <label>Remarks</label>
-                            <textarea class="form-control" th:field="*{remarks}" rows="5"
+                            <textarea class="form-control" id="editRemarks" name="remarks" rows="5"
                                 placeholder="Enter detailed remarks..."></textarea>
                         </div>
                     </form>
@@ -387,12 +387,5 @@
                 reader.readAsDataURL(file);
             }
         };
-
-        // Auto-show Flash Modal
-        $(document).ready(function () {
-            if ($('#flashMessageModalContainer').length) {
-                $('#flashMessageModal').modal('show');
-            }
-        });
     </script>
 </div>

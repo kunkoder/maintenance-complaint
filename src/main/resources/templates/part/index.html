@@ -305,39 +305,11 @@
                 });
             });
 
-            // Add Image Preview
-            document.getElementById('addImageInput')?.addEventListener('change', function () {
-                const fileName = this.files[0] ? this.files[0].name : 'Choose file';
-                document.getElementById('addImageLabel').textContent = fileName;
-
-                const preview = document.getElementById('addImagePreview');
-                if (this.files && this.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        preview.src = e.target.result;
-                        preview.style.display = 'block';
-                    };
-                    reader.readAsDataURL(this.files[0]);
-                } else {
-                    preview.style.display = 'none';
-                }
-            });
-
-            // Edit Image Preview
-            document.getElementById('editImageInput')?.addEventListener('change', function () {
-                const fileName = this.files[0] ? this.files[0].name : 'Choose file';
-                document.getElementById('editImageLabel').textContent = fileName;
-
-                const preview = document.getElementById('editImagePreview');
-                if (this.files && this.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        preview.src = e.target.result;
-                        preview.style.display = 'block';
-                    };
-                    reader.readAsDataURL(this.files[0]);
-                } else {
-                    preview.style.display = 'none';
+            $(document).ready(function () {
+                // Check if the modal container exists (meaning a flash message was present)
+                if ($('#flashMessageModalContainer').length) {
+                    // Show the modal using Bootstrap's modal function
+                    $('#flashMessageModal').modal('show');
                 }
             });
         </script>

@@ -79,10 +79,6 @@ public class PartService {
         Part part = partRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Part not found with ID: " + id));
 
-        if (partRepository.existsByCodeIgnoreCase(dto.getCode())) {
-            throw new IllegalArgumentException("Part with this code already exists.");
-        }
-
         mapToEntity(part, dto);
 
         String oldImage = part.getImage();

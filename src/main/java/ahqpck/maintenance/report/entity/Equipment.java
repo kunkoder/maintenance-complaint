@@ -34,6 +34,7 @@ public class Equipment {
 
     private String model;
     private String unit;
+
     private Integer qty = 0;
 
     private String manufacturer;

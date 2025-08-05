@@ -1,0 +1,425 @@
+<div th:fragment="import-modal">
+    <div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="importModalLabel">
+                        <i class="fa fa-file-import mr-2"></i> Import Equipment Data
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="importForm" enctype="multipart/form-data">
+                        <!-- Step 1: Upload File -->
+                        <div class="step mb-4">
+                            <h6><i class="fas fa-upload mr-1"></i> Step 1: Upload File</h6>
+                            <div class="custom-file">
+                                <input type="file" class="custom-file-input" id="importFile"
+                                    accept=".csv,.tsv,.txt,.xlsx,.xls" required>
+                                <label class="custom-file-label" for="importFile">Choose file (CSV, TSV, XLSX)</label>
+                            </div>
+                            <small class="form-text text-muted">
+                                Supported formats: CSV, TSV (; separated), Excel (.xlsx, .xls)
+                            </small>
+                        </div>
+
+                        <!-- Step 2: Select Sheet -->
+                        <div class="step mb-4" id="sheetSelection" style="display:none;">
+                            <h6><i class="fas fa-table mr-1"></i> Step 2: Select Sheet</h6>
+                            <select class="form-control" id="sheetSelect"></select>
+                        </div>
+
+                        <!-- Step 3: Map Columns -->
+                        <div class="step mb-4" id="columnMapping" style="display:none;">
+                            <h6><i class="fas fa-columns mr-1"></i> Step 3: Map Columns</h6>
+                            <p class="text-muted mb-3">
+                                Click to select/deselect columns. Detected header row: <strong id="headerRow">Row
+                                    1</strong>
+                            </p>
+                            <div class="row border rounded p-3 bg-light" id="columnCheckboxes">
+                                <!-- Buttons will be inserted here -->
+                            </div>
+                        </div>
+
+                        <!-- Step 4: Preview -->
+                        <div class="step" id="previewSection" style="display:none;">
+                            <h6><i class="fas fa-eye mr-1"></i> Step 4: Preview Data</h6>
+                            <div class="table-responsive mt-3">
+                                <table id="item-table" class="display table table-striped table-hover">
+                                    <thead class="bg-primary text-white">
+                                        <tr>
+                                            <!-- Headers will be inserted here dynamically -->
+                                        </tr>
+                                    </thead>
+                                    <tbody id="previewTbody">
+                                        <!-- Rows will be inserted here dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-light" id="prevBtn" style="display:none;">Previous</button>
+                    <button type="button" class="btn btn-primary" id="nextBtn">Next</button>
+                    <button type="button" class="btn btn-success" id="importBtn" style="display:none;">
+                        <i class="fa fa-check mr-1"></i> Import
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flash Message Modal (Success or Error) -->
+    <div th:if="${error != null or success != null}" id="flashMessageModalContainer">
+        <div class="modal fade" id="flashMessageModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header"
+                        th:classappend="${error} ? 'bg-danger text-white' : 'bg-success text-white'">
+                        <h5 class="modal-title">
+                            <i th:class="${error} ? 'fas fa-exclamation-triangle mr-2' : 'fas fa-check-circle mr-2'"></i>
+                            <span th:text="${error} ? 'Error' : 'Success'">Status</span>
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body py-4">
+                        <div th:if="${error}" class="text-center">
+                            <ul class="list-unstyled">
+                                <li th:each="err : ${#strings.listSplit(error, '|')}">
+                                    <p class="text-danger mb-2" th:text="${err.trim()}">Error</p>
+                                </li>
+                            </ul>
+                        </div>
+                        <div th:if="${success}" class="text-center">
+                            <p class="text-success" th:text="${success}">Success</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button"
+                            class="btn"
+                            th:classappend="${error} ? 'btn-danger' : 'btn-success'"
+                            data-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SheetJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- Custom Styles to Guarantee Visibility -->
+    <style>
+        /* Custom toggle buttons instead of checkboxes */
+        .col-btn {
+            padding: 8px 12px;
+            margin: 4px;
+            border: 2px solid #007bff;
+            background-color: #e3f2fd;
+            color: #0056b3;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-align: center;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .col-btn.selected {
+            background-color: #007bff;
+            color: white;
+            border-color: #005edc;
+        }
+
+        .col-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Ensure container wraps properly */
+        #columnCheckboxes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        /* Fix modal scrolling */
+        .modal-body {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        #item-table th,
+        #item-table td {
+            text-align: left;
+            vertical-align: middle;
+        }
+    </style>
+
+    <script>
+        let workbook = null;
+        let selectedSheet = "";
+        let headerRowIndex = 0;
+        let parsedData = [];
+        const steps = ['sheetSelection', 'columnMapping', 'previewSection'];
+        let currentStep = -1;
+
+        function showStep(n) {
+            steps.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+            if (n >= 0 && n < steps.length) {
+                document.getElementById(steps[n]).style.display = 'block';
+                currentStep = n;
+            }
+
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const importBtn = document.getElementById('importBtn');
+
+            if (prevBtn) prevBtn.style.display = currentStep > 0 ? 'inline-block' : 'none';
+            if (nextBtn) nextBtn.style.display = currentStep < steps.length - 1 ? 'inline-block' : 'none';
+            if (importBtn) importBtn.style.display = currentStep === steps.length - 1 ? 'inline-block' : 'none';
+        }
+
+        // Handle file upload
+        document.getElementById('importFile').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                try {
+                    workbook = XLSX.read(data, { type: 'array', sheetRows: 50 });
+                    const sheetNames = workbook.SheetNames;
+                    const select = document.getElementById('sheetSelect');
+                    select.innerHTML = '';
+
+                    sheetNames.forEach(name => {
+                        const opt = document.createElement('option');
+                        opt.value = name;
+                        opt.textContent = name;
+                        select.appendChild(opt);
+                    });
+
+                    document.getElementById('sheetSelection').style.display = 'block';
+                    document.getElementById('sheetSelect').value = selectedSheet;
+                    showStep(0);
+                } catch (err) {
+                    alert("Failed to read file: " + err.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        // Handle sheet selection
+        document.getElementById('sheetSelect').addEventListener('change', function () {
+            selectedSheet = this.value;
+            detectAndRenderColumns();
+            showStep(1);
+        });
+
+        // Detect header row intelligently
+        function detectHeaderRow(sheet) {
+            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', range: 0 });
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const nonEmpty = row.filter(cell => cell?.toString().trim() !== '').length;
+                if (nonEmpty < 2) continue;
+
+                const likelyText = row.filter(cell => {
+                    const text = cell?.toString().trim();
+                    return text && isNaN(text);
+                }).length;
+
+                if (likelyText >= 2) return { rowIndex: i, headerRow: row };
+            }
+            return { rowIndex: 0, headerRow: rows[0] || [] };
+        }
+
+        // Render columns as clickable buttons
+        function detectAndRenderColumns() {
+            const worksheet = workbook.Sheets[selectedSheet];
+            const { rowIndex, headerRow } = detectHeaderRow(worksheet);
+            headerRowIndex = rowIndex;
+            document.getElementById('headerRow').textContent = `Row ${headerRowIndex + 1}`;
+
+            const container = document.getElementById('columnCheckboxes');
+            container.innerHTML = '';
+
+            const likelyFields = [
+                "Code",
+                "Name",
+                "Model",
+                "Unit",
+                "Qty",
+                "Manufacturer",
+                "Serial No.",
+                "Manufactured Date",
+                "Commissioned Date",
+                "Capacity",
+                "Remarks"
+            ];
+
+            headerRow.forEach((col, idx) => {
+                const colText = col?.toString().trim() || '';
+                if (colText === '') return;
+
+                const btn = document.createElement('div');
+                btn.className = 'col-btn';
+                btn.dataset.idx = idx;
+                btn.textContent = colText;
+
+                // Auto-select likely fields
+                if (likelyFields.some(f => colText.toLowerCase().includes(f))) {
+                    btn.classList.add('selected');
+                }
+
+                // Toggle on click
+                btn.addEventListener('click', function () {
+                    this.classList.toggle('selected');
+                });
+
+                container.appendChild(btn);
+            });
+        }
+
+        function generatePreview() {
+            const worksheet = workbook.Sheets[selectedSheet];
+            const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            if (rows.length <= headerRowIndex) return;
+
+            const headerRow = rows[headerRowIndex];
+            const selectedColumnButtons = document.querySelectorAll('.col-btn.selected');
+            const selectedColumns = Array.from(selectedColumnButtons)
+                .map(btn => parseInt(btn.dataset.idx))
+                .sort((a, b) => a - b);
+
+            const thead = document.querySelector('#item-table thead tr');
+            const tbody = document.getElementById('previewTbody');
+
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+
+            // Use button text as header (from UI)
+            selectedColumnButtons.forEach(button => {
+                const th = document.createElement('th');
+                th.textContent = button.textContent;
+                thead.appendChild(th);
+            });
+
+            // Data rows
+            const maxRows = Math.min(10, rows.length - headerRowIndex - 1);
+            for (let i = 1; i <= maxRows; i++) {
+                const rowIndex = headerRowIndex + i;
+                if (rowIndex >= rows.length) break;
+                const row = rows[rowIndex];
+                const tr = document.createElement('tr');
+                selectedColumns.forEach(idx => {
+                    const td = document.createElement('td');
+                    td.textContent = row[idx] !== undefined ? row[idx] : '';
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            }
+
+            // Build parsedData with mapped field names
+            const fieldMapping = {
+                "Code": "code",
+                "Name": "name",
+                "Model": "model",
+                "Unit": "unit",
+                "Qty": "qty",
+                "Manufacturer": "manufacturer",
+                "Serial No.": "serialNo",
+                "Manufactured Date": "manufacturedDate",
+                "Commissioned Date": "commissionedDate",
+                "Capacity": "capacity",
+                "Remarks": "remarks"
+            };
+
+            parsedData = [];
+            for (let i = headerRowIndex + 1; i < rows.length; i++) {
+                const row = rows[i];
+                const obj = {};
+                selectedColumns.forEach(idx => {
+                    const colText = headerRow[idx]?.toString().trim() || '';
+                    const button = document.querySelector(`.col-btn[data-idx="${idx}"]`);
+                    const displayText = button ? button.textContent.trim() : colText;
+
+                    // Only include if this column was selected (button exists and is selected)
+                    if (button && button.classList.contains('selected')) {
+                        const finalKey = fieldMapping[displayText] || displayText.toLowerCase();
+                        obj[finalKey] = row[idx];
+                    }
+                });
+                parsedData.push(obj);
+            }
+        }
+        // Navigation
+        document.getElementById('nextBtn').addEventListener('click', function () {
+            if (currentStep === 1) {
+                generatePreview();
+            }
+            showStep(currentStep + 1);
+        });
+
+        document.getElementById('prevBtn').addEventListener('click', function () {
+            showStep(currentStep - 1);
+        });
+
+        // Final Import
+        document.getElementById('importBtn').addEventListener('click', function () {
+            if (parsedData.length === 0) {
+                alert("No data to import.");
+                return;
+            }
+
+            fetch('/equipments/import', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    data: parsedData,
+                    sheet: selectedSheet,
+                    headerRow: headerRowIndex + 1
+                })
+            })
+                .then(response => {
+                    if (response.redirected) {
+                        // Server redirected — reload to new location
+                        window.location.href = response.url;
+                        return;
+                    }
+                    // Try to read JSON (if server sends success/failure JSON)
+                    return response.json().then(data => {
+                        $('#importModal').modal('hide');
+                        // alert(`Imported ${data.imported} items. ${data.errors} errors.`);
+                        // location.reload();
+                    }).catch(() => {
+                        // If JSON parse fails, assume redirect or error
+                        window.location.href = '/equipments';
+                    });
+                })
+                .catch(err => {
+                    alert("Import failed: " + err.message);
+                    console.error(err);
+                });
+        });
+
+        // Flash message
+        $(document).ready(function () {
+            if ($('#flashMessageModalContainer').length) {
+                console.log("modal");
+                $('#flashMessageModal').modal('show');
+            }
+        });
+    </script>
+</div>

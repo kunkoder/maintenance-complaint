@@ -121,15 +121,17 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Code <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="editCode" name="code" required>
-                                    <div class="invalid-feedback">Please enter a unique code.</div>
+                                    <input type="text" class="form-control" id="editCode" name="code">
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('code')}"
+                                        th:errors="*{code}">Please enter a unique code.</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="editName" name="name" required>
-                                    <div class="invalid-feedback">Please enter a name.</div>
+                                    <input type="text" class="form-control" id="editName" name="name">
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}"
+                                        th:errors="*{name}">Please enter a name.</div>
                                 </div>
                             </div>
                         </div>
@@ -308,13 +310,5 @@
                 reader.readAsDataURL(file);
             }
         }
-
-        $(document).ready(function () {
-            // Check if the modal container exists (meaning a flash message was present)
-            if ($('#flashMessageModalContainer').length) {
-                // Show the modal using Bootstrap's modal function
-                $('#flashMessageModal').modal('show');
-            }
-        });
     </script>
 </div>
