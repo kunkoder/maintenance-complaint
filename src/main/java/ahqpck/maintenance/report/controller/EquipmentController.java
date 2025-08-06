@@ -28,6 +28,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -162,98 +165,43 @@ public class EquipmentController {
     }
 
     @PostMapping("/import")
-public String importEquipments(@RequestBody Map<String, Object> payload,
-                               RedirectAttributes ra) {
-    try {
-        List<Map<String, Object>> data = (List<Map<String, Object>>) payload.get("data");
-        String sheet = (String) payload.get("sheet");
-        Integer headerRow = (Integer) payload.get("headerRow");
+    public String importEquipments(
+            @RequestParam("data") String dataJson,
+            @RequestParam(value = "sheet", required = false) String sheet,
+            @RequestParam(value = "headerRow", required = false) Integer headerRow,
+            RedirectAttributes ra) {
 
-        EquipmentService.ImportResult result = equipmentService.importEquipmentsFromExcel(data);
-        System.out.println(result.getImportedCount());
-
-        if (result.getImportedCount() > 0 && !result.hasErrors()) {
-            ra.addFlashAttribute("success", "Successfully imported " + result.getImportedCount() + " equipment record(s).");
-        } else if (result.getImportedCount() > 0) {
-            // Combine warning + errors into `error` as pipe-separated string
-            StringBuilder errorMsg = new StringBuilder();
-            errorMsg.append("Imported ").append(result.getImportedCount())
-                    .append(" record(s), but ").append(result.getErrorMessages().size())
-                    .append(" row(s) had errors:");
-            for (String err : result.getErrorMessages()) {
-                errorMsg.append("|").append(err);
-            }
-            ra.addFlashAttribute("error", errorMsg.toString());
-        } else {
-            // All failed
-            StringBuilder errorMsg = new StringBuilder("Failed to import any equipment:");
-            for (String err : result.getErrorMessages()) {
-                errorMsg.append("|").append(err);
-            }
-            ra.addFlashAttribute("error", errorMsg.toString());
-        }
-        System.out.println(result.getErrorMessages());
-
-        return "redirect:/equipments";
-
-    } catch (Exception e) {
-        ra.addFlashAttribute("error", "Bulk import failed: " + e.getMessage());
-        return "redirect:/equipments";
-    }
-}
-
-    private static String toString(Object obj) {
-        return obj != null ? obj.toString().trim() : null;
-    }
-
-    private static Integer parseInteger(Object obj) {
-        if (obj == null || obj.toString().trim().isEmpty())
-            return null;
         try {
-            return Integer.parseInt(obj.toString().trim());
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid number format: " + obj);
-        }
-    }
+            ObjectMapper mapper = new ObjectMapper();
+            List<Map<String, Object>> data = mapper.readValue(dataJson,
+                    new TypeReference<List<Map<String, Object>>>() {
+                    });
 
-    private static LocalDate toLocalDate(Object obj) {
-        if (obj == null || obj.toString().trim().isEmpty())
-            return null;
+            EquipmentService.ImportResult result = equipmentService.importEquipmentsFromExcel(data);
 
-        String str = obj.toString().trim();
-
-        // Handle Excel serial dates (e.g., 45359)
-        if (str.matches("\\d+(\\.\\d+)?")) {
-            double excelDate = Double.parseDouble(str);
-            return convertExcelDate(excelDate);
-        }
-
-        // Define supported date formats
-        List<DateTimeFormatter> formatters = List.of(
-                DateTimeFormatter.ofPattern("yyyy-MM-dd"),
-                DateTimeFormatter.ofPattern("dd/MM/yyyy"),
-                DateTimeFormatter.ofPattern("MM/dd/yyyy"),
-                DateTimeFormatter.ofPattern("dd-MM-yyyy"),
-                DateTimeFormatter.ofPattern("MM-dd-yyyy"));
-
-        // Try each format
-        for (DateTimeFormatter formatter : formatters) {
-            try {
-                return LocalDate.parse(str, formatter);
-            } catch (DateTimeParseException ignored) {
-                // Try next format
+            if (result.getImportedCount() > 0 && !result.hasErrors()) {
+                ra.addFlashAttribute("success",
+                        "Successfully imported " + result.getImportedCount() + " equipment record(s).");
+            } else if (result.getImportedCount() > 0) {
+                StringBuilder msg = new StringBuilder("Imported ").append(result.getImportedCount())
+                        .append(" record(s), but ").append(result.getErrorMessages().size()).append(" error(s):");
+                for (String err : result.getErrorMessages()) {
+                    msg.append("|").append(err);
+                }
+                ra.addFlashAttribute("error", msg.toString());
+            } else {
+                StringBuilder msg = new StringBuilder("Failed to import any equipment:");
+                for (String err : result.getErrorMessages()) {
+                    msg.append("|").append(err);
+                }
+                ra.addFlashAttribute("error", msg.toString());
             }
+
+            return "redirect:/equipments";
+
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Bulk import failed: " + e.getMessage());
+            return "redirect:/equipments";
         }
-
-        // If all fail
-        throw new IllegalArgumentException("Unrecognized date format: " + str);
     }
-
-    private static LocalDate convertExcelDate(double serialDate) {
-        int n = (int) serialDate;
-        if (n >= 60)
-            n--; // Adjust for Excel's 1900 leap year bug
-        return LocalDate.of(1899, 12, 30).plusDays(n);
-    }
-
 }

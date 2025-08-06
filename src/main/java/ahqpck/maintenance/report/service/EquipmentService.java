@@ -21,9 +21,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -122,128 +125,155 @@ public class EquipmentService {
 
     // Add this method to EquipmentService
     public ImportResult importEquipmentsFromExcel(List<Map<String, Object>> data) {
-    List<String> errorMessages = new ArrayList<>();
-    int importedCount = 0;
+        List<String> errorMessages = new ArrayList<>();
+        int importedCount = 0;
 
-    if (data == null || data.isEmpty()) {
-        throw new IllegalArgumentException("No data to import.");
+        if (data == null || data.isEmpty()) {
+            throw new IllegalArgumentException("No data to import.");
+        }
+
+        for (int i = 0; i < data.size(); i++) {
+            Map<String, Object> row = data.get(i);
+            try {
+                EquipmentDTO dto = new EquipmentDTO();
+
+                dto.setCode(toString(row.get("code")));
+                dto.setName(toString(row.get("name")));
+                dto.setModel(toString(row.get("model")));
+                dto.setUnit(toString(row.get("unit")));
+                dto.setQty(parseInteger(row.get("qty")));
+                dto.setManufacturer(toString(row.get("manufacturer")));
+                dto.setSerialNo(toString(row.get("serialNo")));
+                dto.setManufacturedDate(toLocalDate(row.get("manufacturedDate")));
+                dto.setCommissionedDate(toLocalDate(row.get("commissionedDate")));
+                dto.setCapacity(toString(row.get("capacity")));
+                dto.setRemarks(toString(row.get("remarks")));
+
+                // Use injected validator
+                Set<ConstraintViolation<EquipmentDTO>> violations = validator.validate(dto);
+                if (!violations.isEmpty()) {
+                    String msg = violations.stream()
+                            .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                            .collect(Collectors.joining(", "));
+                    throw new IllegalArgumentException("Validation failed: " + msg);
+                }
+
+                if (dto.getCode() == null || dto.getCode().isEmpty()) {
+                    throw new IllegalArgumentException("Code is required");
+                }
+
+                if (equipmentRepository.existsByCodeIgnoreCase(dto.getCode())) {
+                    throw new IllegalArgumentException("Duplicate equipment code: " + dto.getCode());
+                }
+
+                createEquipment(dto, null);
+                importedCount++;
+
+            } catch (Exception e) {
+                String message = e.getMessage() != null ? e.getMessage() : "Unknown error";
+                errorMessages.add("Row " + (i + 1) + ": " + message);
+            }
+        }
+
+        return new ImportResult(importedCount, errorMessages);
     }
 
-    for (int i = 0; i < data.size(); i++) {
-        Map<String, Object> row = data.get(i);
+    private String toString(Object obj) {
+        return obj != null ? obj.toString().trim() : null;
+    }
+
+    private Integer parseInteger(Object obj) {
+        if (obj == null || obj.toString().trim().isEmpty())
+            return null;
         try {
-            EquipmentDTO dto = new EquipmentDTO();
-
-            dto.setCode(toString(row.get("code")));
-            dto.setName(toString(row.get("name")));
-            dto.setModel(toString(row.get("model")));
-            dto.setUnit(toString(row.get("unit")));
-            dto.setQty(parseInteger(row.get("qty")));
-            dto.setManufacturer(toString(row.get("manufacturer")));
-            dto.setSerialNo(toString(row.get("serialNo")));
-            dto.setManufacturedDate(toLocalDate(row.get("manufacturedDate")));
-            dto.setCommissionedDate(toLocalDate(row.get("commissionedDate")));
-            dto.setCapacity(toString(row.get("capacity")));
-            dto.setRemarks(toString(row.get("remarks")));
-
-            // Use injected validator
-            Set<ConstraintViolation<EquipmentDTO>> violations = validator.validate(dto);
-            if (!violations.isEmpty()) {
-                String msg = violations.stream()
-                        .map(v -> v.getPropertyPath() + ": " + v.getMessage())
-                        .collect(Collectors.joining(", "));
-                throw new IllegalArgumentException("Validation failed: " + msg);
-            }
-
-            if (dto.getCode() == null || dto.getCode().isEmpty()) {
-                throw new IllegalArgumentException("Code is required");
-            }
-
-            if (equipmentRepository.existsByCodeIgnoreCase(dto.getCode())) {
-                throw new IllegalArgumentException("Duplicate equipment code: " + dto.getCode());
-            }
-
-            createEquipment(dto, null);
-            importedCount++;
-
-        } catch (Exception e) {
-            String message = e.getMessage() != null ? e.getMessage() : "Unknown error";
-            errorMessages.add("Row " + (i + 1) + ": " + message);
+            return Integer.parseInt(obj.toString().trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid number format: " + obj);
         }
     }
 
-    return new ImportResult(importedCount, errorMessages);
-}
+    private LocalDate toLocalDate(Object obj) {
+        if (obj == null || obj.toString().trim().isEmpty())
+            return null;
 
-// === Utility Methods (copy inside EquipmentService) ===
+        String str = obj.toString().trim();
 
-private String toString(Object obj) {
-    return obj != null ? obj.toString().trim() : null;
-}
+        // Handle Excel serial date
+        if (str.matches("\\d+(\\.\\d+)?")) {
+            double serial = Double.parseDouble(str);
+            return convertExcelDate(serial);
+        }
 
-private Integer parseInteger(Object obj) {
-    if (obj == null || obj.toString().trim().isEmpty()) return null;
-    try {
-        return Integer.parseInt(obj.toString().trim());
-    } catch (NumberFormatException e) {
-        throw new IllegalArgumentException("Invalid number format: " + obj);
-    }
-}
+        // Try multiple full and partial date formats
+        return Stream.of(
+                // Full date formats
+                "yyyy-MM-dd",
+                "dd/MM/yyyy", "MM/dd/yyyy",
+                "dd-MM-yyyy", "MM-dd-yyyy",
 
-private LocalDate toLocalDate(Object obj) {
-    if (obj == null || obj.toString().trim().isEmpty()) return null;
+                // Month-year formats
+                "MMM yyyy", // "Apr 2014"
+                "MMMM yyyy", // "April 2014"
+                "MM/yyyy", // "04/2014"
+                "M/yyyy", // "4/2014"
+                "yyyy-MM", // "2014-04"
+                "yyyy/MM")
+                .map(pattern -> {
+                    try {
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+                        TemporalAccessor parsed = formatter.parse(str);
 
-    String str = obj.toString().trim();
+                        // If the parsed result has only year and month, default day to 1
+                        if (parsed.isSupported(ChronoField.YEAR) && parsed.isSupported(ChronoField.MONTH_OF_YEAR)) {
+                            int year = parsed.get(ChronoField.YEAR);
+                            int month = parsed.get(ChronoField.MONTH_OF_YEAR);
+                            return LocalDate.of(year, month, 1);
+                        }
 
-    // Handle Excel serial date
-    if (str.matches("\\d+(\\.\\d+)?")) {
-        double serial = Double.parseDouble(str);
-        return convertExcelDate(serial);
-    }
+                        // Otherwise, try as full LocalDate
+                        if (parsed.isSupported(ChronoField.DAY_OF_MONTH)) {
+                            return LocalDate.from(parsed);
+                        }
 
-    // Try multiple formats
-    return Stream.of("yyyy-MM-dd", "dd/MM/yyyy", "MM/dd/yyyy", "dd-MM-yyyy", "MM-dd-yyyy")
-            .map(DateTimeFormatter::ofPattern)
-            .map(fmt -> {
-                try {
-                    return LocalDate.parse(str, fmt);
-                } catch (DateTimeParseException ignored) {
-                    return null;
-                }
-            })
-            .filter(Objects::nonNull)
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("Invalid date format: " + str));
-}
-
-private LocalDate convertExcelDate(double serial) {
-    int n = (int) serial;
-    if (n >= 60) n--; // Fix Excel 1900 leap year bug
-    return LocalDate.of(1899, 12, 30).plusDays(n);
-}
-
-// === Result Holder Class (static inner class) ===
-public static class ImportResult {
-    private final int importedCount;
-    private final List<String> errorMessages;
-
-    public ImportResult(int importedCount, List<String> errorMessages) {
-        this.importedCount = importedCount;
-        this.errorMessages = errorMessages;
+                        return null;
+                    } catch (DateTimeException ignored) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Invalid date format: " + str));
     }
 
-    public int getImportedCount() {
-        return importedCount;
+    private LocalDate convertExcelDate(double serial) {
+        int n = (int) serial;
+        if (n >= 60)
+            n--; // Excel 1900 leap year bug
+        return LocalDate.of(1899, 12, 30).plusDays(n);
     }
 
-    public List<String> getErrorMessages() {
-        return errorMessages;
-    }
+    // === Result Holder Class (static inner class) ===
+    public static class ImportResult {
+        private final int importedCount;
+        private final List<String> errorMessages;
 
-    public boolean hasErrors() {
-        return !errorMessages.isEmpty();
+        public ImportResult(int importedCount, List<String> errorMessages) {
+            this.importedCount = importedCount;
+            this.errorMessages = errorMessages;
+        }
+
+        public int getImportedCount() {
+            return importedCount;
+        }
+
+        public List<String> getErrorMessages() {
+            return errorMessages;
+        }
+
+        public boolean hasErrors() {
+            return !errorMessages.isEmpty();
+        }
     }
-}
 
     private void mapToEntity(Equipment equipment, EquipmentDTO dto) {
         equipment.setCode(dto.getCode().trim());

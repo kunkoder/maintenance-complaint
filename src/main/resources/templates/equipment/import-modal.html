@@ -12,7 +12,7 @@
                     </button>
                 </div>
                 <div class="modal-body p-4">
-                    <form id="importForm" enctype="multipart/form-data">
+                    <form id="importForm" method="post" th:action="@{/equipments/import}" enctype="multipart/form-data">
                         <!-- Step 1: Upload File -->
                         <div class="step mb-4">
                             <h6><i class="fas fa-upload mr-1"></i> Step 1: Upload File</h6>
@@ -26,6 +26,12 @@
                             </small>
                         </div>
 
+                        <!-- Hidden fields to hold parsed data -->
+                        <input type="hidden" id="importData" name="data" />
+                        <input type="hidden" id="importSheet" name="sheet" />
+                        <input type="hidden" id="importHeaderRow" name="headerRow" />
+
+                        <!-- Other steps (unchanged) -->
                         <!-- Step 2: Select Sheet -->
                         <div class="step mb-4" id="sheetSelection" style="display:none;">
                             <h6><i class="fas fa-table mr-1"></i> Step 2: Select Sheet</h6>
@@ -50,13 +56,9 @@
                             <div class="table-responsive mt-3">
                                 <table id="item-table" class="display table table-striped table-hover">
                                     <thead class="bg-primary text-white">
-                                        <tr>
-                                            <!-- Headers will be inserted here dynamically -->
-                                        </tr>
+                                        <tr></tr>
                                     </thead>
-                                    <tbody id="previewTbody">
-                                        <!-- Rows will be inserted here dynamically -->
-                                    </tbody>
+                                    <tbody id="previewTbody"></tbody>
                                 </table>
                             </div>
                         </div>
@@ -74,45 +76,9 @@
         </div>
     </div>
 
-    <!-- Flash Message Modal (Success or Error) -->
-    <div th:if="${error != null or success != null}" id="flashMessageModalContainer">
-        <div class="modal fade" id="flashMessageModal" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header"
-                        th:classappend="${error} ? 'bg-danger text-white' : 'bg-success text-white'">
-                        <h5 class="modal-title">
-                            <i th:class="${error} ? 'fas fa-exclamation-triangle mr-2' : 'fas fa-check-circle mr-2'"></i>
-                            <span th:text="${error} ? 'Error' : 'Success'">Status</span>
-                        </h5>
-                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body py-4">
-                        <div th:if="${error}" class="text-center">
-                            <ul class="list-unstyled">
-                                <li th:each="err : ${#strings.listSplit(error, '|')}">
-                                    <p class="text-danger mb-2" th:text="${err.trim()}">Error</p>
-                                </li>
-                            </ul>
-                        </div>
-                        <div th:if="${success}" class="text-center">
-                            <p class="text-success" th:text="${success}">Success</p>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button"
-                            class="btn"
-                            th:classappend="${error} ? 'btn-danger' : 'btn-success'"
-                            data-dismiss="modal">OK</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- SheetJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <!-- Custom Styles to Guarantee Visibility -->
@@ -256,17 +222,17 @@
             container.innerHTML = '';
 
             const likelyFields = [
-                "Code",
-                "Name",
-                "Model",
-                "Unit",
-                "Qty",
-                "Manufacturer",
-                "Serial No.",
-                "Manufactured Date",
-                "Commissioned Date",
-                "Capacity",
-                "Remarks"
+                "code",
+                "name",
+                "model",
+                "unit",
+                "qty",
+                "manufacturer",
+                "serial no.",
+                "manufactured date",
+                "commissioned date",
+                "capacity",
+                "remarks"
             ];
 
             headerRow.forEach((col, idx) => {
@@ -383,43 +349,100 @@
                 return;
             }
 
-            fetch('/equipments/import', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    data: parsedData,
-                    sheet: selectedSheet,
-                    headerRow: headerRowIndex + 1
-                })
-            })
-                .then(response => {
-                    if (response.redirected) {
-                        // Server redirected — reload to new location
-                        window.location.href = response.url;
-                        return;
-                    }
-                    // Try to read JSON (if server sends success/failure JSON)
-                    return response.json().then(data => {
-                        $('#importModal').modal('hide');
-                        // alert(`Imported ${data.imported} items. ${data.errors} errors.`);
-                        // location.reload();
-                    }).catch(() => {
-                        // If JSON parse fails, assume redirect or error
-                        window.location.href = '/equipments';
-                    });
-                })
-                .catch(err => {
-                    alert("Import failed: " + err.message);
-                    console.error(err);
-                });
+            // Set hidden fields
+            document.getElementById('importData').value = JSON.stringify(parsedData);
+            document.getElementById('importSheet').value = selectedSheet;
+            document.getElementById('importHeaderRow').value = headerRowIndex + 1;
+
+            // Submit the form (natural POST → flash messages will work!)
+            document.getElementById('importForm').submit();
         });
 
-        // Flash message
-        $(document).ready(function () {
-            if ($('#flashMessageModalContainer').length) {
-                console.log("modal");
-                $('#flashMessageModal').modal('show');
-            }
+        // Export to Excel (Current Table Data)
+        document.getElementById('exportExcel').addEventListener('click', function (e) {
+            e.preventDefault();
+
+            // Get table headers
+            const headers = [];
+            document.querySelectorAll('#item-table thead th').forEach(th => {
+                // Exclude "Action" column
+                if (!th.textContent.includes('Action')) {
+                    headers.push(th.textContent.trim());
+                }
+            });
+
+            // Get all visible rows (after search/sort/pagination)
+            const data = [];
+            document.querySelectorAll('#item-table tbody tr').forEach(tr => {
+                if (tr.style.display === 'none') return; // Skip hidden rows
+                const row = [];
+                const tds = tr.querySelectorAll('td');
+                for (let i = 0; i < tds.length - 1; i++) { // Skip last "Action" column
+                    row.push(tds[i].textContent.trim());
+                }
+                data.push(row);
+            });
+
+            // Create worksheet
+            const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Equipment");
+
+            // Save file
+            XLSX.writeFile(wb, "Equipment_Data_" + new Date().toISOString().slice(0, 10) + ".xlsx");
+        });
+
+        // Export to PDF (Current Table Data)
+        // Export to PDF (Current Table Data)
+        document.getElementById('exportPdf').addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: 'landscape', // 'l' → 'landscape'
+                unit: 'mm',
+                format: 'a4' // Explicitly set A4
+            });
+
+            // Extract headers (skip Action)
+            const headers = [];
+            document.querySelectorAll('#item-table thead th').forEach(th => {
+                if (!th.textContent.includes('Action')) {
+                    headers.push(th.textContent.trim());
+                }
+            });
+
+            // Extract visible rows (skip hidden and Action column)
+            const data = [];
+            document.querySelectorAll('#item-table tbody tr').forEach(tr => {
+                if (tr.style.display === 'none') return;
+                const row = [];
+                const tds = tr.querySelectorAll('td');
+                for (let i = 0; i < tds.length - 1; i++) { // Skip Action
+                    row.push(tds[i].textContent.trim());
+                }
+                data.push(row);
+            });
+
+            // Add title
+            doc.setFontSize(16);
+            doc.text("Equipment List", 14, 15);
+
+            // Generate table
+            doc.autoTable({
+                head: [headers],
+                body: data,
+                startY: 20,
+                theme: 'grid',
+                styles: { fontSize: 8 },
+                columnStyles: headers.reduce((acc, key, i) => {
+                    acc[i] = { cellWidth: 'auto' };
+                    return acc;
+                }, {})
+            });
+
+            // Save PDF
+            doc.save("Equipment_Data_" + new Date().toISOString().slice(0, 10) + ".pdf");
         });
     </script>
 </div>
