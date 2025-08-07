@@ -37,13 +37,13 @@
                             <div class="d-flex align-items-center">
                                 <h4 class="card-title" th:text="${title}"></h4>
                                 <form class="form-inline ml-auto" th:action="@{/users}" method="get">
-                                    <div class="input-icon mr-2"> <!-- Added margin for spacing -->
+                                    <div class="input-icon"> <!-- Added margin for spacing -->
                                         <input type="text" name="keyword" th:value="${keyword}" id="userSearchInput"
                                             class="form-control" placeholder="Search...">
                                         <span class="input-icon-addon"><i class="fa fa-search"></i></span>
                                     </div>
                                     <!-- Size Dropdown -->
-                                    <div class="form-group mr-2"> <!-- Added margin for spacing -->
+                                    <div class="form-group"> <!-- Added margin for spacing -->
                                         <label for="pageSizeSelect" class="sr-only">Items per page:</label>
                                         <!-- Accessible label -->
                                         <select name="size" id="pageSizeSelect" class="form-control"
@@ -55,7 +55,7 @@
                                         </select>
                                     </div>
                                     <!-- Filter Dropdown Button (Filter Icon Only) -->
-                                    <div class="dropdown ml-2">
+                                    <div class="dropdown">
                                         <button class="btn btn-primary dropdown-toggle" type="button"
                                             id="filterDropdown" data-toggle="dropdown" aria-haspopup="true"
                                             aria-expanded="false" style="padding: 0.375rem 0.5rem;">
@@ -101,8 +101,10 @@
                                             <th>Full Name</th>
                                             <th>Employee ID</th>
                                             <th>Email</th>
-                                            <th>Role</th>
+                                            <th>Role(s)</th>
                                             <th>Status</th>
+                                            <th>Created At</th>
+                                            <th>Activated At</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
@@ -118,10 +120,15 @@
                                             <td data-field="name">John Doe</td>
                                             <td data-field="employeeId">E1001</td>
                                             <td data-field="email">john@example.com</td>
-                                            <td data-field="role">Admin</td>
+                                            <td data-field="role">
+                                                <span class="badge badge-primary">ADMIN</span>
+                                                <span class="badge badge-info">MEMBER</span>
+                                            </td>
                                             <td>
                                                 <span data-field="status" class="badge badge-success">ACTIVE</span>
                                             </td>
+                                            <td data-field="createdAt">2023-10-01 08:30</td>
+                                            <td data-field="activatedAt">2023-10-02 10:15</td>
                                             <td>
                                                 <div class="form-button-action">
                                                     <button type="button"
@@ -148,10 +155,14 @@
                                             <td data-field="name">Jane Smith</td>
                                             <td data-field="employeeId">E1002</td>
                                             <td data-field="email">jane@example.com</td>
-                                            <td data-field="role">User</td>
+                                            <td data-field="role">
+                                                <span class="badge badge-info">MEMBER</span>
+                                            </td>
                                             <td>
                                                 <span data-field="status" class="badge badge-secondary">INACTIVE</span>
                                             </td>
+                                            <td data-field="createdAt">2023-10-05 14:20</td>
+                                            <td data-field="activatedAt">-</td>
                                             <td>
                                                 <div class="form-button-action">
                                                     <button type="button"
@@ -178,10 +189,14 @@
                                             <td data-field="name">Robert Johnson</td>
                                             <td data-field="employeeId">E1003</td>
                                             <td data-field="email">robert@example.com</td>
-                                            <td data-field="role">Manager</td>
+                                            <td data-field="role">
+                                                <span class="badge badge-warning">SUPERADMIN</span>
+                                            </td>
                                             <td>
                                                 <span data-field="status" class="badge badge-success">ACTIVE</span>
                                             </td>
+                                            <td data-field="createdAt">2023-09-15 09:00</td>
+                                            <td data-field="activatedAt">2023-09-15 09:05</td>
                                             <td>
                                                 <div class="form-button-action">
                                                     <button type="button"
@@ -197,8 +212,7 @@
                                             </td>
                                         </tr>
 
-                                        <!-- No users message (only shown if no data) -->
-                                        <!-- This is removed since we are showing sample data -->
+                                        <!-- No users message (will be added dynamically in real version) -->
                                     </tbody>
                                 </table>
                             </div>
@@ -263,35 +277,100 @@
     <!-- Scripts Fragment -->
     <th:block layout:fragment="scripts">
         <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const form = document.getElementById('equipmentsForm');
+                const sortByInput = document.getElementById('sortByInput');
+                const ascInput = document.getElementById('ascInput');
 
-            $(document).ready(function () {
-                // Check if the modal container exists (meaning a flash message was present)
-                if ($('#flashMessageModalContainer').length) {
-                    // Show the modal using Bootstrap's modal function
-                    $('#flashMessageModal').modal('show');
-                }
+                // Handle column click
+                document.querySelectorAll('.sort-column').forEach(item => {
+                    item.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const column = this.getAttribute('data-column');
+                        sortByInput.value = column;
+
+                        // Update active class
+                        document.querySelectorAll('.sort-column').forEach(el => {
+                            el.classList.remove('active');
+                        });
+                        this.classList.add('active');
+
+                        // Submit form
+                        form.submit();
+                    });
+                });
+
+                // Handle sort order (asc=true/false)
+                document.querySelectorAll('[data-asc]').forEach(item => {
+                    item.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const ascValue = this.getAttribute('data-asc') === 'true'; // convert to boolean
+                        ascInput.value = ascValue;
+
+                        // Update active class
+                        document.querySelectorAll('[data-asc]').forEach(el => {
+                            el.classList.remove('active');
+                        });
+                        this.classList.add('active');
+
+                        // Submit form
+                        form.submit();
+                    });
+                });
             });
 
             $(document).ready(function () {
 
                 // Trigger edit modal
+                // Define switch elements (will be null until modal is shown)
+                const checkbox = document.getElementById('editStatusSwitch');
+                const textSpan = document.getElementById('editStatusText');
+                const hiddenInput = document.getElementById('editStatusTextHidden');
+
+                // Function to update UI based on checkbox state
+                function updateStatus() {
+                    if (!checkbox || !textSpan || !hiddenInput) return;
+
+                    const isActive = checkbox.checked;
+                    textSpan.textContent = isActive ? 'ACTIVE' : 'INACTIVE';
+                    hiddenInput.value = isActive ? 'ACTIVE' : 'INACTIVE';
+                }
+
+                // Function to initialize switch based on current hiddenInput value
+                function initSwitch() {
+                    if (!checkbox || !hiddenInput) return;
+
+                    // Set checkbox state based on hiddenInput's current value
+                    checkbox.checked = (hiddenInput.value === 'ACTIVE');
+                    updateStatus(); // Sync UI (text and value)
+                }
+
+                // Trigger edit modal
                 $('.edit-row').on('click', function () {
                     const currentId = $(this).data('id');
-                    console.log(currentId);
                     const row = $(this).closest('tr');
 
-                    // Assuming 'row' is the <tr> element (jQuery object)
+                    // Populate form fields
                     $('#editId').val(currentId);
+                    $('#editName').val(row.find('[data-field="name"]').text().trim());
+                    $('#editEmployeeId').val(row.find('[data-field="employeeId"]').text().trim());
+                    $('#editEmail').val(row.find('[data-field="email"]').text().trim());
+                    $('#editRole').val(row.find('[data-field="role"]').text().trim());
 
-                    $('#editName').val(row.find('[data-field="name"]').text());
-                    $('#editEmployeeId').val(row.find('[data-field="employeeId"]').text());
-                    $('#editEmail').val(row.find('[data-field="email"]').text());
-                    $('#editRole').val(row.find('[data-field="role"]').text());
+                    // Set status in hidden input
+                    const statusText = row.find('[data-field="status"]').text().trim();
+                    $('#editStatusTextHidden').val(statusText); // e.g., "ACTIVE" or "INACTIVE"
 
-                    // For status: get text from the <span> inside the td[data-field="status"]
-                    $('#editStatusTextHidden').val(row.find('[data-field="status"]').text());
+                    // ✅ Now initialize the switch AFTER setting the value
+                    initSwitch();
 
+                    // Show modal
                     $('#editRowModal').modal('show');
+                });
+
+                // Listen for checkbox changes
+                $('#editStatusSwitch').on('change', function () {
+                    updateStatus();
                 });
 
                 // Trigger delete modal
@@ -303,37 +382,11 @@
                 });
             });
 
-            // Image preview for Add Modal
-            document.getElementById('addImageInput')?.addEventListener('change', function () {
-                const fileName = this.files[0] ? this.files[0].name : 'Choose file';
-                document.getElementById('addImageLabel').textContent = fileName;
-                const preview = document.getElementById('addImagePreview');
-                if (this.files && this.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        preview.src = e.target.result;
-                        preview.style.display = 'block';
-                    };
-                    reader.readAsDataURL(this.files[0]);
-                } else {
-                    preview.style.display = 'none';
-                }
-            });
-
-            // Image preview for Edit Modal
-            document.getElementById('editImageInput')?.addEventListener('change', function () {
-                const fileName = this.files[0] ? this.files[0].name : 'Choose file';
-                document.getElementById('editImageLabel').textContent = fileName;
-                const preview = document.getElementById('editImagePreview');
-                if (this.files && this.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        preview.src = e.target.result;
-                        preview.style.display = 'block';
-                    };
-                    reader.readAsDataURL(this.files[0]);
-                } else {
-                    preview.style.display = 'none';
+            // Auto-show Flash Modal
+            $(document).ready(function () {
+                if ($('#flashMessageModalContainer').length) {
+                    console.log("modal");
+                    $('#flashMessageModal').modal('show');
                 }
             });
         </script>

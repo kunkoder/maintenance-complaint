@@ -1,13 +1,14 @@
 package ahqpck.maintenance.report.service;
 
-import ahqpck.maintenance.report.dto.EquipmentDTO;
 import ahqpck.maintenance.report.dto.PartDTO;
-import ahqpck.maintenance.report.entity.Equipment;
 import ahqpck.maintenance.report.entity.Part;
 import ahqpck.maintenance.report.exception.NotFoundException;
 import ahqpck.maintenance.report.repository.PartRepository;
 import ahqpck.maintenance.report.specification.PartSpecification;
 import ahqpck.maintenance.report.util.FileUploadUtil;
+import ahqpck.maintenance.report.util.ImportUtil;
+import jakarta.validation.Validator;
+import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -21,16 +22,17 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 @Service
+@RequiredArgsConstructor
 public class PartService {
 
     @Value("${app.upload-part-image.dir:src/main/resources/static/upload/part/image}")
     private String uploadDir;
 
     private final PartRepository partRepository;
+    private final Validator validator;
 
-    public PartService(PartRepository partRepository) {
-        this.partRepository = partRepository;
-    }
+    private final FileUploadUtil fileUploadUtil;
+    private final ImportUtil importUtil;
 
     public Page<PartDTO> getAllParts(String keyword, int page, int size, String sortBy, boolean asc) {
         Sort sort = asc ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
@@ -64,7 +66,7 @@ public class PartService {
 
         if (imageFile != null && !imageFile.isEmpty()) {
             try {
-                String fileName = FileUploadUtil.saveFile(uploadDir, imageFile, "image");
+                String fileName = fileUploadUtil.saveFile(uploadDir, imageFile, "image");
                 part.setImage(fileName);
             } catch (IOException e) {
                 throw new IllegalArgumentException("Failed to save image: " + e.getMessage());
@@ -84,14 +86,14 @@ public class PartService {
         String oldImage = part.getImage();
 
         if (deleteImage && oldImage != null) {
-            FileUploadUtil.deleteFile(uploadDir, oldImage);
+            fileUploadUtil.deleteFile(uploadDir, oldImage);
             part.setImage(null);
         } else if (imageFile != null && !imageFile.isEmpty()) {
 
             try {
-                String newImage = FileUploadUtil.saveFile(uploadDir, imageFile, "image");
+                String newImage = fileUploadUtil.saveFile(uploadDir, imageFile, "image");
                 if (oldImage != null) {
-                    FileUploadUtil.deleteFile(uploadDir, oldImage);
+                    fileUploadUtil.deleteFile(uploadDir, oldImage);
                 }
                 part.setImage(newImage);
             } catch (IOException e) {
@@ -107,7 +109,7 @@ public class PartService {
                 .orElseThrow(() -> new NotFoundException("Part not found with ID: " + id));
 
         if (part.getImage() != null) {
-            FileUploadUtil.deleteFile(uploadDir, part.getImage());
+            fileUploadUtil.deleteFile(uploadDir, part.getImage());
         }
         partRepository.delete(part);
     }

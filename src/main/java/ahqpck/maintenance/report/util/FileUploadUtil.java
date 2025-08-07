@@ -1,5 +1,6 @@
 package ahqpck.maintenance.report.util;
 
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -19,6 +20,7 @@ import java.util.UUID;
  * 4. DOC    -> .pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .txt, .csv
  * 5. ANY    -> All file types (use with caution)
  */
+@Component
 public class FileUploadUtil {
 
     /**
@@ -30,7 +32,7 @@ public class FileUploadUtil {
      * @return           Saved file name (e.g., "abc123.jpg")
      * @throws IOException if file is invalid, too large, or save fails
      */
-    public static String saveFile(String uploadDir, MultipartFile file, String fileType) throws IOException {
+    public String saveFile(String uploadDir, MultipartFile file, String fileType) throws IOException {
         if (file == null || file.isEmpty()) {
             return null;
         }
@@ -132,7 +134,7 @@ public class FileUploadUtil {
      * @param uploadDir   Directory where file is stored
      * @param fileName    Name of the file to delete (e.g., "abc123.jpg")
      */
-    public static void deleteFile(String uploadDir, String fileName) {
+    public void deleteFile(String uploadDir, String fileName) {
         if (fileName == null || fileName.trim().isEmpty()) {
             return;
         }

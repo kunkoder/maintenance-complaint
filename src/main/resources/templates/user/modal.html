@@ -15,7 +15,7 @@
                         id="formAdd">
                         <!-- Username -->
                         <div class="form-group">
-                            <label>Username <span class="text-danger">*</span></label>
+                            <label>Full Name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="addName" name="name" required>
                             <div class="invalid-feedback">Please enter a username.</div>
                         </div>
@@ -63,17 +63,20 @@
                             </div>
                         </div>
 
-                        <!-- Image Upload -->
-                        <div class="form-group mb-0">
-                            <label>Profile Image <span class="text-muted">(optional)</span></label>
-                            <div class="custom-file">
-                                <input type="file" class="custom-file-input" id="addImageInput" name="avatarFile"
-                                    accept="image/*">
-                                <label class="custom-file-label" for="addImageInput">Choose file</label>
-                            </div>
-                            <div class="mt-2">
-                                <img id="addImagePreview" src="" alt="Image Preview" class="img-thumbnail"
-                                    style="max-height: 150px; display: none;">
+                        <div class="form-row">
+                            <div class="col-md-6">
+                                <div class="form-group mb">
+                                    <label>Profile Image <span class="text-muted">(optional)</span></label>
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="addImageInput"
+                                            name="avatarFile" accept="image/*">
+                                        <label class="custom-file-label" for="addImageInput">Choose file</label>
+                                    </div>
+                                    <div class="mt-2">
+                                        <img id="addImagePreview" src="" alt="Image Preview" class="img-thumbnail"
+                                            style="max-height: 150px; display: none;">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </form>
@@ -282,58 +285,34 @@
         }
     </style>
 
+    <!-- JavaScript -->
     <script>
-        $(document).ready(function () {
-            // Define switch elements (will be null until modal is shown)
-            const checkbox = document.getElementById('editStatusSwitch');
-            const textSpan = document.getElementById('editStatusText');
-            const hiddenInput = document.getElementById('editStatusTextHidden');
-
-            // Function to update UI based on checkbox state
-            function updateStatus() {
-                if (!checkbox || !textSpan || !hiddenInput) return;
-
-                const isActive = checkbox.checked;
-                textSpan.textContent = isActive ? 'ACTIVE' : 'INACTIVE';
-                hiddenInput.value = isActive ? 'ACTIVE' : 'INACTIVE';
+        // Image Preview for Add
+        document.getElementById('addImageInput').onchange = function (evt) {
+            const preview = document.getElementById('addImagePreview');
+            const file = evt.target.files[0];
+            if (file && file.type.match('image.*')) {
+                const reader = new FileReader();
+                reader.onload = function () {
+                    preview.src = reader.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
             }
+        };
 
-            // Function to initialize switch based on current hiddenInput value
-            function initSwitch() {
-                if (!checkbox || !hiddenInput) return;
-
-                // Set checkbox state based on hiddenInput's current value
-                checkbox.checked = (hiddenInput.value === 'ACTIVE');
-                updateStatus(); // Sync UI (text and value)
+        // Image Preview for Edit
+        document.getElementById('editImageInput').onchange = function (evt) {
+            const preview = document.getElementById('editImagePreview');
+            const file = evt.target.files[0];
+            if (file && file.type.match('image.*')) {
+                const reader = new FileReader();
+                reader.onload = function () {
+                    preview.src = reader.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
             }
-
-            // Trigger edit modal
-            $('.edit-row').on('click', function () {
-                const currentId = $(this).data('id');
-                const row = $(this).closest('tr');
-
-                // Populate form fields
-                $('#editId').val(currentId);
-                $('#editName').val(row.find('[data-field="name"]').text().trim());
-                $('#editEmployeeId').val(row.find('[data-field="employeeId"]').text().trim());
-                $('#editEmail').val(row.find('[data-field="email"]').text().trim());
-                $('#editRole').val(row.find('[data-field="role"]').text().trim());
-
-                // Set status in hidden input
-                const statusText = row.find('[data-field="status"]').text().trim();
-                $('#editStatusTextHidden').val(statusText); // e.g., "ACTIVE" or "INACTIVE"
-
-                // ✅ Now initialize the switch AFTER setting the value
-                initSwitch();
-
-                // Show modal
-                $('#editRowModal').modal('show');
-            });
-
-            // Listen for checkbox changes
-            $('#editStatusSwitch').on('change', function () {
-                updateStatus();
-            });
-        });
+        };
     </script>
 </div>

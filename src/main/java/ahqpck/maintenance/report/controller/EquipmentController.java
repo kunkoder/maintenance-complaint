@@ -5,6 +5,7 @@ import ahqpck.maintenance.report.dto.EquipmentDTO;
 import ahqpck.maintenance.report.exception.ImportException;
 import ahqpck.maintenance.report.exception.ValidationException;
 import ahqpck.maintenance.report.service.EquipmentService;
+import ahqpck.maintenance.report.util.ImportUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
@@ -57,17 +58,20 @@ public class EquipmentController {
     @GetMapping
     public String listEquipments(
             @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "1") @Min(1) int page, // Now starts at 1
             @RequestParam(defaultValue = "10") @Min(1) int size,
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "true") boolean asc,
             Model model) {
 
         try {
-            var equipmentPage = equipmentService.getAllEquipments(keyword, page, size, sortBy, asc);
+            // Convert 1-based page to 0-based index (Spring expects 0 = first page)
+            int zeroBasedPage = page - 1;
+
+            var equipmentPage = equipmentService.getAllEquipments(keyword, zeroBasedPage, size, sortBy, asc);
             model.addAttribute("equipments", equipmentPage);
             model.addAttribute("keyword", keyword);
-            model.addAttribute("currentPage", page);
+            model.addAttribute("currentPage", page); // Store 1-based for Thymeleaf
             model.addAttribute("pageSize", size);
             model.addAttribute("sortBy", sortBy);
             model.addAttribute("asc", asc);
@@ -78,6 +82,7 @@ public class EquipmentController {
                     "commissionedDate"
             });
             model.addAttribute("equipmentDTO", new EquipmentDTO());
+            System.out.println(model);
 
         } catch (Exception e) {
             model.addAttribute("error", "Failed to load equipment: " + e.getMessage());
@@ -177,7 +182,7 @@ public class EquipmentController {
                     new TypeReference<List<Map<String, Object>>>() {
                     });
 
-            EquipmentService.ImportResult result = equipmentService.importEquipmentsFromExcel(data);
+            ImportUtil.ImportResult result = equipmentService.importEquipmentsFromExcel(data);
 
             if (result.getImportedCount() > 0 && !result.hasErrors()) {
                 ra.addFlashAttribute("success",

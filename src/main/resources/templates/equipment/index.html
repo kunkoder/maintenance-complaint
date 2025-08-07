@@ -43,6 +43,7 @@
                         </a>
                     </div>
                     <!-- Include Modals -->
+
                     <div th:replace="~{equipment/import-modal :: import-modal}"></div>
                     <button class="btn btn-primary ml-auto mt-2" data-toggle="modal" data-target="#addRowModal">
                         <i class="fa fa-plus-circle mr-2"></i> Add
@@ -145,10 +146,10 @@
                                             <td data-field="manufacturer" th:text="${equipment.manufacturer}"></td>
                                             <td data-field="serialNo" th:text="${equipment.serialNo}"></td>
                                             <td data-field="manufacturedDate"
-                                                th:text="${#temporals.format(equipment.manufacturedDate, 'MMM dd, yyyy')} ?: '-'">
+                                                th:text="${#temporals.format(equipment.manufacturedDate, 'yyyy-MM-dd')} ?: '-'">
                                             </td>
                                             <td data-field="commissionedDate"
-                                                th:text="${#temporals.format(equipment.commissionedDate, 'MMM dd, yyyy')} ?: '-'">
+                                                th:text="${#temporals.format(equipment.commissionedDate, 'yyyy-MM-dd')} ?: '-'">
                                             </td>
                                             <td data-field="capacity" th:text="${equipment.capacity}"></td>
                                             <td data-field="image">
@@ -194,22 +195,25 @@
                                 <div class="col-md-6 col-sm-12">
                                     <nav class="d-flex justify-content-end">
                                         <ul class="pagination mb-0">
+
+                                            <!-- Previous Button -->
                                             <li class="page-item"
                                                 th:classappend="${!equipments.hasPrevious} ? 'disabled'">
                                                 <a class="page-link"
-                                                    th:href="@{/equipments(keyword=${keyword}, page=${equipments.number - 1}, size=${pageSize}, sortBy=${sortBy}, asc=${asc})}"
+                                                    th:href="@{/equipments(keyword=${keyword}, page=${equipments.number}, size=${pageSize}, sortBy=${sortBy}, asc=${asc})}"
                                                     th:if="${equipments.hasPrevious}">Prev</a>
                                                 <span class="page-link" th:if="${!equipments.hasPrevious}">Prev</span>
                                             </li>
-                                            <li class="page-item" th:classappend="${p == equipments.number} ? 'active'"
-                                                th:each="p : ${#numbers.sequence(0, equipments.totalPages - 1)}">
-                                                <a class="page-link"
-                                                    th:href="@{/equipments(keyword=${keyword}, page=${p}, size=${pageSize}, sortBy=${sortBy}, asc=${asc})}"
-                                                    th:text="${p + 1}"></a>
+
+                                            <!-- Current Page (1-based display) -->
+                                            <li class="page-item active">
+                                                <span class="page-link" th:text="${equipments.number + 1}">1</span>
                                             </li>
+
+                                            <!-- Next Button -->
                                             <li class="page-item" th:classappend="${!equipments.hasNext} ? 'disabled'">
                                                 <a class="page-link"
-                                                    th:href="@{/equipments(keyword=${keyword}, page=${equipments.number + 1}, size=${pageSize}, sortBy=${sortBy}, asc=${asc})}"
+                                                    th:href="@{/equipments(keyword=${keyword}, page=${(equipments.number + 1) + 1}, size=${pageSize}, sortBy=${sortBy}, asc=${asc})}"
                                                     th:if="${equipments.hasNext}">Next</a>
                                                 <span class="page-link" th:if="${!equipments.hasNext}">Next</span>
                                             </li>
@@ -228,10 +232,37 @@
     <!-- Required for PDF Export -->
     <th:block layout:fragment="scripts">
         <script>
+            const sortFieldLabels = {
+                'code': 'Code',
+                'name': 'Name',
+                'model': 'Model',
+                'unit': 'Unit',
+                'qty': 'Qty',
+                'manufacturer': 'Manufacturer',
+                'serialNo': 'Serial No.',
+                'manufacturedDate': 'Manufactured Date',
+                'commissionedDate': 'Commissioned Date',
+                'capacity': 'Capacity',
+                'remarks': 'Remarks'
+                // Add more if needed
+            };
+
             document.addEventListener('DOMContentLoaded', function () {
                 const form = document.getElementById('equipmentsForm');
                 const sortByInput = document.getElementById('sortByInput');
                 const ascInput = document.getElementById('ascInput');
+
+                // Update dropdown items with friendly names
+                document.querySelectorAll('.sort-column').forEach(item => {
+                    const field = item.getAttribute('data-column');
+                    const displayText = sortFieldLabels[field] || field; // Fallback to raw field
+                    item.textContent = displayText;
+
+                    // Highlight active sort column
+                    if (sortByInput.value === field) {
+                        item.classList.add('active');
+                    }
+                });
 
                 // Handle column click
                 document.querySelectorAll('.sort-column').forEach(item => {
