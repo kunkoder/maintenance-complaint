@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -20,15 +21,32 @@ import ahqpck.maintenance.report.entity.User;
 public class UserDTO {
 
     private String id;
+
+    @NotBlank(message = "Name is mandatory")
     private String name;
+
+    @NotBlank(message = "Employee id is mandatory")
     private String employeeId;
+
+    @NotBlank(message = "Email is mandatory")
+    @Email(message = "Email should be valid")
     private String email;
+
+    // @NotBlank(message = "Password is mandatory")
+    // @Size(min = 6, message = "Password must be at least 6 characters")
+    // private String password;
+
     private String avatar;
     private LocalDateTime createdAt;
     private LocalDateTime activatedAt;
     private String activationToken;
     private String passwordResetToken;
     private LocalDateTime passwordResetTokenExpiry;
+
+    @NotBlank(message = "Status is mandatory")
     private User.Status status;
+
+    @NotNull(message = "Roles are mandatory")
+    @Size(min = 1, message = "At least one role is required")
     private Set<RoleDTO> roles = new HashSet<>();
 }

@@ -2,27 +2,112 @@ package ahqpck.maintenance.report.config;
 
 import ahqpck.maintenance.report.entity.Complaint;
 import ahqpck.maintenance.report.entity.Part;
+import ahqpck.maintenance.report.entity.Role;
+import ahqpck.maintenance.report.entity.User;
 import ahqpck.maintenance.report.entity.Complaint.Priority;
 import ahqpck.maintenance.report.entity.Complaint.Category;
 import ahqpck.maintenance.report.entity.Complaint.Status;
 import ahqpck.maintenance.report.service.ComplaintService;
+import ahqpck.maintenance.report.service.UserService;
+import jakarta.annotation.PostConstruct;
+import jakarta.transaction.Transactional;
 import ahqpck.maintenance.report.repository.PartRepository;
+import ahqpck.maintenance.report.repository.RoleRepository;
+import ahqpck.maintenance.report.repository.UserRepository;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Optional;
 
 @Component
-public class DataLoader implements CommandLineRunner {
+public class DataInitializer implements CommandLineRunner {
+    @Autowired
+    private RoleRepository roleRepository;
 
-    private static final Logger log = LoggerFactory.getLogger(DataLoader.class);
+    @PostConstruct
+    public void initDefaultRoles() {
+        Arrays.stream(Role.Name.values()).forEach(name -> {
+            roleRepository.findByName(name).orElseGet(() -> {
+                Role role = new Role();
+                role.setName(name);
+                return roleRepository.save(role);
+            });
+        });
+    }
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private UserService userService;
+
+    @PostConstruct
+    public void init() {
+        initDefaultRoles();
+        initDefaultUser();
+    }
+
+    // @Transactional
+    // public void initDefaultRoles() {
+    //     Arrays.stream(Role.Name.values()).forEach(name -> {
+    //         roleRepository.findByName(name).orElseGet(() -> {
+    //             Role role = new Role();
+    //             role.setName(name);
+    //             return roleRepository.save(role);
+    //         });
+    //     });
+    // }
+
+    @Transactional
+    public void initDefaultUser() {
+        String email = "ggomugo@gmail.com";
+        Optional<User> existingUser = userRepository.findByEmail(email);
+
+        if (existingUser.isPresent()) {
+            // Optional: log that user already exists
+            return;
+        }
+
+        // Find required roles
+        Role superAdminRole = roleRepository.findByName(Role.Name.SUPERADMIN)
+                .orElseThrow(() -> new IllegalStateException("SUPERADMIN role not found. Run role init first."));
+        Role adminRole = roleRepository.findByName(Role.Name.ADMIN)
+                .orElseThrow(() -> new IllegalStateException("ADMIN role not found. Run role init first."));
+
+        // Create user entity
+        User user = new User();
+        user.setName("Gema Nur");
+        user.setEmail(email);
+        user.setEmployeeId("0905");
+        user.setStatus(User.Status.ACTIVE);
+        user.setCreatedAt(LocalDateTime.now());
+        user.setActivatedAt(LocalDateTime.now());
+
+        // Assign roles
+        user.getRoles().add(superAdminRole);
+        user.getRoles().add(adminRole);
+
+        // Save directly (or use service if you prefer validation)
+        userRepository.save(user);
+    }
+
+
+
+
+
+
+    private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
 
     private final PartRepository partRepository;
     private final ComplaintService complaintService;
 
-    public DataLoader(PartRepository partRepository, ComplaintService complaintService) {
+    public DataInitializer(PartRepository partRepository, ComplaintService complaintService) {
         this.partRepository = partRepository;
         this.complaintService = complaintService;
     }
