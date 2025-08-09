@@ -174,32 +174,38 @@
                                     <input type="password" name="password" class="form-control" id="editPassword">
                                 </div>
                             </div>
-                            <!-- Edit Modal: Role Selector -->
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Role(s) <span class="text-danger">*</span></label>
 
-                                    <!-- Hidden select (unique ID) -->
-                                    <select id="editRoleSelect" name="roleNames" multiple
-                                        style="display: none;"></select>
+                                    <!-- Hidden select (for form submission) -->
+                                    <select id="roleSelect" name="roleNames" multiple style="display: none;">
+                                        <option th:each="role : ${roles}" th:value="${role.name}"
+                                            th:text="${role.name}"></option>
+                                    </select>
 
-                                    <!-- Custom tag input UI (identical structure) -->
                                     <div class="tag-input" id="editTagInput">
-                                        <div class="tag-list" id="editTagList">
-                                            <!-- Tags will be added here dynamically -->
-                                        </div>
+                                        <div class="tag-list" id="editTagList"></div>
                                         <input type="text" id="editTagSearch" class="tag-input-field"
                                             placeholder="Add role..." list="roleOptions">
                                     </div>
+
+                                    <!-- Hidden select -->
+                                    <select id="editRoleSelect" name="roleNames" multiple
+                                        style="display: none;"></select>
 
                                     <!-- Datalist for autocomplete -->
                                     <datalist id="roleOptions">
                                         <option th:each="role : ${roles}" th:value="${role.name}"></option>
                                     </datalist>
 
+                                    <!-- Validation error -->
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('roleNames')}"
+                                        th:errors="*{roleNames}">
+                                        Please select at least one role.
+                                    </div>
                                 </div>
                             </div>
-
                         </div>
 
                         <!-- Image Upload & Status Toggle -->
@@ -272,9 +278,9 @@
                     <strong id="deleteDocName" class="text-dark"></strong>
                     <p class="text-muted mt-2 mb-0">This action cannot be undone.</p>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer border-0 pt-2 pb-4 px-4">
                     <button type="button" class="btn btn-secondary btn-border" data-dismiss="modal">Cancel</button>
-                    <a href="#" id="confirmDeleteButton" class="btn btn-danger ml-2">Yes, Delete</a>
+                    <button type="button" class="btn btn-danger ml-2" id="confirmDeleteButton">Yes, Delete</button>
                 </div>
             </div>
         </div>
@@ -466,7 +472,7 @@
     <!-- JavaScript -->
     <script>
         // Image Preview for Add
-        document.getElementById('addImageInput')?.addEventListener('change', function (evt) {
+        document.getElementById('addImageInput').onchange = function (evt) {
             const preview = document.getElementById('addImagePreview');
             const file = evt.target.files[0];
             if (file && file.type.match('image.*')) {
@@ -477,10 +483,10 @@
                 };
                 reader.readAsDataURL(file);
             }
-        });
+        };
 
         // Image Preview for Edit
-        document.getElementById('editImageInput')?.addEventListener('change', function (evt) {
+        document.getElementById('editImageInput').onchange = function (evt) {
             const preview = document.getElementById('editImagePreview');
             const file = evt.target.files[0];
             if (file && file.type.match('image.*')) {
@@ -491,103 +497,88 @@
                 };
                 reader.readAsDataURL(file);
             }
-        });
+        };
 
-        // Unified Tag Input Logic
+
         document.addEventListener("DOMContentLoaded", function () {
+            const tagInput = document.getElementById("tagInput");
+            const tagSearch = document.getElementById("tagSearch");
+            const tagList = document.getElementById("tagList");
+            const hiddenSelect = document.getElementById("roleSelect");
             const datalist = document.getElementById("roleOptions");
-            const options = Array.from(datalist?.options || []).map(opt => opt.value);
+            const options = Array.from(datalist.options).map(opt => opt.value);
 
-            function setupTagInput(inputId, tagListId, tagSearchId, selectId) {
-                const tagInput = document.getElementById(inputId);
-                const tagList = document.getElementById(tagListId);
-                const tagSearch = document.getElementById(tagSearchId);
-                const hiddenSelect = document.getElementById(selectId);
-
-                if (!tagInput || !tagList || !tagSearch || !hiddenSelect) return;
-
-                function syncSelect() {
-                    hiddenSelect.innerHTML = "";
-                    Array.from(tagList.querySelectorAll(".tag")).forEach(tag => {
-                        const option = document.createElement("option");
-                        option.value = tag.dataset.value;
-                        option.selected = true;
-                        hiddenSelect.appendChild(option);
-                    });
-                }
-
-                function addTag(value) {
-                    if (!value || Array.from(tagList.querySelectorAll(".tag")).some(t => t.dataset.value === value)) return;
-                    const tag = document.createElement("div");
-                    tag.className = "tag";
-                    tag.dataset.value = value;
-                    tag.innerHTML = `
-                ${value}
-                <span class="remove-tag" 
-                      onclick="window.removeTag(this, '${selectId}', '${tagListId}')">
-                    ×
-                </span>
-            `;
-                    tagList.appendChild(tag);
-                    syncSelect();
-                }
-
-                window.removeTag = function (el, selectId, tagListId) {
-                    const tag = el.parentElement;
-                    const value = tag.dataset.value;
-                    tag.remove();
-
-                    // Sync to hidden <select>
-                    const select = document.getElementById(selectId);
-                    const option = select.querySelector(`option[value="${value}"]`);
-                    if (option) option.remove();
-
-                    // Optional: trigger change event
-                    select.dispatchEvent(new Event('change'));
-                };
-
-                tagSearch.addEventListener("keydown", e => {
-                    if (e.key === "Enter" || e.key === "," || e.key === "Tab") {
-                        e.preventDefault();
-                        const value = tagSearch.value.trim().replace(/,$/, "");
-                        if (options.includes(value)) {
-                            addTag(value);
-                            tagSearch.value = "";
-                        }
-                    }
+            // Sync tags to hidden select
+            function syncSelect() {
+                const selectedValues = Array.from(tagList.querySelectorAll(".tag")).map(tag => tag.dataset.value);
+                // Clear and repopulate hidden select
+                hiddenSelect.innerHTML = "";
+                selectedValues.forEach(value => {
+                    const option = document.createElement("option");
+                    option.value = value;
+                    option.selected = true;
+                    hiddenSelect.appendChild(option);
                 });
+            }
 
-                tagSearch.addEventListener("change", () => {
-                    const value = tagSearch.value.trim();
+            // Add a tag
+            function addTag(value) {
+                if (!value || Array.from(tagList.querySelectorAll(".tag")).some(tag => tag.dataset.value === value)) return;
+
+                const tag = document.createElement("div");
+                tag.className = "tag";
+                tag.dataset.value = value;
+
+                tag.innerHTML = `
+            ${value}
+            <span class="remove-tag" onclick="removeTag(this)">×</span>
+        `;
+
+                tagList.appendChild(tag);
+                syncSelect();
+            }
+
+            // Remove a tag
+            window.removeTag = function (el) {
+                const tag = el.parentElement;
+                tag.remove();
+                syncSelect();
+            };
+
+            // Add tag on Enter, Tab, or comma
+            tagSearch.addEventListener("keydown", function (e) {
+                if (e.key === "Enter" || e.key === "," || e.key === "Tab") {
+                    e.preventDefault();
+                    const value = tagSearch.value.trim().replace(/,$/, "");
                     if (options.includes(value)) {
                         addTag(value);
                         tagSearch.value = "";
                     }
-                });
+                }
+            });
 
-                tagInput.addEventListener("click", () => tagSearch.focus());
-            }
+            // Allow clicking on datalist options
+            tagSearch.addEventListener("change", function () {
+                const value = tagSearch.value.trim();
+                if (options.includes(value)) {
+                    addTag(value);
+                    tagSearch.value = "";
+                }
+            });
 
-            // Initialize both modals
-            setupTagInput("tagInput", "tagList", "tagSearch", "roleSelect");
-            setupTagInput("editTagInput", "editTagList", "editTagSearch", "editRoleSelect");
+            // Focus search when clicking container
+            tagInput.addEventListener("click", function () {
+                tagSearch.focus();
+            });
 
-            // Status Switch Toggle
-            const switchEl = document.getElementById("editStatusSwitch");
-            const statusText = document.getElementById("editStatusText");
-            const statusHidden = document.getElementById("editStatusTextHidden");
-
-            if (switchEl && statusText && statusHidden) {
-                switchEl.addEventListener("change", () => {
-                    if (switchEl.checked) {
-                        statusText.textContent = "Active";
-                        statusHidden.value = "ACTIVE";
-                    } else {
-                        statusText.textContent = "Inactive";
-                        statusHidden.value = "INACTIVE";
-                    }
-                });
-            }
+            // Prevent form submission on Enter in search
+            tagSearch.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                }
+            });
         });
+
+        
     </script>
 </div>

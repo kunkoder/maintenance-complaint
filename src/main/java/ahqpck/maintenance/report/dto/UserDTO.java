@@ -34,19 +34,17 @@ public class UserDTO {
 
     // @NotBlank(message = "Password is mandatory")
     // @Size(min = 6, message = "Password must be at least 6 characters")
-    // private String password;
+    private String password;
 
-    private String avatar;
+    private String image;
     private LocalDateTime createdAt;
     private LocalDateTime activatedAt;
     private String activationToken;
     private String passwordResetToken;
     private LocalDateTime passwordResetTokenExpiry;
 
-    @NotBlank(message = "Status is mandatory")
     private User.Status status;
 
-    @NotNull(message = "Roles are mandatory")
-    @Size(min = 1, message = "At least one role is required")
+    private Set<String> roleNames = new HashSet<>();
     private Set<RoleDTO> roles = new HashSet<>();
 }

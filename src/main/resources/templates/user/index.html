@@ -36,25 +36,26 @@
                         <div class="card-header">
                             <div class="d-flex align-items-center">
                                 <h4 class="card-title" th:text="${title}"></h4>
-                                <form class="form-inline ml-auto" th:action="@{/users}" method="get">
-                                    <div class="input-icon"> <!-- Added margin for spacing -->
+                                <form class="form-inline ml-auto" th:action="@{/users}" method="get" id="usersForm">
+                                    <div class="input-icon">
                                         <input type="text" name="keyword" th:value="${keyword}" id="userSearchInput"
                                             class="form-control" placeholder="Search...">
                                         <span class="input-icon-addon"><i class="fa fa-search"></i></span>
                                     </div>
+
                                     <!-- Size Dropdown -->
-                                    <div class="form-group"> <!-- Added margin for spacing -->
+                                    <div class="form-group">
                                         <label for="pageSizeSelect" class="sr-only">Items per page:</label>
-                                        <!-- Accessible label -->
                                         <select name="size" id="pageSizeSelect" class="form-control"
                                             onchange="this.form.submit()">
-                                            <option value="10" th:selected="${currentSize == 10}">10</option>
-                                            <option value="30" th:selected="${currentSize == 30}">30</option>
-                                            <option value="50" th:selected="${currentSize == 50}">50</option>
-                                            <option value="100" th:selected="${currentSize == 100}">100</option>
+                                            <option value="10" th:selected="${pageSize == 10}">10</option>
+                                            <option value="30" th:selected="${pageSize == 30}">30</option>
+                                            <option value="50" th:selected="${pageSize == 50}">50</option>
+                                            <option value="100" th:selected="${pageSize == 100}">100</option>
                                         </select>
                                     </div>
-                                    <!-- Filter Dropdown Button (Filter Icon Only) -->
+
+                                    <!-- Filter Dropdown -->
                                     <div class="dropdown">
                                         <button class="btn btn-primary dropdown-toggle" type="button"
                                             id="filterDropdown" data-toggle="dropdown" aria-haspopup="true"
@@ -63,27 +64,29 @@
                                         </button>
                                         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="filterDropdown"
                                             style="min-width: 200px;">
-                                            <!-- Section 1: Column Selection -->
+                                            <!-- Hidden inputs for sort state -->
+                                            <input type="hidden" name="sortBy" id="sortByInput" th:value="${sortBy}" />
+                                            <input type="hidden" name="asc" id="ascInput" th:value="${asc}" />
+
+                                            <!-- Sort Column -->
                                             <h6 class="dropdown-header">Sort Column</h6>
-                                            <a class="dropdown-item" href="#" data-column="complaintNo">Complaint
-                                                No.</a>
-                                            <a class="dropdown-item" href="#" data-column="date">Date</a>
-                                            <a class="dropdown-item" href="#" data-column="area">Area</a>
-                                            <a class="dropdown-item" href="#" data-column="machine">Machine</a>
-                                            <a class="dropdown-item" href="#" data-column="subject">Subject</a>
-                                            <a class="dropdown-item" href="#" data-column="assignee">Assignee</a>
-                                            <a class="dropdown-item" href="#" data-column="status">Status</a>
-                                            <a class="dropdown-item" href="#" data-column="totalTime">Total Time</a>
+                                            <th:block th:each="field : ${sortFields}">
+                                                <a class="dropdown-item sort-column" href="#" th:text="${field}"
+                                                    th:data-column="${field}"
+                                                    th:classappend="${sortBy == field} ? 'active' : ''">
+                                                </a>
+                                            </th:block>
 
                                             <div class="dropdown-divider"></div>
-                                            <!-- Section 2: Sort Order -->
+
+                                            <!-- Sort Order -->
                                             <h6 class="dropdown-header">Sort Order</h6>
-                                            <a class="dropdown-item" href="#" data-order="asc">Ascending</a>
-                                            <a class="dropdown-item" href="#" data-order="desc">Descending</a>
+                                            <a class="dropdown-item" href="#" data-asc="true"
+                                                th:classappend="${asc == true} ? 'active' : ''">Ascending</a>
+                                            <a class="dropdown-item" href="#" data-asc="false"
+                                                th:classappend="${asc == false} ? 'active' : ''">Descending</a>
                                         </div>
                                     </div>
-                                    <!-- Optional: Hidden input for page to reset to 0 on new search/size change -->
-                                    <!-- <input type="hidden" name="page" value="0" /> -->
                                 </form>
                             </div>
                         </div>
@@ -109,159 +112,88 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <!-- Sample User Row 1 -->
-                                        <tr>
-                                            <td data-field="avatar">
+                                        <tr th:each="user : ${users.content}" class="table-row-hover">
+                                            <td data-field="image">
                                                 <div class="avatar-lg my-2">
-                                                    <img src="/assets/img/profile.jpg" class="rounded-circle avatar-img"
-                                                        alt="Avatar" />
+                                                    <img th:src="${user.image != null} ? @{/upload/user/image/__${user.image}__} : @{/assets/img/arashmil.jpg}"
+                                                        class="rounded-circle avatar-img" alt="User Avatar" />
                                                 </div>
                                             </td>
-                                            <td data-field="name">John Doe</td>
-                                            <td data-field="employeeId">E1001</td>
-                                            <td data-field="email">john@example.com</td>
+                                            <td data-field="name" th:text="${user.name}"></td>
+                                            <td data-field="employeeId" th:text="${user.employeeId}"></td>
+                                            <td data-field="email" th:text="${user.email}"></td>
                                             <td data-field="role">
-                                                <span class="badge badge-primary">ADMIN</span>
-                                                <span class="badge badge-info">MEMBER</span>
+                                                <th:block th:each="role : ${user.roles}">
+                                                    <span class="badge badge-info" th:text="${role.name}"></span>
+                                                </th:block>
                                             </td>
                                             <td>
-                                                <span data-field="status" class="badge badge-success">ACTIVE</span>
+                                                <span data-field="status" class="badge"
+                                                    th:classappend="${user.status} == 'ACTIVE' ? 'badge-success' : 'badge-danger'"
+                                                    th:text="${user.status}">INACTIVE</span>
                                             </td>
-                                            <td data-field="createdAt">2023-10-01 08:30</td>
-                                            <td data-field="activatedAt">2023-10-02 10:15</td>
+                                            <td data-field="createdAt"
+                                                th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm')} ?: '-'">
+                                            </td>
+                                            <td data-field="activatedAt"
+                                                th:text="${#temporals.format(user.activatedAt, 'yyyy-MM-dd HH:mm')} ?: '-'">
+                                            </td>
                                             <td>
                                                 <div class="form-button-action">
                                                     <button type="button"
-                                                        class="btn btn-link btn-primary btn-lg edit-row" data-id="1"
-                                                        data-name="John Doe">
+                                                        class="btn btn-link btn-primary btn-lg edit-row"
+                                                        th:data-id="${user.id}" th:data-name="${user.name}">
                                                         <i class="fa fa-edit"></i>
                                                     </button>
-                                                    <button class="btn btn-link btn-danger delete-row" data-id="1"
-                                                        data-name="John Doe">
+                                                    <button type="button" class="btn btn-link btn-danger delete-row"
+                                                        th:data-id="${user.id}" th:data-name="${user.name}">
                                                         <i class="fa fa-times"></i>
                                                     </button>
                                                 </div>
                                             </td>
                                         </tr>
-
-                                        <!-- Sample User Row 2 -->
-                                        <tr>
-                                            <td data-field="avatar">
-                                                <div class="avatar-lg my-2">
-                                                    <img src="/assets/img/profile.jpg" class="rounded-circle avatar-img"
-                                                        alt="Avatar" />
-                                                </div>
-                                            </td>
-                                            <td data-field="name">Jane Smith</td>
-                                            <td data-field="employeeId">E1002</td>
-                                            <td data-field="email">jane@example.com</td>
-                                            <td data-field="role">
-                                                <span class="badge badge-info">MEMBER</span>
-                                            </td>
-                                            <td>
-                                                <span data-field="status" class="badge badge-secondary">INACTIVE</span>
-                                            </td>
-                                            <td data-field="createdAt">2023-10-05 14:20</td>
-                                            <td data-field="activatedAt">-</td>
-                                            <td>
-                                                <div class="form-button-action">
-                                                    <button type="button"
-                                                        class="btn btn-link btn-primary btn-lg edit-row" data-id="2"
-                                                        data-name="Jane Smith">
-                                                        <i class="fa fa-edit"></i>
-                                                    </button>
-                                                    <button class="btn btn-link btn-danger delete-row" data-id="2"
-                                                        data-name="Jane Smith">
-                                                        <i class="fa fa-times"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
+                                        <tr th:if="${users.totalElements == 0}">
+                                            <td colspan="9" class="text-center">No users found</td>
                                         </tr>
-
-                                        <!-- Sample User Row 3 -->
-                                        <tr>
-                                            <td data-field="avatar">
-                                                <div class="avatar-lg my-2">
-                                                    <img src="/assets/img/profile.jpg" class="rounded-circle avatar-img"
-                                                        alt="Avatar" />
-                                                </div>
-                                            </td>
-                                            <td data-field="name">Robert Johnson</td>
-                                            <td data-field="employeeId">E1003</td>
-                                            <td data-field="email">robert@example.com</td>
-                                            <td data-field="role">
-                                                <span class="badge badge-warning">SUPERADMIN</span>
-                                            </td>
-                                            <td>
-                                                <span data-field="status" class="badge badge-success">ACTIVE</span>
-                                            </td>
-                                            <td data-field="createdAt">2023-09-15 09:00</td>
-                                            <td data-field="activatedAt">2023-09-15 09:05</td>
-                                            <td>
-                                                <div class="form-button-action">
-                                                    <button type="button"
-                                                        class="btn btn-link btn-primary btn-lg edit-row" data-id="3"
-                                                        data-name="Robert Johnson">
-                                                        <i class="fa fa-edit"></i>
-                                                    </button>
-                                                    <button class="btn btn-link btn-danger delete-row" data-id="3"
-                                                        data-name="Robert Johnson">
-                                                        <i class="fa fa-times"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <!-- No users message (will be added dynamically in real version) -->
                                     </tbody>
                                 </table>
                             </div>
 
                             <!-- Pagination & Info -->
                             <div class="row mt-3 align-items-center">
-                                <!-- Page Info (Left) -->
                                 <div class="col-md-6 col-sm-12">
                                     <p class="text-muted mb-0">
-                                        Showing <span id="startRecord">1</span> - <span id="endRecord">10</span>
-                                        of <span id="totalRecords">100</span> entries
+                                        Showing
+                                        <span th:text="${users.number * users.size + 1} ?: 0"></span>
+                                        -
+                                        <span
+                                            th:text="${users.number * users.size + users.numberOfElements} ?: 0"></span>
+                                        of <span th:text="${users.totalElements} ?: 0"></span> entries
                                     </p>
                                 </div>
-
-                                <!-- Pagination (Right) -->
                                 <div class="col-md-6 col-sm-12">
                                     <nav aria-label="User list pagination" class="d-flex justify-content-end">
                                         <ul class="pagination mb-0">
+
                                             <!-- Previous Button -->
-                                            <li class="page-item">
-                                                <a class="page-link" href="#" aria-label="Previous">
-                                                    <span aria-hidden="true">Prev</span>
-                                                </a>
+                                            <li class="page-item" th:classappend="${!users.hasPrevious} ? 'disabled'">
+                                                <a class="page-link"
+                                                    th:href="@{/users(keyword=${keyword}, page=${users.number > 0 ? users.number : 0}, size=${currentSize}, sortBy=${sortBy}, asc=${asc})}"
+                                                    th:if="${users.hasPrevious}">Prev</a>
+                                                <span class="page-link" th:if="${!users.hasPrevious}">Prev</span>
                                             </li>
 
-                                            <!-- Page Numbers (Example: Current page 1) -->
+                                            <!-- Current Page (1-based) -->
                                             <li class="page-item active">
-                                                <a class="page-link" href="#">
-                                                    1 <span class="sr-only">(current)</span>
-                                                </a>
-                                            </li>
-                                            <li class="page-item">
-                                                <a class="page-link" href="#">2</a>
-                                            </li>
-                                            <li class="page-item">
-                                                <a class="page-link" href="#">3</a>
-                                            </li>
-                                            <li class="page-item disabled">
-                                                <span class="page-link">...</span>
-                                            </li>
-                                            <li class="page-item">
-                                                <a class="page-link" href="#">10</a>
+                                                <span class="page-link" th:text="${users.number + 1}">1</span>
                                             </li>
 
                                             <!-- Next Button -->
-                                            <li class="page-item">
-                                                <a class="page-link" href="#" aria-label="Next">
-                                                    <span aria-hidden="true">Next</span>
-                                                </a>
+                                            <li class="page-item" th:classappend="${!users.hasNext} ? 'disabled'">
+                                                <a class="page-link"
+                                                    th:href="@{/users(keyword=${keyword}, page=${users.number + 2}, size=${currentSize}, sortBy=${sortBy}, asc=${asc})}"
+                                                    th:if="${users.hasNext}">Next</a>
+                                                <span class="page-link" th:if="${!users.hasNext}">Next</span>
                                             </li>
                                         </ul>
                                     </nav>
@@ -277,10 +209,31 @@
     <!-- Scripts Fragment -->
     <th:block layout:fragment="scripts">
         <script>
+            const sortFieldLabels = {
+                'name': 'Full Name',
+                'employeeId': 'Employee Id',
+                'email': 'Email',
+                'status': 'Status',
+                'createdAt': 'Created At',
+                'activatedAt': 'Activated At'
+            };
+
             document.addEventListener('DOMContentLoaded', function () {
-                const form = document.getElementById('equipmentsForm');
+                const form = document.getElementById('usersForm');
                 const sortByInput = document.getElementById('sortByInput');
                 const ascInput = document.getElementById('ascInput');
+
+                // Update dropdown items with friendly names
+                document.querySelectorAll('.sort-column').forEach(item => {
+                    const field = item.getAttribute('data-column');
+                    const displayText = sortFieldLabels[field] || field; // Fallback to raw field
+                    item.textContent = displayText;
+
+                    // Highlight active sort column
+                    if (sortByInput.value === field) {
+                        item.classList.add('active');
+                    }
+                });
 
                 // Handle column click
                 document.querySelectorAll('.sort-column').forEach(item => {
@@ -345,6 +298,48 @@
                     updateStatus(); // Sync UI (text and value)
                 }
 
+                function getRolesFromCell(cell) {
+                    const roles = [];
+                    const badges = cell.querySelectorAll('.badge');
+                    for (let badge of badges) {
+                        const role = badge.textContent.trim();
+                        if (role) roles.push(role);
+                    }
+                    return roles;
+                }
+
+                function initEditRoleInput(roles) {
+                    const tagList = document.getElementById("editTagList");
+                    const hiddenSelect = document.getElementById("editRoleSelect");
+
+                    // Clear existing
+                    tagList.innerHTML = "";
+                    hiddenSelect.innerHTML = "";
+
+                    roles.forEach(role => {
+                        const tag = document.createElement("div");
+                        tag.className = "tag";
+                        tag.dataset.value = role;
+
+                        // ✅ Use global window.removeTag with parameters
+                        tag.innerHTML = `
+            ${role}
+            <span class="remove-tag" 
+                  onclick="window.removeTag(this, 'editRoleSelect', 'editTagList')">
+                ×
+            </span>
+        `;
+
+                        tagList.appendChild(tag);
+
+                        // Add to hidden select
+                        const option = document.createElement("option");
+                        option.value = role;
+                        option.selected = true;
+                        hiddenSelect.appendChild(option);
+                    });
+                }
+
                 // Trigger edit modal
                 $('.edit-row').on('click', function () {
                     const currentId = $(this).data('id');
@@ -355,7 +350,18 @@
                     $('#editName').val(row.find('[data-field="name"]').text().trim());
                     $('#editEmployeeId').val(row.find('[data-field="employeeId"]').text().trim());
                     $('#editEmail').val(row.find('[data-field="email"]').text().trim());
-                    $('#editRole').val(row.find('[data-field="role"]').text().trim());
+                    const roleCell = row.find('[data-field="role"]')[0];
+                    const roles = getRolesFromCell(roleCell);
+                    initEditRoleInput(roles)
+
+                    // Set image preview if exists
+                    const imgSrc = row.find('[data-field="image"] img').attr('src');
+                    if (imgSrc) {
+                        $('#editImagePreview').attr('src', imgSrc).show();
+                    } else {
+                        $('#editImagePreview').hide();
+                    }
+
 
                     // Set status in hidden input
                     const statusText = row.find('[data-field="status"]').text().trim();
@@ -373,11 +379,13 @@
                     updateStatus();
                 });
 
-                // Trigger delete modal
+                // --- Delete Modal Trigger ---
                 $('.delete-row').on('click', function () {
                     const name = $(this).data('name');
+                    const id = $(this).data('id');
+
                     $('#deleteDocName').text(name);
-                    currentId = $(this).data('id');
+                    $('#confirmDeleteButton').attr('href', '/users/delete/' + encodeURIComponent(id));
                     $('#deleteRowModal').modal('show');
                 });
             });
@@ -389,6 +397,7 @@
                     $('#flashMessageModal').modal('show');
                 }
             });
+
         </script>
     </th:block>
 

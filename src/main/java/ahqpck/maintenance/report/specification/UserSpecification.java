@@ -20,6 +20,7 @@ public class UserSpecification {
                 cb.like(cb.lower(root.get("employeeId")), pattern),
                 cb.like(cb.lower(root.get("role").as(String.class)), pattern),
                 cb.like(cb.lower(root.get("status").as(String.class)), pattern)
+                
             );
         };
     }

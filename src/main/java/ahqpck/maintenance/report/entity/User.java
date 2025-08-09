@@ -47,9 +47,9 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
-    private String passwordHash;
+    private String password;
 
-    private String avatar;
+    private String image;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -84,10 +84,7 @@ public class User {
     @PrePersist
     public void prePersist() {
         this.id = this.id == null ? Base62.encode(UUID.randomUUID()) : this.id;
-
-        LocalDateTime now = LocalDateTime.now();
-        this.createdAt = now;
-
-        this.status = this.status == null ? Status.INACTIVE : this.status;
+        this.createdAt = LocalDateTime.now();
+        this.status = this.status != null ? this.status : Status.INACTIVE;
     }
 }
