@@ -1,52 +1,27 @@
 package ahqpck.maintenance.report.controller;
 
 import ahqpck.maintenance.report.dto.AreaDTO;
-import ahqpck.maintenance.report.dto.RoleDTO;
+import ahqpck.maintenance.report.dto.EquipmentDTO;
 import ahqpck.maintenance.report.dto.UserDTO;
-import ahqpck.maintenance.report.entity.Role;
 import ahqpck.maintenance.report.entity.User;
-import ahqpck.maintenance.report.exception.ImportException;
-import ahqpck.maintenance.report.exception.ValidationException;
-import ahqpck.maintenance.report.repository.RoleRepository;
 import ahqpck.maintenance.report.repository.UserRepository;
 import ahqpck.maintenance.report.service.AreaService;
 import ahqpck.maintenance.report.service.UserService;
-import ahqpck.maintenance.report.util.ImportUtil;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.ValidationUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Controller
@@ -56,6 +31,7 @@ public class AreaController {
 
     private final AreaService areaService;
     private final UserRepository userRepository; // For populating responsiblePerson dropdown
+    private final UserService userService;
 
     @Value("${app.upload-area-image.dir:src/main/resources/static/upload/area/image}")
     private String uploadDir; // Not used now, but reserved for future
@@ -87,9 +63,17 @@ public class AreaController {
             });
 
             // Load users for responsiblePerson dropdown
-            List<UserDTO> users = userRepository.findAll().stream()
-                    .map(this::mapToUserDTO)
-                    .collect(Collectors.toList());
+            // List<UserDTO> users = userRepository.findAll().stream()
+            //         .map(this::mapToUserDTO)
+            //         .collect(Collectors.toList());
+
+
+            List<UserDTO> users =  userService.getAllUsers(null, 0, Integer.MAX_VALUE, "name", true)
+                .getContent().stream()
+                .collect(Collectors.toList());
+    
+            
+
             model.addAttribute("users", users);
 
             // Empty DTO for create form
@@ -108,6 +92,8 @@ public class AreaController {
             @Valid @ModelAttribute AreaDTO areaDTO,
             BindingResult bindingResult,
             RedirectAttributes ra) {
+
+                System.out.println("Area" + areaDTO);
 
         if (bindingResult.hasErrors()) {
             String errorMessage = bindingResult.getAllErrors().stream()

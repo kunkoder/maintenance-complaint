@@ -73,6 +73,12 @@ public class User {
     @OneToMany(mappedBy = "responsiblePerson", fetch = FetchType.LAZY)
     private final Set<Area> areas = new HashSet<>();
 
+    @OneToMany(mappedBy = "reporter", fetch = FetchType.LAZY)
+    private final Set<Complaint> reportedComplaints = new HashSet<>();
+
+    @OneToMany(mappedBy = "assignee", fetch = FetchType.LAZY)
+    private final Set<Complaint> assignedComplaints = new HashSet<>();
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private final Set<Role> roles = new HashSet<>();

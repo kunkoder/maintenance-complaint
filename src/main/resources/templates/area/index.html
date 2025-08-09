@@ -115,8 +115,8 @@
                                             <th>Code</th>
                                             <th>Name</th>
                                             <th>Description</th>
-                                            <th>Status</th>
                                             <th>Responsible Person</th>
+                                            <th>Status</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
@@ -127,7 +127,7 @@
                                             <td data-field="description" th:text="${area.description}"></td>
                                             <td data-field="responsiblePerson"
                                                 th:data-user-id="${area.responsiblePerson?.id}"
-                                                th:text="${area.responsiblePerson?.name}">-</td>
+                                                th:text="${area.responsiblePerson?.name ?: '-'}">-</td>
                                             <td data-field="status">
                                                 <span class="badge"
                                                     th:classappend="${area.status} == 'ACTIVE' ? 'badge-success' : (${area.status} == 'UNDER_MAINTENANCE' ? 'badge-warning' : 'badge-danger')"
@@ -194,6 +194,9 @@
                     $('#editCode').val(row.find('[data-field="code"]').text().trim());
                     $('#editName').val(row.find('[data-field="name"]').text().trim());
                     $('#editDescription').val(row.find('[data-field="description"]').text().trim());
+
+                    // jQuery automatically converts data-* to camelCase
+                    $('#editResponsiblePerson').val(row.find('td[data-field="responsiblePerson"]').data('user-id'));
 
                     // Set status (convert badge text to enum)
                     const statusText = row.find('[data-field="status"]').text().trim().toUpperCase();

@@ -12,7 +12,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -40,14 +43,26 @@ public class Complaint {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @Column(nullable = false)
-    private String area;
+    // @Column(nullable = false)
+    // private String area;
 
-    @Column(nullable = false)
-    private String machine;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "area_id", referencedColumnName = "id", nullable = false)
+    private Area area;
 
-    @Column(nullable = false)
-    private String reporter;
+    // @Column(nullable = false)
+    // private String machine;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "equipment_id", referencedColumnName = "id", nullable = false)
+    private Equipment equipment;
+
+    // @Column(nullable = false)
+    // private String reporter;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reporter_id", referencedColumnName = "id", nullable = false)
+    private User reporter;
 
     @Column(nullable = false)
     private String subject;
@@ -55,8 +70,12 @@ public class Complaint {
     @Column(columnDefinition = "TEXT", nullable = true)
     private String description;
 
-    @Column(nullable = true)
-    private String assignee;
+    // @Column(nullable = true)
+    // private String assignee;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assignee_id", referencedColumnName = "id", nullable = false)
+    private User assignee;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

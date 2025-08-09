@@ -1,5 +1,7 @@
 package ahqpck.maintenance.report.entity;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import ahqpck.maintenance.report.util.Base62;
@@ -11,6 +13,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -41,6 +44,9 @@ public class Area {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     private User responsiblePerson;
+
+    @OneToMany(mappedBy = "area", fetch = FetchType.LAZY)
+    private final Set<Complaint> complaints = new HashSet<>();
 
     private String description;
 

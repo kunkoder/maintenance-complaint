@@ -1,191 +1,466 @@
-// ComplaintService.java
 package ahqpck.maintenance.report.service;
 
+import ahqpck.maintenance.report.dto.AreaDTO;
+import ahqpck.maintenance.report.dto.ComplaintDTO;
+import ahqpck.maintenance.report.dto.ComplaintPartDTO;
+import ahqpck.maintenance.report.dto.EquipmentDTO;
+import ahqpck.maintenance.report.dto.PartDTO;
+import ahqpck.maintenance.report.dto.UserDTO;
 import ahqpck.maintenance.report.entity.*;
-import ahqpck.maintenance.report.repository.ComplaintPartRepository;
+import ahqpck.maintenance.report.exception.NotFoundException;
 import ahqpck.maintenance.report.repository.ComplaintRepository;
+import ahqpck.maintenance.report.repository.EquipmentRepository;
 import ahqpck.maintenance.report.repository.PartRepository;
-import jakarta.transaction.Transactional;
+import ahqpck.maintenance.report.repository.UserRepository;
+import ahqpck.maintenance.report.specification.ComplaintSpecification;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.NoSuchElementException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ComplaintService {
 
-    private static final Logger log = LoggerFactory.getLogger(ComplaintService.class);
-
     private final ComplaintRepository complaintRepository;
+    private final UserRepository userRepository;
+    private final EquipmentRepository equipmentRepository;
     private final PartRepository partRepository;
-    private final ComplaintPartRepository complaintPartRepository;
+    private final Validator validator;
 
-    /**
-     * Create a new maintenance complaint
-     */
-    @Transactional
-    public Complaint createComplaint(Complaint complaint) {
-        log.info("Creating new complaint with subject: '{}' for machine: {}", 
-            complaint.getSubject(), complaint.getMachine());
-        
-        complaint.setStatus(Complaint.Status.OPEN);
-        complaint.setCloseTime(null);
-        complaint.setTotalResolutionTimeMinutes(null);
-        Complaint saved = complaintRepository.save(complaint);
-    
-        log.info("Complaint created successfully with ID: {}", saved.getId());
-        return saved;
+    // ================== GET ALL WITH PAGINATION & SEARCH ==================
+    @Transactional(readOnly = true)
+    public Page<ComplaintDTO> getAllComplaints(String keyword, int page, int size, String sortBy, boolean asc) {
+        Sort sort = asc ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Specification<Complaint> spec = ComplaintSpecification.search(keyword);
+        Page<Complaint> complaintPage = complaintRepository.findAll(spec, pageable);
+
+        return complaintPage.map(this::toDTO);
     }
 
-    /**
-     * Add a part to an existing complaint (before closing)
-     */
+    // ================== GET BY ID ==================
+    @Transactional(readOnly = true)
+    public ComplaintDTO getComplaintById(String id) {
+        Complaint complaint = complaintRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Complaint not found with ID: " + id));
+        return toDTO(complaint);
+    }
+
+    // ================== CREATE ==================
     @Transactional
-    public void addPartToComplaint(String complaintId, String partCode, Integer quantity) {
-        log.info("Adding part '{}' (qty: {}) to complaint ID: {}", partCode, quantity, complaintId);
-        
-        Complaint complaint = complaintRepository.findById(complaintId)
-            .orElseThrow(() -> new NoSuchElementException("Complaint not found: " + complaintId));
+    public void createComplaint(ComplaintDTO dto) {
+        // validateDTO(dto);
 
-        Part part = partRepository.findByCode(partCode)
-            .orElseThrow(() -> new NoSuchElementException("Part not found: " + partCode));
-
-        // Check if this part is already added
-        boolean alreadyAdded = complaint.getPartsUsed().stream()
-            .anyMatch(cp -> cp.getPart().getId().equals(part.getId()));
-
-        if (alreadyAdded) {
-            throw new IllegalArgumentException("Part is already added to this complaint. Update quantity instead.");
-        }
-
-        complaint.addPart(part, quantity);
+        Complaint complaint = new Complaint();
+        mapToEntity(complaint, dto);
         complaintRepository.save(complaint);
-        log.info("Part '{}' (qty: {}) added to complaint {}", partCode, quantity, complaintId); 
     }
 
-    /**
-     * Update complaint status
-     * If status is set to CLOSED:
-     *  - Sets closeTime
-     *  - Calculates total resolution time
-     *  - Deducts used parts from inventory
-     */
+    // ================== UPDATE ==================
     @Transactional
-    public Complaint updateStatus(String complaintId, Complaint.Status newStatus) {
-        log.info("Updating complaint ID: {} status to {}", complaintId, newStatus);
-        
-        Complaint complaint = complaintRepository.findById(complaintId)
-            .orElseThrow(() -> new NoSuchElementException("Complaint not found: " + complaintId));
+    public void updateComplaint(ComplaintDTO dto) {
+        // validateDTO(dto);
 
-        Complaint.Status oldStatus = complaint.getStatus();
-        complaint.setStatus(newStatus);
+        Complaint complaint = complaintRepository.findById(dto.getId())
+                .orElseThrow(() -> new NotFoundException("Complaint not found with ID: " + dto.getId()));
 
-        if (newStatus == Complaint.Status.CLOSED && oldStatus != Complaint.Status.CLOSED) {
-            LocalDateTime now = LocalDateTime.now();
-            complaint.setCloseTime(now);
-            // totalResolutionTimeMinutes is calculated in @PreUpdate
-        }
-
+        mapToEntity(complaint, dto);
         complaintRepository.save(complaint);
-
-        // Deduct inventory only when transitioning to CLOSED
-        if (newStatus == Complaint.Status.CLOSED && oldStatus != Complaint.Status.CLOSED) {
-            deductPartsFromInventory(complaint);
-        }
-
-            if (newStatus == Complaint.Status.CLOSED && oldStatus != Complaint.Status.CLOSED) {
-            log.info("Complaint {} CLOSED: Deducting {} parts from inventory", complaintId, complaint.getPartsUsed().size());
-        }
-
-        return complaint;
     }
 
-    /**
-     * Deduct all parts used in this complaint from stock
-     */
-    private void deductPartsFromInventory(Complaint complaint) {
-        for (ComplaintPart cp : complaint.getPartsUsed()) {
-            log.info("Deducting {} x '{}' (Part ID: {}) from stock", 
-                cp.getQuantity(), cp.getPart().getName(), cp.getPart().getId());
-            cp.getPart().useParts(cp.getQuantity());
-            partRepository.save(cp.getPart());
-        }
-    }
-
-    /**
-     * Reopen a CLOSED complaint → restock parts
-     */
+    // ================== DELETE ==================
     @Transactional
-    public Complaint reopenComplaint(String complaintId) {
-        log.warn("Reopening CLOSED complaint: {}", complaintId);
-        Complaint complaint = complaintRepository.findById(complaintId)
-            .orElseThrow(() -> new NoSuchElementException("Complaint not found: " + complaintId));
+    public void deleteComplaint(String id) {
+        Complaint complaint = complaintRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Complaint not found with ID: " + id));
 
-        if (complaint.getStatus() != Complaint.Status.CLOSED) {
-            throw new IllegalArgumentException("Only CLOSED complaints can be reopened.");
+        complaintRepository.delete(complaint);
+    }
+
+    // ================== MAPPING METHODS ==================
+
+    private void mapToEntity(Complaint complaint, ComplaintDTO dto) {
+        complaint.setSubject(dto.getSubject().trim());
+        complaint.setDescription(dto.getDescription());
+        complaint.setPriority(dto.getPriority());
+        complaint.setCategory(dto.getCategory());
+        complaint.setActionTaken(dto.getActionTaken());
+        complaint.setImageBefore(dto.getImageBefore());
+        complaint.setImageAfter(dto.getImageAfter());
+        complaint.setStatus(dto.getStatus());
+        complaint.setCloseTime(dto.getCloseTime());
+
+        // Map Area
+        if (dto.getArea() != null && dto.getArea().getId() != null) {
+            Area area = new Area();
+            area.setId(dto.getArea().getId());
+            complaint.setArea(area); // Lazy load via ID (proxy)
+        } else {
+            throw new IllegalArgumentException("Area is required");
         }
 
-        // Restock all parts
-        restockParts(complaint);
+        // Map Equipment
+        if (dto.getEquipment() != null && dto.getEquipment().getId() != null) {
+            Equipment equipment = equipmentRepository.findById(dto.getEquipment().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Equipment not found with ID: " + dto.getEquipment().getId()));
+            complaint.setEquipment(equipment);
+        } else {
+            throw new IllegalArgumentException("Equipment is required");
+        }
 
-        complaint.setStatus(Complaint.Status.IN_PROGRESS);
-        complaint.setCloseTime(null);
-        complaint.setTotalResolutionTimeMinutes(null);
+        // Map Reporter
+        if (dto.getReporter() != null && dto.getReporter().getId() != null) {
+            User reporter = userRepository.findById(dto.getReporter().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Reporter not found with ID: " + dto.getReporter().getId()));
+            complaint.setReporter(reporter);
+        } else {
+            throw new IllegalArgumentException("Reporter is required");
+        }
 
-        log.info("Complaint {} reopened and {} parts restocked", complaintId, complaint.getPartsUsed().size());
-        return complaintRepository.save(complaint);
-    }
+        // Map Assignee
+        if (dto.getAssignee() != null && dto.getAssignee().getId() != null) {
+            User assignee = userRepository.findById(dto.getAssignee().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Assignee not found with ID: " + dto.getAssignee().getId()));
+            complaint.setAssignee(assignee);
+        } else {
+            throw new IllegalArgumentException("Assignee is required");
+        }
 
-    private void restockParts(Complaint complaint) {
-        for (ComplaintPart cp : complaint.getPartsUsed()) {
-            Part part = cp.getPart();
-            part.addStock(cp.getQuantity());
-            partRepository.save(part);
+        // Map Parts Used
+        complaint.getPartsUsed().clear(); // Remove old parts (will be replaced)
+        if (dto.getPartsUsed() != null) {
+            for (ComplaintPartDTO partDto : dto.getPartsUsed()) {
+                Part part = partRepository.findById(partDto.getPart().getId())
+                        .orElseThrow(() -> new IllegalArgumentException("Part not found with ID: " + partDto.getPart().getId()));
+
+                ComplaintPart cp = new ComplaintPart();
+                cp.setComplaint(complaint);
+                cp.setPart(part);
+                cp.setQuantity(partDto.getQuantity());
+
+                // Set embedded ID
+                cp.setId(new ComplaintPartId(complaint.getId(), part.getId()));
+
+                complaint.getPartsUsed().add(cp);
+            }
         }
     }
 
-    /**
-     * Find complaint by ID
-     */
-    public Complaint getComplaintById(String complaintId) {
-        return complaintRepository.findById(complaintId)
-            .orElseThrow(() -> new NoSuchElementException("Complaint not found: " + complaintId));
+    // ================== HELPER: DTO Conversion ==================
+    private ComplaintDTO toDTO(Complaint complaint) {
+        ComplaintDTO dto = new ComplaintDTO();
+        dto.setId(complaint.getId());
+        dto.setReportDate(complaint.getReportDate());
+        dto.setUpdatedAt(complaint.getUpdatedAt());
+        dto.setSubject(complaint.getSubject());
+        dto.setDescription(complaint.getDescription());
+        dto.setPriority(complaint.getPriority());
+        dto.setCategory(complaint.getCategory());
+        dto.setActionTaken(complaint.getActionTaken());
+        dto.setImageBefore(complaint.getImageBefore());
+        dto.setImageAfter(complaint.getImageAfter());
+        dto.setStatus(complaint.getStatus());
+        dto.setCloseTime(complaint.getCloseTime());
+        dto.setTotalResolutionTimeMinutes(complaint.getTotalResolutionTimeMinutes());
+
+        // Map Area
+        if (complaint.getArea() != null) {
+            AreaDTO areaDTO = new AreaDTO();
+            areaDTO.setId(complaint.getArea().getId());
+            areaDTO.setCode(complaint.getArea().getCode());
+            areaDTO.setName(complaint.getArea().getName());
+            dto.setArea(areaDTO);
+        }
+
+        // Map Equipment
+        if (complaint.getEquipment() != null) {
+            EquipmentDTO equipmentDTO = new EquipmentDTO();
+            equipmentDTO.setId(complaint.getEquipment().getId());
+            equipmentDTO.setName(complaint.getEquipment().getName());
+            equipmentDTO.setCode(complaint.getEquipment().getCode());
+            dto.setEquipment(equipmentDTO);
+        }
+
+        // Map Reporter
+        dto.setReporter(mapToUserDTO(complaint.getReporter()));
+
+        // Map Assignee
+        dto.setAssignee(mapToUserDTO(complaint.getAssignee()));
+
+        // Map Parts Used
+        if (complaint.getPartsUsed() != null) {
+            dto.setPartsUsed(complaint.getPartsUsed().stream()
+                    .map(cp -> {
+                        ComplaintPartDTO partDto = new ComplaintPartDTO();
+                        partDto.setPart(mapToPartDTO(cp.getPart()));
+                        partDto.setQuantity(cp.getQuantity());
+                        return partDto;
+                    })
+                    .collect(Collectors.toList()));
+        }
+
+        return dto;
     }
 
-    /**
-     * Get all complaints
-     */
-    public List<Complaint> getAllComplaints() {
-        return complaintRepository.findAll();
+    // ================== HELPER: UserDTO Mapping ==================
+    private UserDTO mapToUserDTO(User user) {
+        if (user == null) return null;
+
+        UserDTO dto = new UserDTO();
+        dto.setId(user.getId());
+        dto.setName(user.getName());
+        dto.setEmployeeId(user.getEmployeeId());
+        dto.setEmail(user.getEmail());
+        return dto;
     }
 
-    /**
-     * Get complaints by status
-     */
-    public List<Complaint> getComplaintsByStatus(Complaint.Status status) {
-        return complaintRepository.findByStatus(status);
+    // ================== HELPER: PartDTO Mapping ==================
+    private PartDTO mapToPartDTO(Part part) {
+        if (part == null) return null;
+
+        PartDTO dto = new PartDTO();
+        dto.setId(part.getId());
+        dto.setName(part.getName());
+        dto.setCode(part.getCode());
+        dto.setDescription(part.getDescription());
+        return dto;
     }
 
-    /**
-     * Get complaints by machine
-     */
-    public List<Complaint> getComplaintsByMachine(String machine) {
-        return complaintRepository.findByMachine(machine);
-    }
-
-    /**
-     * Update assignee
-     */
-    @Transactional
-    public Complaint updateAssignee(String complaintId, String assignee) {
-        Complaint complaint = getComplaintById(complaintId);
-        complaint.setAssignee(assignee);
-        return complaintRepository.save(complaint);
-    }
+    // ================== VALIDATION ==================
+    // private void validateDTO(ComplaintDTO dto) {
+    //     Set<ConstraintViolation<ComplaintDTO>> violations = validator.validate(dto);
+    //     if (!violations.isEmpty()) {
+    //         String errorMsg = violations.stream()
+    //                 .map(v -> v.getMessage())
+    //                 .collect(Collectors.joining(", "));
+    //         throw new IllegalArgumentException("Validation failed: " + errorMsg);
+    //     }
+    // }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// package ahqpck.maintenance.report.service;
+
+// import ahqpck.maintenance.report.entity.*;
+// import ahqpck.maintenance.report.repository.ComplaintPartRepository;
+// import ahqpck.maintenance.report.repository.ComplaintRepository;
+// import ahqpck.maintenance.report.repository.PartRepository;
+// import jakarta.transaction.Transactional;
+// import lombok.RequiredArgsConstructor;
+// import org.springframework.stereotype.Service;
+
+// import java.time.LocalDateTime;
+// import java.util.List;
+// import java.util.NoSuchElementException;
+
+// import org.slf4j.Logger;
+// import org.slf4j.LoggerFactory;
+
+// @Service
+// @RequiredArgsConstructor
+// public class ComplaintService {
+
+//     private static final Logger log = LoggerFactory.getLogger(ComplaintService.class);
+
+//     private final ComplaintRepository complaintRepository;
+//     private final PartRepository partRepository;
+//     private final ComplaintPartRepository complaintPartRepository;
+
+//     /**
+//      * Create a new maintenance complaint
+//      */
+//     @Transactional
+//     public Complaint createComplaint(Complaint complaint) {
+//         log.info("Creating new complaint with subject: '{}' for machine: {}", 
+//             complaint.getSubject(), complaint.getMachine());
+        
+//         complaint.setStatus(Complaint.Status.OPEN);
+//         complaint.setCloseTime(null);
+//         complaint.setTotalResolutionTimeMinutes(null);
+//         Complaint saved = complaintRepository.save(complaint);
+    
+//         log.info("Complaint created successfully with ID: {}", saved.getId());
+//         return saved;
+//     }
+
+//     /**
+//      * Add a part to an existing complaint (before closing)
+//      */
+//     @Transactional
+//     public void addPartToComplaint(String complaintId, String partCode, Integer quantity) {
+//         log.info("Adding part '{}' (qty: {}) to complaint ID: {}", partCode, quantity, complaintId);
+        
+//         Complaint complaint = complaintRepository.findById(complaintId)
+//             .orElseThrow(() -> new NoSuchElementException("Complaint not found: " + complaintId));
+
+//         Part part = partRepository.findByCode(partCode)
+//             .orElseThrow(() -> new NoSuchElementException("Part not found: " + partCode));
+
+//         // Check if this part is already added
+//         boolean alreadyAdded = complaint.getPartsUsed().stream()
+//             .anyMatch(cp -> cp.getPart().getId().equals(part.getId()));
+
+//         if (alreadyAdded) {
+//             throw new IllegalArgumentException("Part is already added to this complaint. Update quantity instead.");
+//         }
+
+//         complaint.addPart(part, quantity);
+//         complaintRepository.save(complaint);
+//         log.info("Part '{}' (qty: {}) added to complaint {}", partCode, quantity, complaintId); 
+//     }
+
+//     /**
+//      * Update complaint status
+//      * If status is set to CLOSED:
+//      *  - Sets closeTime
+//      *  - Calculates total resolution time
+//      *  - Deducts used parts from inventory
+//      */
+//     @Transactional
+//     public Complaint updateStatus(String complaintId, Complaint.Status newStatus) {
+//         log.info("Updating complaint ID: {} status to {}", complaintId, newStatus);
+        
+//         Complaint complaint = complaintRepository.findById(complaintId)
+//             .orElseThrow(() -> new NoSuchElementException("Complaint not found: " + complaintId));
+
+//         Complaint.Status oldStatus = complaint.getStatus();
+//         complaint.setStatus(newStatus);
+
+//         if (newStatus == Complaint.Status.CLOSED && oldStatus != Complaint.Status.CLOSED) {
+//             LocalDateTime now = LocalDateTime.now();
+//             complaint.setCloseTime(now);
+//             // totalResolutionTimeMinutes is calculated in @PreUpdate
+//         }
+
+//         complaintRepository.save(complaint);
+
+//         // Deduct inventory only when transitioning to CLOSED
+//         if (newStatus == Complaint.Status.CLOSED && oldStatus != Complaint.Status.CLOSED) {
+//             deductPartsFromInventory(complaint);
+//         }
+
+//             if (newStatus == Complaint.Status.CLOSED && oldStatus != Complaint.Status.CLOSED) {
+//             log.info("Complaint {} CLOSED: Deducting {} parts from inventory", complaintId, complaint.getPartsUsed().size());
+//         }
+
+//         return complaint;
+//     }
+
+//     /**
+//      * Deduct all parts used in this complaint from stock
+//      */
+//     private void deductPartsFromInventory(Complaint complaint) {
+//         for (ComplaintPart cp : complaint.getPartsUsed()) {
+//             log.info("Deducting {} x '{}' (Part ID: {}) from stock", 
+//                 cp.getQuantity(), cp.getPart().getName(), cp.getPart().getId());
+//             cp.getPart().useParts(cp.getQuantity());
+//             partRepository.save(cp.getPart());
+//         }
+//     }
+
+//     /**
+//      * Reopen a CLOSED complaint → restock parts
+//      */
+//     @Transactional
+//     public Complaint reopenComplaint(String complaintId) {
+//         log.warn("Reopening CLOSED complaint: {}", complaintId);
+//         Complaint complaint = complaintRepository.findById(complaintId)
+//             .orElseThrow(() -> new NoSuchElementException("Complaint not found: " + complaintId));
+
+//         if (complaint.getStatus() != Complaint.Status.CLOSED) {
+//             throw new IllegalArgumentException("Only CLOSED complaints can be reopened.");
+//         }
+
+//         // Restock all parts
+//         restockParts(complaint);
+
+//         complaint.setStatus(Complaint.Status.IN_PROGRESS);
+//         complaint.setCloseTime(null);
+//         complaint.setTotalResolutionTimeMinutes(null);
+
+//         log.info("Complaint {} reopened and {} parts restocked", complaintId, complaint.getPartsUsed().size());
+//         return complaintRepository.save(complaint);
+//     }
+
+//     private void restockParts(Complaint complaint) {
+//         for (ComplaintPart cp : complaint.getPartsUsed()) {
+//             Part part = cp.getPart();
+//             part.addStock(cp.getQuantity());
+//             partRepository.save(part);
+//         }
+//     }
+
+//     /**
+//      * Find complaint by ID
+//      */
+//     public Complaint getComplaintById(String complaintId) {
+//         return complaintRepository.findById(complaintId)
+//             .orElseThrow(() -> new NoSuchElementException("Complaint not found: " + complaintId));
+//     }
+
+//     /**
+//      * Get all complaints
+//      */
+//     public List<Complaint> getAllComplaints() {
+//         return complaintRepository.findAll();
+//     }
+
+//     /**
+//      * Get complaints by status
+//      */
+//     public List<Complaint> getComplaintsByStatus(Complaint.Status status) {
+//         return complaintRepository.findByStatus(status);
+//     }
+
+//     /**
+//      * Get complaints by machine
+//      */
+//     public List<Complaint> getComplaintsByMachine(String machine) {
+//         return complaintRepository.findByMachine(machine);
+//     }
+
+//     /**
+//      * Update assignee
+//      */
+//     @Transactional
+//     public Complaint updateAssignee(String complaintId, String assignee) {
+//         Complaint complaint = getComplaintById(complaintId);
+//         complaint.setAssignee(assignee);
+//         return complaintRepository.save(complaint);
+//     }
+// }

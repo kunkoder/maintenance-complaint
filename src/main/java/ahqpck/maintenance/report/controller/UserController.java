@@ -77,7 +77,7 @@ public class UserController {
             model.addAttribute("sortBy", sortBy);
             model.addAttribute("asc", asc);
 
-            model.addAttribute("title", "Users");
+            model.addAttribute("title", "User Management");
             model.addAttribute("sortFields", new String[] {
                     "name", "employeeId", "email", "status", "createdAt", "activatedAt"
             });

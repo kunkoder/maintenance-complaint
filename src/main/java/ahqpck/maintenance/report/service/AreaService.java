@@ -74,7 +74,7 @@ public class AreaService {
     private void mapToEntity(Area area, AreaDTO dto) {
         area.setCode(dto.getCode().trim());
         area.setName(dto.getName().trim());
-        area.setStatus(dto.getStatus() != null ? dto.getStatus() : Area.Status.INACTIVE);
+        area.setStatus(dto.getStatus());
         area.setDescription(dto.getDescription());
 
         // Map responsiblePerson

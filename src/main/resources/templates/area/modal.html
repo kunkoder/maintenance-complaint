@@ -33,7 +33,7 @@
                                 placeholder="Enter description..."></textarea>
                         </div>
 
-                        <div class="form-group">
+                        <!-- <div class="form-group">
                             <label>Responsible Person <span class="text-danger">*</span></label>
                             <select class="form-control" th:field="*{responsiblePerson.id}" required>
                                 <option value="" disabled selected>Select Person</option>
@@ -43,7 +43,43 @@
                             </select>
                             <div class="invalid-feedback" th:if="${#fields.hasErrors('responsiblePerson')}"
                                 th:errors="*{responsiblePerson}">Responsible person is required.</div>
+                        </div> -->
+
+                        <div class="form-group">
+                            <label>Responsible Person <span class="text-danger">*</span></label>
+                        
+                            <!-- Visible Autocomplete Input -->
+                            <input
+                                type="text"
+                                class="form-control"
+                                list="userOptions"
+                                id="responsiblePersonInput"
+                                placeholder="Search person by name or employee ID"
+                                autocomplete="off"
+                                required />
+                        
+                            <!-- Datalist for Autocomplete Suggestions -->
+                            <datalist id="userOptions">
+                                <option th:each="user : ${users}"
+                                        th:value="${user.name + ' (' + user.employeeId + ')'}"
+                                        th:data-id="${user.id}">
+                                </option>
+                            </datalist>
+                        
+                            <!-- Hidden Select with th:field (for reliable binding) -->
+                            <select class="d-none" th:field="*{responsiblePerson.id}" required>
+                                <option th:each="user : ${users}" th:value="${user.id}">
+                                    <!-- This text doesn't matter — only value is used -->
+                                </option>
+                            </select>
+                        
+                            <!-- Error Feedback -->
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('responsiblePerson.id')}"
+                                 th:errors="*{responsiblePerson.id}">
+                                Responsible person is required.
+                            </div>
                         </div>
+
 
                         <div class="form-group">
                             <label>Status <span class="text-danger">*</span></label>
@@ -103,25 +139,16 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="editStatus">Status</label>
-                                    <select class="form-control" id="editStatus">
+                                    <select class="form-control" id="editStatus" name="status">
                                         <option value="" disabled selected>Select Status</option>
-                                        <option value="ACTIVE">Active</option>
-                                        <option value="UNDER_MAINTENANCE">Under Maintenance</option>
-                                        <option value="INACTIVE">Inactive</option>
+                                        <option value="ACTIVE">ACTIVE</option>
+                                        <option value="INACTIVE">INACTIVE</option>
+                                        <option value="UNDER_MAINTENANCE">UNDER MAINTENANCE</option>
                                     </select>
                                     <div class="invalid-feedback">Please select a status.</div>
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Responsible Person</label>
-                                    <input type="text" class="form-control" id="editResponsiblePerson"
-                                        name="responsiblePerson">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-row">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Responsible Person <span class="text-danger">*</span></label>
@@ -252,5 +279,6 @@
                 reader.readAsDataURL(file);
             }
         };
+
     </script>
 </div>
