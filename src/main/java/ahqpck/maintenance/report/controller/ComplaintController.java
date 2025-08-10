@@ -26,6 +26,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -92,8 +95,6 @@ public class ComplaintController {
     public String getComplaintDetail(@PathVariable String id, Model model) {
         try {
             ComplaintDTO complaintDTO = complaintService.getComplaintById(id);
-
-            System.out.println(complaintDTO);
             model.addAttribute("complaint", complaintDTO);
             model.addAttribute("title", "Complaint Detail");
 
@@ -144,6 +145,7 @@ public class ComplaintController {
     // === UPDATE COMPLAINT ===
     @PostMapping("/update")
     public String updateComplaint(
+            // @RequestParam String partsUsedJson,
             @Valid @ModelAttribute ComplaintDTO complaintDTO,
             BindingResult bindingResult,
             RedirectAttributes ra) {
@@ -154,6 +156,14 @@ public class ComplaintController {
         }
 
         try {
+            // ObjectMapper mapper = new ObjectMapper();
+            // List<ComplaintPartDTO> partsUsed = mapper.readValue(
+            //         partsUsedJson,
+            //         new TypeReference<List<ComplaintPartDTO>>() {
+            //         });
+            //         System.out.println(partsUsedJson);
+            // complaintDTO.setPartsUsed(partsUsed);
+            // System.out.println(partsUsedJson);
             complaintService.updateComplaint(complaintDTO);
             ra.addFlashAttribute("success", "Complaint updated successfully.");
             return "redirect:/complaints";

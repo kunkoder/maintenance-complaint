@@ -1,0 +1,248 @@
+<div th:fragment="part-modal">
+    <!-- Modal: Add Part -->
+    <div class="modal fade" id="addPartModal" tabindex="-1" role="dialog" aria-labelledby="addPartModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white no-bd">
+                    <h5 class="modal-title" id="addPartModalLabel">
+                        <i class="fas fa-plus-circle mr-2"></i> Add Part
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Search Input -->
+                    <div class="form-group mb-3">
+                        <label for="partSearch">Search Parts</label>
+                        <input type="text" class="form-control" id="partSearch" placeholder="Search by code or name...">
+                    </div>
+
+                    <!-- Parts List -->
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="availablePartsTable">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Part Code</th>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr data-code="MTR-2001" data-name="AC Motor 1.5kW" data-category="Mechanical">
+                                    <td><code class="bg-light px-2 py-1 rounded">MTR-2001</code></td>
+                                    <td>AC Motor 1.5kW</td>
+                                    <td>Mechanical</td>
+                                    <td class="text-center">
+                                        <button class="btn btn-primary btn-sm select-part-btn">
+                                            <i class="fas fa-plus"></i> Select
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr data-code="BRG-8890" data-name="Ball Bearing 6205" data-category="Mechanical">
+                                    <td><code class="bg-light px-2 py-1 rounded">BRG-8890</code></td>
+                                    <td>Ball Bearing 6205</td>
+                                    <td>Mechanical</td>
+                                    <td class="text-center">
+                                        <button class="btn btn-primary btn-sm select-part-btn">
+                                            <i class="fas fa-plus"></i> Select
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr data-code="SEAL-102" data-name="O-Ring Seal Kit" data-category="Seals">
+                                    <td><code class="bg-light px-2 py-1 rounded">SEAL-102</code></td>
+                                    <td>O-Ring Seal Kit</td>
+                                    <td>Seals</td>
+                                    <td class="text-center">
+                                        <button class="btn btn-primary btn-sm select-part-btn">
+                                            <i class="fas fa-plus"></i> Select
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-2 pb-4 px-4">
+                    <button type="button" class="btn btn-danger btn-border" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Confirm Delete Part -->
+    <div class="modal fade" id="deletePartModal" tabindex="-1" role="dialog" aria-labelledby="deletePartModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white no-bd">
+                    <h5 class="modal-title" id="deletePartModalLabel">
+                        <i class="fas fa-trash-alt mr-2"></i> Remove Part
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-4">
+                    <p>Are you sure you want to remove this part from the list?</p>
+                    <strong id="partToRemove" class="text-dark"></strong>
+                    <p class="text-muted mt-2 mb-0">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer border-0 pt-2 pb-4 px-4">
+                    <button type="button" class="btn btn-secondary btn-border" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger ml-2" id="confirmRemovePart">Yes, Remove</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            // === Initialize parts list from existing table rows ===
+            let partsInUse = {};
+
+            function loadExistingParts() {
+                $('#partsTable tbody tr').each(function () {
+                    const code = $(this).attr('data-code');
+                    if (code) {
+                        partsInUse[code] = {
+                            code: code,
+                            name: $(this).attr('data-name'),
+                            category: $(this).attr('data-category'),
+                            qty: $(this).find('td:eq(3)').text().trim()
+                        };
+                    }
+                });
+            }
+            loadExistingParts();
+
+            // === SEARCH in Add Part Modal ===
+            $('#partSearch').on('keyup', function () {
+                const value = $(this).val().toLowerCase();
+                $('#availablePartsTable tbody tr').filter(function () {
+                    $(this).toggle(
+                        $(this).text().toLowerCase().indexOf(value) > -1
+                    );
+                });
+            });
+
+            // === ADD Part from Modal ===
+            $('#availablePartsTable').on('click', '.select-part-btn', function () {
+                const row = $(this).closest('tr');
+                const code = row.attr('data-code');
+                const name = row.attr('data-name');
+                const category = row.attr('data-category');
+
+                // Prevent duplicates
+                if (partsInUse[code]) {
+                    toastr.warning('Part already added.');
+                    return;
+                }
+
+                // Default quantity
+                const qty = '1';
+
+                // Create new row with data attributes
+                const $newRow = $(`
+            <tr data-code="${code}" data-name="${name}" data-category="${category}">
+                <td class="pl-3"><code class="bg-light px-2 py-1 rounded">${code}</code></td>
+                <td>${name}</td>
+                <td>${category}</td>
+                <td class="text-center font-weight-bold" contenteditable="true" data-original="${qty}">${qty}</td>
+                <td class="text-center">
+                    <button class="btn btn-link text-danger btn-sm delete-row" type="button">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            </tr>
+        `);
+
+                // Add to table and tracking
+                $('#partsTable tbody').append($newRow);
+                partsInUse[code] = { code, name, category, qty };
+
+                // Update hidden field
+                updatePartsUsedField();
+
+                // Notify
+                toastr.success(`${name} added.`);
+
+                // Close modal if desired
+                // $('#addPartModal').modal('hide');
+            });
+
+            // === DELETE Confirmation Modal Trigger ===
+            $('#partsTable').on('click', '.delete-row', function (e) {
+                e.preventDefault();
+                const row = $(this).closest('tr');
+                const code = row.attr('data-code');
+                const name = row.attr('data-name');
+
+                if (!code) {
+                    console.error('Missing data-code in row');
+                    return;
+                }
+
+                // Set modal info
+                $('#partToRemove').text(`${name} (${code})`);
+                $('#deletePartModal').data('code', code); // Store code for removal
+                $('#deletePartModal').modal('show');
+            });
+
+            // === CONFIRM DELETE ===
+            $('#confirmRemovePart').on('click', function () {
+                const code = $('#deletePartModal').data('code');
+                const row = $(`#partsTable tbody tr[data-code="${code}"]`);
+
+                if (row.length) {
+                    row.remove();
+                    delete partsInUse[code];
+                    updatePartsUsedField();
+                    toastr.info('Part removed.');
+                }
+
+                $('#deletePartModal').modal('hide');
+            });
+
+            // === EDIT Quantity (inline editable) ===
+            $('#partsTable').on('focus', 'td[contenteditable]', function () {
+                $(this).data('previous', $(this).text());
+            });
+
+            $('#partsTable').on('blur', 'td[contenteditable]', function () {
+                const $cell = $(this);
+                const $row = $cell.closest('tr');
+                const code = $row.attr('data-code');
+                const newValue = $cell.text().trim();
+
+                if (!code) return;
+
+                if (!newValue || isNaN(newValue) || newValue <= 0) {
+                    // Revert
+                    $cell.text($cell.data('previous'));
+                    toastr.error('Quantity must be a positive number.');
+                } else {
+                    $cell.text(newValue);
+                    $cell.data('original', newValue);
+                    partsInUse[code].qty = newValue;
+                    updatePartsUsedField();
+                }
+            });
+
+            // === Sync to Hidden Input ===
+            function updatePartsUsedField() {
+                const partsArray = Object.values(partsInUse);
+                $('#partsUsedData').val(JSON.stringify(partsArray));
+            }
+
+            // === Open Add Modal Button ===
+            $('#addPartBtn').on('click', function () {
+                $('#partSearch').val('');
+                $('#availablePartsTable tbody tr').show(); // Reset filter
+                $('#addPartModal').modal('show');
+            });
+        });
+    </script>
+</div>

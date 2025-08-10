@@ -56,30 +56,28 @@
                                 </div>
 
                                 <!-- Subject (Editable) -->
-                                <h3 class="mb-3" contenteditable="true" th:id="${'subject-field'}"
+                                <h3 class="mb-3 pb-2" contenteditable="true" th:id="${'subject-field'}"
                                     th:data-original="${complaint.subject}" th:text="${complaint.subject}"
-                                    style="cursor: text; border-bottom: 2px dashed transparent; transition: border-color 0.2s;"
-                                    onfocus="this.style.borderBottom='2px dashed #007bff';"
-                                    onblur="updateHiddenInput(this, 'subject-input');">
+                                    style="cursor: text; border-bottom: 2px dashed #ccc; transition: border-color 0.2s;"
+                                    onfocus="this.style.borderBottom = '2px dashed #007bff';"
+                                    onblur="this.style.borderBottom = '2px dashed #ccc'; updateHiddenInput(this, 'subject-input');">
                                 </h3>
                                 <input type="hidden" name="subject" th:value="${complaint.subject}"
                                     id="subject-input" />
 
                                 <!-- Badges: Priority, Category -->
                                 <div class="mb-4">
-                                    <span class="badge badge-info">Maintenance</span>
+                                    <span class="badge badge-info">MAINTENANCE</span>
 
                                     <span class="badge"
                                         th:classappend="${(complaint.priority == 'HIGH') ? 'badge-danger' : (complaint.priority == 'MEDIUM') ? 'badge-warning' : 'badge-secondary'}"
-                                        th:text="${complaint.priority} + ' Priority'" id="priority-field"
-                                        style="cursor: pointer;" title="Click to edit"
-                                        onclick="cyclePriority(this)"></span>
+                                        th:text="${complaint.priority} + ' PRIORITY'" id="priority-field"
+                                        style="cursor: pointer;" title="Click to edit"></span>
                                     <input type="hidden" name="priority" th:value="${complaint.priority}"
                                         id="priority-input" />
 
                                     <span class="badge badge-dark" th:text="${complaint.category}" id="category-field"
-                                        style="cursor: pointer;" title="Click to edit"
-                                        onclick="cycleCategory(this)"></span>
+                                        style="cursor: pointer;" title="Click to edit"></span>
                                     <input type="hidden" name="category" th:value="${complaint.category}"
                                         id="category-input" />
                                 </div>
@@ -89,26 +87,15 @@
                                     <div class="col-md-6">
                                         <p class="mb-2">
                                             <strong>Reporter:</strong>
-                                            <span th:id="${'reporter-field'}"
+                                            <span th:id="${'reporter-field'}" class="ml-2"
                                                 th:data-original="${complaint.reporter.name + ' (' + complaint.reporter.employeeId + ')'}"
                                                 th:text="${complaint.reporter.name + ' (' + complaint.reporter.employeeId + ')'}">
                                             </span>
                                         </p>
                                         <input type="hidden" name="reporterName"
                                             th:value="${complaint.reporter.name}" />
-                                        <input type="hidden" name="reporterEmployeeId"
+                                        <input type="hidden" name="reporter.employeeId"
                                             th:value="${complaint.reporter.employeeId}" />
-
-                                        <!-- <p class="mb-2">
-                                            <strong>Assignee:</strong>
-                                            <span th:id="${'assignee-field'}" contenteditable="true"
-                                                th:data-original="${complaint.assignee?.name ?: '-'}"
-                                                th:text="${complaint.assignee?.name ?: '-'}"
-                                                style="cursor: text; border-bottom: 1px dashed #ccc;">
-                                            </span>
-                                        </p>
-                                        <input type="hidden" name="assigneeName" th:value="${complaint.assignee?.name}"
-                                            id="assignee-input" /> -->
 
                                         <!-- Assignee -->
                                         <p class="mb-2">
@@ -117,12 +104,13 @@
                                                 class="form-control form-control-sm d-inline-block w-auto"
                                                 list="userOptions" id="assigneeInput"
                                                 style="border: none; cursor: text; border-bottom: 1px dashed #ccc;"
-                                                onfocus="this.style.borderBottom='2px dashed #007bff';" />
+                                                onfocus="this.style.borderBottom = '1px dashed #007bff';"
+                                                onblur="this.style.borderBottom = '1px dashed #ccc';" />
                                         </p>
                                         <!-- <input type="hidden" name="assigneeName" id="assigneeName" />
                                         <input type="hidden" name="assigneeEmployeeId" id="assigneeEmployeeId" /> -->
                                         <input type="hidden" name="assigneeName" id="assigneeName" />
-                                        <input type="hidden" name="assigneeEmployeeId" id="assigneeEmployeeId" />
+                                        <input type="hidden" name="assignee.employeeId" id="assigneeEmployeeId" />
 
                                         <datalist id="userOptions">
                                             <option th:each="user : ${users}"
@@ -130,28 +118,47 @@
                                                 th:data-employee-id="${user.employeeId}">
                                             </option>
                                         </datalist>
-
+                                        <!-- Area -->
                                         <p class="mb-2">
                                             <strong>Area:</strong>
-                                            <span th:id="${'area-field'}" contenteditable="true"
-                                                th:data-original="${complaint.area.name}"
-                                                th:text="${complaint.area.name}"
-                                                style="cursor: text; border-bottom: 1px dashed #ccc;">
-                                            </span>
+                                            <input type="text"
+                                                class="form-control form-control-sm d-inline-block w-auto"
+                                                list="areaOptions" id="areaInput" placeholder="Search area..."
+                                                style="border: none; cursor: text; border-bottom: 1px dashed #ccc;"
+                                                onfocus="this.style.borderBottom = '1px dashed #007bff';"
+                                                onblur="this.style.borderBottom = '1px dashed #ccc';" />
                                         </p>
-                                        <input type="hidden" name="areaName" th:value="${complaint.area.name}"
-                                            id="area-input" />
+                                        <input type="hidden" name="areaName" id="areaName" />
+                                        <input type="hidden" name="area.code" id="areaCode" />
 
+                                        <datalist id="areaOptions">
+                                            <option th:each="area : ${areas}"
+                                                th:value="${area.name} + ' (' + ${area.code} + ')'"
+                                                th:data-code="${area.code}">
+                                            </option>
+                                        </datalist>
+
+                                        <!-- Equipment -->
                                         <p class="mb-2">
                                             <strong>Equipment:</strong>
-                                            <span th:id="${'equipment-field'}" contenteditable="true"
-                                                th:data-original="${complaint.equipment.name}"
-                                                th:text="${complaint.equipment.name}"
-                                                style="cursor: text; border-bottom: 1px dashed #ccc;">
-                                            </span>
+                                            <input type="text"
+                                                class="form-control form-control-sm d-inline-block w-auto"
+                                                list="equipmentOptions" id="equipmentInput"
+                                                placeholder="Search equipment..."
+                                                style="border: none; cursor: text; border-bottom: 1px dashed #ccc;"
+                                                onfocus="this.style.borderBottom = '1px dashed #007bff';"
+                                                onblur="this.style.borderBottom = '1px dashed #ccc';" />
                                         </p>
-                                        <input type="hidden" name="equipmentName" th:value="${complaint.equipment.name}"
-                                            id="equipment-input" />
+                                        <input type="hidden" name="equipmentName" id="equipmentName" />
+                                        <input type="hidden" name="equipment.code" id="equipmentCode" />
+
+                                        <datalist id="equipmentOptions">
+                                            <option th:each="equipment : ${equipments}"
+                                                th:value="${equipment.name} + ' (' + ${equipment.code} + ')'"
+                                                th:data-code="${equipment.code}">
+                                            </option>
+                                        </datalist>
+
                                     </div>
                                     <div class="col-md-6">
                                         <p class="mb-2">
@@ -162,7 +169,7 @@
                                             </span>
                                         </p>
                                         <input type="hidden" name="reportDate"
-                                            th:value="${#temporals.format(complaint.reportDate, 'yyyy-MM-dd HH:mm')}" />
+                                            th:value="${#temporals.format(complaint.reportDate, 'yyyy-MM-dd''T''HH:mm')}" />
 
                                         <p class="mb-2" th:if="${complaint.closeTime != null}">
                                             <strong>Close Time:</strong>
@@ -329,7 +336,10 @@
                                             </tbody>
                                         </table>
                                     </div>
-                                    <input type="hidden" name="partsUsedData" id="partsUsedData" value="" />
+                                    <!-- Dynamic hidden inputs for Spring binding -->
+                                    <div id="partsUsedInputs"></div>
+                                    <!-- <input type="hidden" name="partsUsedJson" id="partsUsedData" value="" /> -->
+                                    <!-- <input type="hidden" name="partsUsed" id="partsUsedData" value="" /> -->
                                 </div>
 
                                 <!-- Action Buttons -->
@@ -359,8 +369,335 @@
         </div>
     </div>
 
-    <!-- Scripts Fragment -->
-    <!-- <th:block layout:fragment="scripts">
+    <th:block layout:fragment="scripts">
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            const USERS = /*[[${users}]]*/[];
+            const AREAS = /*[[${areas}]]*/[];
+            const EQUIPMENTS = /*[[${equipments}]]*/[];
+            const COMPLAINT = /*[[${complaint}]]*/ null;
+            /*]]>*/
+        </script>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                function updatePartsUsedInputs() {
+    const container = document.getElementById('partsUsedInputs');
+    container.innerHTML = ''; // Clear existing
+
+    const rows = document.querySelectorAll('#partsTable tbody tr');
+    rows.forEach((row, index) => {
+        const code = row.querySelector('code').textContent.trim();
+        const name = row.querySelector('td:nth-child(2)').textContent.trim();
+        const category = row.querySelector('td:nth-child(3)').textContent.trim();
+        const qty = row.querySelector('td:nth-child(4)').getAttribute('data-original') || '1';
+
+        // Helper to create hidden input
+        function addField(name, value) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = value;
+            container.appendChild(input);
+        }
+
+        // Add all fields
+        addField(`partsUsed[${index}].part.code`, code);
+        addField(`partsUsed[${index}].part.name`, name);
+        addField(`partsUsed[${index}].part.category`, category);
+        addField(`partsUsed[${index}].quantity`, qty);
+    });
+}
+
+                // === 1. Simple Sync: Input → Hidden Fields (Assignee, Area, Equipment) ===
+                function linkInputToHidden(inputId, ...hiddenIdConfigs) {
+                    const input = document.getElementById(inputId);
+                    if (!input) return;
+
+                    input.addEventListener('input', function () {
+                        const selectedOption = [...document.querySelectorAll(`#${input.list.id} option`)]
+                            .find(opt => opt.value === input.value);
+
+                        hiddenIdConfigs.forEach(config => {
+                            let value = '';
+                            if (typeof config === 'string') {
+                                // Simple case: just set input value
+                                value = input.value.trim();
+                            } else if (config.id && config.extract) {
+                                // Configured case: extract from dataset
+                                value = selectedOption ? selectedOption.dataset[config.extract] : '';
+                            }
+
+                            const field = document.getElementById(config.id || config);
+                            if (field) field.value = value;
+                        });
+                    });
+                }
+
+                // === 2. Prefill Input from Data ===
+                function setTextInput(inputId, value) {
+                    const input = document.getElementById(inputId);
+                    if (input) input.value = value;
+                }
+
+                // === 3. Initialize Autocomplete Sync ===
+                // === 3. Initialize Autocomplete Sync ===
+                linkInputToHidden('assigneeInput',
+                    { id: 'assigneeName', extract: null },           // value = full input
+                    { id: 'assigneeEmployeeId', extract: 'employeeId' } // value = dataset.employeeId
+                );
+
+                linkInputToHidden('areaInput',
+                    { id: 'areaName', extract: null },
+                    { id: 'areaCode', extract: 'code' }
+                );
+
+                linkInputToHidden('equipmentInput',
+                    { id: 'equipmentName', extract: null },
+                    { id: 'equipmentCode', extract: 'code' }
+                );
+
+                // === 4. Prefill from Complaint Data ===
+                // === 4. Prefill from Complaint Data ===
+                if (COMPLAINT) {
+                    // Assignee
+                    if (COMPLAINT.assignee) {
+                        const name = COMPLAINT.assignee.name;
+                        const id = COMPLAINT.assignee.employeeId;
+                        if (name && id) {
+                            // Display: "Alice (EMP001)"
+                            document.getElementById('assigneeInput').value = `${name} (${id})`;
+                            // Hidden input: only "EMP001"
+                            document.getElementById('assigneeName').value = name;
+                            document.getElementById('assigneeEmployeeId').value = id; // ← Only ID
+                        }
+                    }
+
+                    // Area
+                    if (COMPLAINT.area) {
+                        const name = COMPLAINT.area.name;
+                        const code = COMPLAINT.area.code;
+                        if (name && code) {
+                            document.getElementById('areaInput').value = `${name} (${code})`;
+                            document.getElementById('areaName').value = name;
+                            document.getElementById('areaCode').value = code;
+                        }
+                    }
+
+                    // Equipment
+                    if (COMPLAINT.equipment) {
+                        const name = COMPLAINT.equipment.name;
+                        const code = COMPLAINT.equipment.code;
+                        if (name && code) {
+                            document.getElementById('equipmentInput').value = `${name} (${code})`;
+                            document.getElementById('equipmentName').value = name;
+                            document.getElementById('equipmentCode').value = code;
+                        }
+                    }
+                }
+
+                // === 5. Editable Badge: Click → Select Dropdown ===
+                function makeEditable(fieldId, options, dynamicOptionsFn = null) {
+                    const field = document.getElementById(fieldId);
+                    if (!field) return;
+
+                    const originalValue = field.getAttribute('data-original') || field.innerText.trim();
+                    field.setAttribute('data-original', originalValue);
+                    field.style.cursor = 'pointer';
+                    field.title = 'Click to edit';
+
+                    field.addEventListener('click', function () {
+                        if (field.querySelector('select')) return; // Already editing
+
+                        let availableOptions = [];
+                        if (dynamicOptionsFn) {
+                            availableOptions = dynamicOptionsFn(originalValue);
+                        } else if (Array.isArray(options)) {
+                            availableOptions = options;
+                        }
+
+                        if (availableOptions.length === 0) return;
+
+                        const select = document.createElement('select');
+                        select.className = 'form-control form-control-sm';
+                        select.style.cssText = `
+                        padding: 0.3em 0.6em;
+                        font-size: ${window.getComputedStyle(field).fontSize};
+                        border-radius: 0.25rem;
+                        border: 2px solid ${window.getComputedStyle(field).color};
+                        background: ${window.getComputedStyle(field).backgroundColor};
+                        color: ${window.getComputedStyle(field).color};
+                    `;
+
+                        availableOptions.forEach(opt => {
+                            const option = document.createElement('option');
+                            option.value = opt;
+                            option.textContent = opt;
+                            if (opt === originalValue) option.selected = true;
+                            select.appendChild(option);
+                        });
+
+                        field.innerHTML = '';
+                        field.appendChild(select);
+                        select.focus();
+
+                        select.addEventListener('blur', function () {
+                            const newValue = select.value;
+                            if (newValue && newValue !== originalValue) {
+                                field.innerText = newValue;
+                                field.setAttribute('data-original', newValue);
+
+                                // Update badge class if needed
+                                if (field.classList.contains('badge')) {
+                                    updateBadgeClass(field, newValue);
+                                }
+                            } else {
+                                field.innerText = originalValue;
+                            }
+                        });
+
+                        select.addEventListener('change', function () {
+                            select.blur();
+                        });
+                    });
+                }
+
+                // === 6. Update Badge Class ===
+                function updateBadgeClass(badge, value) {
+                    badge.classList.remove(
+                        'badge-danger', 'badge-warning', 'badge-info', 'badge-primary', 'badge-success', 'badge-secondary'
+                    );
+
+                    if (value === 'OPEN') badge.classList.add('badge-danger');
+                    else if (value === 'IN_PROGRESS') badge.classList.add('badge-warning');
+                    else if (value === 'PENDING') badge.classList.add('badge-info');
+                    else if (value === 'DONE') badge.classList.add('badge-primary');
+                    else if (value === 'CLOSED') badge.classList.add('badge-success');
+                    else badge.classList.add('badge-secondary');
+                }
+
+                // === 7. Dynamic Options for Status ===
+                function getStatusOptions(currentStatus) {
+                    switch (currentStatus) {
+                        case 'OPEN': return ['OPEN', 'IN_PROGRESS'];
+                        case 'IN_PROGRESS': return ['IN_PROGRESS', 'PENDING', 'CLOSED'];
+                        case 'PENDING': return ['PENDING', 'IN_PROGRESS', 'CLOSED'];
+                        case 'CLOSED': return ['CLOSED', 'IN_PROGRESS'];
+                        default: return [];
+                    }
+                }
+
+                // === 8. Initialize Editable Badges ===
+                makeEditable('status-field', null, getStatusOptions);
+                makeEditable('priority-field', ['HIGH PRIORITY', 'MEDIUM PRIORITY', 'LOW PRIORITY']);
+                makeEditable('category-field', ['MECHANICAL', 'ELECTRICAL', 'IT']);
+
+                // But map to actual value on submit:
+                document.getElementById('priority-input').value = {
+                    'HIGH Priority': 'HIGH',
+                    'MEDIUM Priority': 'MEDIUM',
+                    'LOW Priority': 'LOW'
+                }[priorityField.innerText.trim()] || 'MEDIUM';
+
+                // === 9. Image Upload Preview ===
+                window.handleImageUpload = function (input, previewId, placeholderId) {
+                    const file = input.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const preview = document.getElementById(previewId);
+                        const placeholder = document.getElementById(placeholderId);
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                        if (placeholder) placeholder.style.display = 'none';
+                    };
+                    reader.readAsDataURL(file);
+                };
+
+                // === 10. Form Submit: Sync Dynamic Fields ===
+                const complaintForm = document.getElementById('complaintForm')
+                complaintForm.addEventListener('submit', function (e) {
+                    console.log(complaintForm)
+                    e.preventDefault()
+                    console.log(complaintForm)
+                    // Serialize parts table into JSON
+                    // const parts = [];
+                    // document.querySelectorAll('#partsTable tbody tr').forEach(row => {
+                    //     const code = row.querySelector('code').textContent.trim();
+                    //     const name = row.querySelector('td:nth-child(2)').textContent.trim();
+                    //     const category = row.querySelector('td:nth-child(3)').textContent.trim();
+                    //     const qty = parseInt(row.querySelector('td:nth-child(4)').getAttribute('data-original')) || 1;
+
+                    //     parts.push({
+                    //         part: {
+                    //             code: code,
+                    //             name: name,
+                    //             category: category
+                    //             // Add other PartDTO fields if needed: supplier, etc.
+                    //         },
+                    //         quantity: qty
+                    //     });
+                    // });
+
+                    // // Set JSON string to hidden input
+                    // document.getElementById('partsUsedData').value = JSON.stringify(parts);
+                    updatePartsUsedInputs();
+                    // Sync subject
+                    const subjectField = document.getElementById('subject-field');
+                    if (subjectField) {
+                        document.querySelector('input[name="subject"]').value = subjectField.innerText.trim();
+                    }
+
+                    // Sync status, priority, category
+                    const statusField = document.getElementById('status-field');
+                    const priorityField = document.getElementById('priority-field');
+                    const categoryField = document.getElementById('category-field');
+
+                    if (statusField) document.getElementById('status-input').value = statusField.innerText.trim();
+                    if (priorityField) document.getElementById('priority-input').value = priorityField.innerText.trim();
+                    if (categoryField) document.getElementById('category-input').value = categoryField.innerText.trim();
+
+                    // Sync description and action taken
+                    const description = document.getElementById('description-field');
+                    const actionTaken = document.getElementById('action-taken-field');
+
+                    if (description) document.getElementById('description-input').value = description.value.trim();
+                    if (actionTaken) document.getElementById('action-taken-input').value = actionTaken.value.trim();
+                });
+            });
+        </script>
+    </th:block>
+
+</body>
+
+</html>
+
+<!-- NOTE current response:
+http://localhost:8000/complaints/74JqB6BGtproxHS7dnF3e1?id=74JqB6BGtproxHS7dnF3e1
+&status=OPEN
+&subject=SSS
+&priority=HIGH
+&category=ELECTRICAL
+&reporterName=QQQ
+&reporterEmployeeId=QQQ
+&assigneeName=QQQ
+&assigneeEmployeeId=QQQ&
+areaName=ZZZ
+&areaCode=ZZZ
+&equipmentName=QQQ
+&equipmentCode=QQQ
+&reportDate=2025-08-10+18%3A25
+&totalResolutionTimeMinutes=
+&description=
+&actionTaken=
+&imageBeforeFile=
+&imageAfterFile=
+&partsUsedData= -->
+
+
+
+<!-- Scripts Fragment -->
+<!-- <th:block layout:fragment="scripts">
         <script th:inline="javascript">
             /*<![CDATA[*/
             const USERS = /*[[${users}]]*/[];
@@ -722,116 +1059,3 @@
             });
         </script>
     </th:block> -->
-
-    <th:block layout:fragment="scripts">
-        <script th:inline="javascript">
-            /*<![CDATA[*/
-            const USERS = /*[[${users}]]*/[];
-            const AREAS = /*[[${areas}]]*/[];
-            const EQUIPMENTS = /*[[${equipments}]]*/[];
-            const complaint = /*[[${complaint}]]*/ null;
-            /*]]>*/
-        </script>
-
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                // === 1. Simple Sync: Input → Hidden Fields ===
-                function linkInputToHidden(inputId, ...hiddenIds) {
-                    const input = document.getElementById(inputId);
-                    if (!input) return;
-
-                    input.addEventListener('input', function () {
-                        const value = this.value.trim();
-                        hiddenIds.forEach(id => {
-                            const field = document.getElementById(id);
-                            if (field) field.value = value;
-                        });
-                    });
-                }
-
-                // === 2. Prefill Input from Data ===
-                function setTextInput(inputId, value) {
-                    const input = document.getElementById(inputId);
-                    if (input) input.value = value;
-                }
-
-                // === 3. Initialize Autocomplete Sync ===
-                linkInputToHidden('assigneeInput', 'assigneeName', 'assigneeEmployeeId');
-                linkInputToHidden('areaInput', 'areaName', 'areaCode');
-                linkInputToHidden('equipmentInput', 'equipmentName', 'equipmentCode');
-
-                // === 4. Prefill from Complaint Data ===
-                
-                console.log(complaint);
-
-                if (complaint) {
-                    // Assignee
-                    if (complaint.assignee) {
-                        console.log(`${complaint.assignee.name} (${complaint.assignee.employeeId})`);
-                        setTextInput('assigneeInput', `${complaint.assignee.name} (${complaint.assignee.employeeId})`);
-                        setTextInput('assigneeName', complaint.assignee.name);
-                        setTextInput('assigneeEmployeeId', complaint.assignee.employeeId);
-                    }
-
-                    // Area
-                    if (complaint.area) {
-                        setTextInput('areaInput', `${complaint.area.name} (${complaint.area.code})`);
-                        setTextInput('areaName', complaint.area.name);
-                        setTextInput('areaCode', complaint.area.code);
-                    }
-
-                    // Equipment
-                    if (complaint.equipment) {
-                        setTextInput('equipmentInput', `${complaint.equipment.name} (${complaint.equipment.code})`);
-                        setTextInput('equipmentName', complaint.equipment.name);
-                        setTextInput('equipmentCode', complaint.equipment.code);
-                    }
-                }
-
-                // === 5. Image Upload Preview ===
-                window.handleImageUpload = function (input, previewId, placeholderId) {
-                    const file = input.files[0];
-                    if (!file) return;
-
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        const preview = document.getElementById(previewId);
-                        const placeholder = document.getElementById(placeholderId);
-                        preview.src = e.target.result;
-                        preview.style.display = 'block';
-                        if (placeholder) placeholder.style.display = 'none';
-                    };
-                    reader.readAsDataURL(file);
-                };
-
-                // === 6. Form Submit: Sync Dynamic Fields ===
-                document.getElementById('complaintForm').addEventListener('submit', function (e) {
-                    // Sync editable subject
-                    const subjectField = document.getElementById('subject-field');
-                    if (subjectField) {
-                        document.querySelector('input[name="subject"]').value = subjectField.innerText.trim();
-                    }
-
-                    // Sync status, priority, category
-                    const statusField = document.getElementById('status-field');
-                    const priorityField = document.getElementById('priority-field');
-                    const categoryField = document.getElementById('category-field');
-
-                    if (statusField) document.getElementById('status-input').value = statusField.innerText.trim();
-                    if (priorityField) document.getElementById('priority-input').value = priorityField.innerText.trim();
-                    if (categoryField) document.getElementById('category-input').value = categoryField.innerText.trim();
-
-                    // Sync description and action taken
-                    const description = document.getElementById('description-field');
-                    const actionTaken = document.getElementById('action-taken-field');
-
-                    if (description) document.getElementById('description-input').value = description.value.trim();
-                    if (actionTaken) document.getElementById('action-taken-input').value = actionTaken.value.trim();
-                });
-            });
-        </script>
-    </th:block>
-
-</body>
-
-</html>
