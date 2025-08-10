@@ -41,7 +41,7 @@ public class User {
     @Column(nullable = false)
     private String name;
 
-    @Column(unique = true)
+    @Column(unique = true, name = "employee_id", nullable = false)
     private String employeeId;
 
     @Column(unique = true, nullable = false)

@@ -127,6 +127,7 @@ public class AreaController {
             @Valid @ModelAttribute AreaDTO areaDTO,
             BindingResult bindingResult,
             RedirectAttributes ra) {
+                System.out.println("Area" + areaDTO);
 
         if (bindingResult.hasErrors()) {
             String errorMessage = bindingResult.getAllErrors().stream()

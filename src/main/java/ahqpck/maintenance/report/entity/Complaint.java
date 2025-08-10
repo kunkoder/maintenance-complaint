@@ -47,21 +47,21 @@ public class Complaint {
     // private String area;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "area_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "area_code", referencedColumnName = "code", nullable = false)
     private Area area;
 
     // @Column(nullable = false)
     // private String machine;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "equipment_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "equipment_code", referencedColumnName = "code", nullable = false)
     private Equipment equipment;
 
     // @Column(nullable = false)
     // private String reporter;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reporter_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "reporter", referencedColumnName = "employee_id", nullable = false)
     private User reporter;
 
     @Column(nullable = false)
@@ -74,7 +74,7 @@ public class Complaint {
     // private String assignee;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assignee_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "assignee", referencedColumnName = "employee_id", nullable = false)
     private User assignee;
 
     @Enumerated(EnumType.STRING)
@@ -115,7 +115,7 @@ public class Complaint {
     }
 
     public enum Status {
-        OPEN, IN_PROGRESS, PENDING, CLOSED
+        OPEN, IN_PROGRESS, PENDING, DONE, CLOSED
     }
 
     public void addPart(Part part, Integer quantity) {

@@ -16,107 +16,175 @@
 
                 <!-- Modal Body -->
                 <div class="modal-body p-4">
-                    <form id="formAdd">
+                    <form th:action="@{/complaints}" th:object="${complaintDTO}" method="post" id="formAdd"
+                        enctype="multipart/form-data">
+
                         <!-- Subject -->
                         <div class="form-group">
-                            <label for="addSubject">Subject <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="addSubject" placeholder="e.g. Motor Overheating"
-                                required>
-                            <div class="invalid-feedback">Please enter a subject.</div>
-                        </div>
-
-                        <!-- Row 2: Area & Machine -->
-                        <div class="form-row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="addArea">Area <span class="text-danger">*</span></label>
-                                    <select class="form-control" id="addArea" required>
-                                        <option value="" disabled selected>Select Area</option>
-                                        <option value="Production Floor A">Production Floor A</option>
-                                        <option value="Assembly Line 3">Assembly Line 3</option>
-                                        <option value="Paint Booth B">Paint Booth B</option>
-                                        <option value="Warehouse">Warehouse</option>
-                                        <option value="Packaging Zone">Packaging Zone</option>
-                                        <option value="Quality Control">Quality Control</option>
-                                    </select>
-                                    <div class="invalid-feedback">Please select an area.</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="addMachine">Machine</label>
-                                    <select class="form-control" id="addMachine">
-                                        <option value="" disabled selected>Select Machine (optional)</option>
-                                        <option value="Conveyor-5">Conveyor-5</option>
-                                        <option value="Press-Machine-2">Press-Machine-2</option>
-                                        <option value="Spray-Robot-7">Spray-Robot-7</option>
-                                        <option value="Forklift-EV12">Forklift-EV12</option>
-                                        <option value="Sealer-Machine-9">Sealer-Machine-9</option>
-                                        <option value="Inspection-Cam-4">Inspection-Cam-4</option>
-                                    </select>
-                                </div>
+                            <label for="subject">Subject <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" th:field="*{subject}"
+                                placeholder="e.g. Motor Overheating" required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('subject')}"
+                                th:errors="*{subject}">
+                                Please enter a subject.
                             </div>
                         </div>
 
-                        <!-- Row 3: Assignee & Priority -->
+                        <!-- Row 2: Area & Machine (Equipment) -->
+                        <div class="form-row">
+                            <!-- Area -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Area <span class="text-danger">*</span></label>
+
+                                    <!-- Visible Autocomplete Input -->
+                                    <input type="text" class="form-control" list="areaOptions" id="areaInput"
+                                        placeholder="Search area by name or code" autocomplete="off" required />
+
+                                    <!-- Datalist for Suggestions -->
+                                    <datalist id="areaOptions">
+                                        <option th:each="area : ${areas}"
+                                            th:value="${area.name} + ' (' + ${area.code} + ')'"
+                                            th:data-code="${area.code}">
+                                        </option>
+                                    </datalist>
+
+                                    <!-- Hidden Select for Thymeleaf Binding -->
+                                    <select class="d-none" th:field="*{area.code}" id="areaSelect">
+                                        <option th:each="area : ${areas}" th:value="${area.code}">Area</option>
+                                    </select>
+
+                                    <!-- Validation Feedback -->
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('area.code')}"
+                                        th:errors="*{area.code}">
+                                        Please select an area.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Equipment -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Equipment <span class="text-danger">*</span></label>
+
+                                    <!-- Visible Autocomplete Input -->
+                                    <input type="text" class="form-control" list="equipmentOptions" id="equipmentInput"
+                                        placeholder="Search equipment by name or code" autocomplete="off" required />
+
+                                    <!-- Datalist for Suggestions -->
+                                    <datalist id="equipmentOptions">
+                                        <option th:each="equipment : ${equipments}"
+                                            th:value="${equipment.name} + ' (' + ${equipment.code} + ')'"
+                                            th:data-code="${equipment.code}">
+                                        </option>
+                                    </datalist>
+
+                                    <!-- Hidden Select for Thymeleaf Binding -->
+                                    <select class="d-none" th:field="*{equipment.code}" id="equipmentSelect">
+                                        <option th:each="equipment : ${equipments}" th:value="${equipment.code}">
+                                            Equipment</option>
+                                    </select>
+
+                                    <!-- Validation Feedback -->
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('equipment.code')}"
+                                        th:errors="*{equipment.code}">
+                                        Please select equipment.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- Row 3: Reporter, Assignee & Priority -->
                         <div class="form-row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="addAssignee">Assignee</label>
-                                    <select class="form-control" id="addAssignee">
-                                        <option value="" disabled selected>Select Assignee (optional)</option>
-                                        <option value="Alice (Maintenance)">Alice (Maintenance)</option>
-                                        <option value="Bob (Mechanic)">Bob (Mechanic)</option>
-                                        <option value="Carol (Technician)">Carol (Technician)</option>
-                                        <option value="Dan (Electrical)">Dan (Electrical)</option>
+                                    <label for="reporter">Reporter <span class="text-danger">*</span></label>
+                                    <!-- Hidden Select for Binding -->
+                                    <select class="d-none" th:field="*{reporter.employeeId}" id="reporterSelect">
+                                        <option th:each="user : ${users}" th:value="${user.employeeId}">User</option>
                                     </select>
+                                    <!-- Autocomplete Input -->
+                                    <input type="text" class="form-control" list="userOptions" id="reporterInput"
+                                        placeholder="Search reporter by name or ID" autocomplete="off" required />
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="addPriority">Priority <span class="text-danger">*</span></label>
-                                    <select class="form-control" id="addPriority" required>
+                                    <label for="assignee">Assignee</label>
+                                    <!-- Hidden Select for Binding -->
+                                    <select class="d-none" th:field="*{assignee.employeeId}" id="assigneeSelect">
+                                        <option th:each="user : ${users}" th:value="${user.employeeId}">User</option>
+                                    </select>
+                                    <!-- Autocomplete Input -->
+                                    <input type="text" class="form-control" list="userOptions" id="assigneeInput"
+                                        placeholder="Search assignee by name or ID" autocomplete="off" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Datalist for User Autocomplete -->
+                        <datalist id="userOptions">
+                            <option th:each="user : ${users}" th:value="${user.name} + ' (' + ${user.employeeId} + ')'"
+                                th:data-employee-id="${user.employeeId}">
+                            </option>
+                        </datalist>
+
+                        <!-- Priority & Category -->
+                        <div class="form-row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="priority">Priority <span class="text-danger">*</span></label>
+                                    <select class="form-control" th:field="*{priority}" required>
                                         <option value="" disabled selected>Select Priority</option>
-                                        <option value="LOW">Low</option>
-                                        <option value="MEDIUM">Medium</option>
-                                        <option value="HIGH">High</option>
+                                        <option th:value="LOW">LOW</option>
+                                        <option th:value="MEDIUM">MEDIUM</option>
+                                        <option th:value="HIGH">HIGH</option>
                                     </select>
-                                    <div class="invalid-feedback">Please select a priority.</div>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('priority')}"
+                                        th:errors="*{priority}">
+                                        Please select a priority.
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- Category -->
-                        <div class="form-group">
-                            <label for="addCategory">Category <span class="text-danger">*</span></label>
-                            <select class="form-control" id="addCategory" required>
-                                <option value="" disabled selected>Select Category</option>
-                                <option value="MECHANICAL">Mechanical</option>
-                                <option value="ELECTRICAL">Electrical</option>
-                                <option value="IT">IT</option>
-                            </select>
-                            <div class="invalid-feedback">Please select a category.</div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="category">Category <span class="text-danger">*</span></label>
+                                    <select class="form-control" th:field="*{category}" required>
+                                        <option value="" disabled selected>Select Category</option>
+                                        <option th:value="MECHANICAL">MECHANICAL</option>
+                                        <option th:value="ELECTRICAL">ELECTRICAL</option>
+                                        <option th:value="IT">IT</option>
+                                    </select>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('category')}"
+                                        th:errors="*{category}">
+                                        Please select a category.
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Description -->
                         <div class="form-group mb-3">
-                            <label for="addDescription">Description <span class="text-muted">(optional)</span></label>
-                            <textarea class="form-control" id="addDescription" rows="4"
+                            <label for="description">Description <span class="text-muted">(optional)</span></label>
+                            <textarea class="form-control" th:field="*{description}" rows="4"
                                 placeholder="Describe the issue in detail..."></textarea>
                         </div>
 
                         <!-- Image Upload -->
                         <div class="form-group mb-0">
-                            <label for="addImageInput">Image <span class="text-muted">(optional)</span></label>
+                            <label for="imageBefore">Image <span class="text-muted">(optional)</span></label>
                             <div class="custom-file">
-                                <input type="file" class="custom-file-input" id="addImageInput" accept="image/*">
-                                <label class="custom-file-label" for="addImageInput">Choose file</label>
+                                <input type="file" class="custom-file-input" id="imageBefore" name="imageBeforeFile"
+                                    accept="image/*">
+                                <label class="custom-file-label" for="imageBefore">Choose file</label>
                             </div>
                             <div class="mt-2">
                                 <img id="addImagePreview" src="" alt="Image Preview" class="img-thumbnail"
                                     style="max-height: 150px; display: none;">
                             </div>
                         </div>
+
                     </form>
                 </div>
 
@@ -126,19 +194,78 @@
                         <i class="fas fa-asterisk text-danger mr-1"></i> Required fields
                     </small>
                     <div>
-                        <button type="button" class="btn btn-danger btn-border" data-dismiss="modal">
-                            Cancel
-                        </button>
-                        <button type="button" class="btn btn-primary ml-2" id="addComplaintButton">
-                            Create Report
-                        </button>
+                        <button type="button" class="btn btn-danger btn-border" data-dismiss="modal">Cancel</button>
+                        <button type="submit" form="formAdd" class="btn btn-primary ml-2">Create Report</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Flash Message Modal (Success or Error) -->
+    <div th:if="${error != null or success != null}" id="flashMessageModalContainer">
+        <div class="modal fade" id="flashMessageModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header"
+                        th:classappend="${error} ? 'bg-danger text-white' : 'bg-success text-white'">
+                        <h5 class="modal-title">
+                            <i
+                                th:class="${error} ? 'fas fa-exclamation-triangle mr-2' : 'fas fa-check-circle mr-2'"></i>
+                            <span th:text="${error} ? 'Error' : 'Success'">Status</span>
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body py-4">
+                        <div th:if="${error}" class="text-center">
+                            <ul class="list-unstyled">
+                                <li th:each="err : ${#strings.listSplit(error, '|')}">
+                                    <p class="mb-2" th:text="${err.trim()}">Error</p>
+                                </li>
+                            </ul>
+                        </div>
+                        <div th:if="${success}" class="text-center">
+                            <p th:text="${success}">Success</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer mt--3">
+                        <button type="button" class="btn" th:classappend="${error} ? 'btn-danger' : 'btn-success'"
+                            data-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        document.getElementById('addImageInput').onchange = function (evt) {
+        function syncSelect(inputId, selectId) {
+            const input = document.getElementById(inputId);
+            const select = document.getElementById(selectId);
+
+            if (!input || !select) {
+                console.warn(`Missing input or select: ${inputId}, ${selectId}`);
+                return;
+            }
+
+            input.addEventListener('input', () => {
+                const options = document.querySelectorAll(`#${selectId === 'reporterSelect' || selectId === 'assigneeSelect'
+                    ? 'userOptions' : selectId === 'areaSelect'
+                        ? 'areaOptions'
+                        : 'equipmentOptions'} option`);
+
+                const opt = [...options].find(o => o.value === input.value);
+                select.value = opt ? (opt.dataset.employeeId || opt.dataset.code) : '';
+            });
+        }
+
+        // === Initialize all fields ===
+        syncSelect('areaInput', 'areaSelect');
+        syncSelect('equipmentInput', 'equipmentSelect');
+        syncSelect('reporterInput', 'reporterSelect');
+        syncSelect('assigneeInput', 'assigneeSelect');
+        document.getElementById('imageBefore').onchange = function (evt) {
             const preview = document.getElementById('addImagePreview');
             const file = evt.target.files[0];
             if (file && file.type.match('image.*')) {

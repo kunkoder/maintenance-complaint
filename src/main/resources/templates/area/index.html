@@ -126,7 +126,7 @@
                                             <td data-field="name" th:text="${area.name}"></td>
                                             <td data-field="description" th:text="${area.description}"></td>
                                             <td data-field="responsiblePerson"
-                                                th:data-user-id="${area.responsiblePerson?.id}"
+                                                th:data-employee-id="${area.responsiblePerson?.employeeId}"
                                                 th:text="${area.responsiblePerson?.name ?: '-'}">-</td>
                                             <td data-field="status">
                                                 <span class="badge"
@@ -195,8 +195,17 @@
                     $('#editName').val(row.find('[data-field="name"]').text().trim());
                     $('#editDescription').val(row.find('[data-field="description"]').text().trim());
 
-                    // jQuery automatically converts data-* to camelCase
-                    $('#editResponsiblePerson').val(row.find('td[data-field="responsiblePerson"]').data('user-id'));
+                    const employeeName = row.find('[data-field="responsiblePerson"]').text().trim();
+                    const employeeId = row.find('[data-field="responsiblePerson"]').data('employeeId');
+                    
+                    $('#editResponsiblePersonInput').val(`${employeeName} (${employeeId})`);
+                    $('#editResponsiblePerson').val(employeeId); // immediate value
+                    // --- Responsible Person: Use same logic as before ---
+                    // const employeeId = row.find('td[data-field="responsiblePerson"]').data('employeeId').toString();
+                    // $('#editResponsiblePerson').val(employeeId);
+                    // const employeeDisplay =  `${row.find('td[data-field="responsiblePerson"]').text().trim()} (${employeeId})`;
+                    // $('#editResponsiblePersonInput').val(employeeDisplay);
+                    // console.log(employeeDisplay);
 
                     // Set status (convert badge text to enum)
                     const statusText = row.find('[data-field="status"]').text().trim().toUpperCase();

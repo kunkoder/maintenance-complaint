@@ -47,35 +47,28 @@
 
                         <div class="form-group">
                             <label>Responsible Person <span class="text-danger">*</span></label>
-                        
+
                             <!-- Visible Autocomplete Input -->
-                            <input
-                                type="text"
-                                class="form-control"
-                                list="userOptions"
-                                id="responsiblePersonInput"
-                                placeholder="Search person by name or employee ID"
-                                autocomplete="off"
-                                required />
-                        
+                            <input type="text" class="form-control" list="userOptions" id="responsiblePersonInput"
+                                placeholder="Search person by name or employee ID" autocomplete="off" required />
+
                             <!-- Datalist for Autocomplete Suggestions -->
                             <datalist id="userOptions">
                                 <option th:each="user : ${users}"
-                                        th:value="${user.name + ' (' + user.employeeId + ')'}"
-                                        th:data-id="${user.id}">
+                                    th:value="${user.name} + ' (' + ${user.employeeId} + ')'"
+                                    th:data-employee-id="${user.employeeId}">
                                 </option>
                             </datalist>
-                        
-                            <!-- Hidden Select with th:field (for reliable binding) -->
-                            <select class="d-none" th:field="*{responsiblePerson.id}" required>
-                                <option th:each="user : ${users}" th:value="${user.id}">
-                                    <!-- This text doesn't matter — only value is used -->
-                                </option>
+
+                            <!-- Hidden Select -->
+                            <select class="d-none" th:field="*{responsiblePerson.employeeId}"
+                                name="responsiblePerson.employeeId" id="responsiblePersonSelect">
+                                <option th:each="user : ${users}" th:value="${user.employeeId}">User</option>
                             </select>
-                        
+
                             <!-- Error Feedback -->
                             <div class="invalid-feedback" th:if="${#fields.hasErrors('responsiblePerson.id')}"
-                                 th:errors="*{responsiblePerson.id}">
+                                th:errors="*{responsiblePerson.id}">
                                 Responsible person is required.
                             </div>
                         </div>
@@ -150,15 +143,39 @@
                             </div>
 
                             <div class="col-md-6">
-                                <div class="form-group">
+                                <!-- <div class="form-group">
                                     <label>Responsible Person <span class="text-danger">*</span></label>
-                                    <select class="form-control" id="editResponsiblePerson" name="responsiblePerson.id"
+                                    <select class="form-control" id="editResponsiblePerson" name="responsiblePerson.employeeId"
                                         required>
                                         <option value="" disabled selected>Select Person</option>
-                                        <option th:each="user : ${users}" th:value="${user.id}"
+                                        <option th:each="user : ${users}" th:value="${user.employeeId}"
                                             th:text="${user.name} + ' (' + ${user.employeeId} + ')'">
                                         </option>
                                     </select>
+                                    <div class="invalid-feedback">Please select a responsible person.</div>
+                                </div> -->
+
+                                <div class="form-group">
+                                    <label>Responsible Person <span class="text-danger">*</span></label>
+
+                                    <!-- Visible input (required) -->
+                                    <input type="text" class="form-control" id="editResponsiblePersonInput"
+                                        list="userOptions" placeholder="Search person by name or ID" />
+
+                                    <!-- Datalist -->
+                                    <datalist id="userOptions">
+                                        <option th:each="user : ${users}"
+                                            th:value="${user.name} + ' (' + ${user.employeeId} + ')'"
+                                            th:data-employee-id="${user.employeeId}">
+                                        </option>
+                                    </datalist>
+
+                                    <!-- Hidden select (no required) -->
+                                    <select class="d-none" name="responsiblePerson.employeeId"
+                                        id="editResponsiblePerson">
+                                        <option th:each="user : ${users}" th:value="${user.employeeId}"></option>
+                                    </select>
+
                                     <div class="invalid-feedback">Please select a responsible person.</div>
                                 </div>
                             </div>
@@ -252,6 +269,38 @@
 
     <!-- JavaScript -->
     <script>
+        // document.addEventListener('DOMContentLoaded', function () {
+        //     const input = document.getElementById('responsiblePersonInput');
+        //     const select = document.querySelector('select[name="responsiblePerson.employeeId"]'); // ✅ Works
+        //     const options = document.querySelectorAll('#userOptions option');
+
+        //     if (!select) {
+        //         console.error("Hidden select not found!");
+        //         return;
+        //     }
+
+        //     input.addEventListener('input', () => {
+        //         const selected = [...options].find(opt => opt.value === input.value);
+        //         select.value = selected ? selected.dataset.employeeId : '';
+        //         console.log("respon", selected);
+        //     });
+        // });
+        function syncSelect(inputId, selectId) {
+            const input = document.getElementById(inputId);
+            const select = document.getElementById(selectId);
+
+            input.addEventListener('input', () => {
+                // Find matching option by display text
+                const opt = [...document.querySelectorAll('#userOptions option')]
+                    .find(o => o.value === input.value);
+                select.value = opt ? opt.dataset.employeeId : '';
+            });
+        }
+
+        // Initialize both modals
+        syncSelect('responsiblePersonInput', 'responsiblePersonSelect');
+        syncSelect('editResponsiblePersonInput', 'editResponsiblePerson');
+
         // Image Preview for Add
         document.getElementById('addImageInput').onchange = function (evt) {
             const preview = document.getElementById('addImagePreview');

@@ -34,38 +34,54 @@
             <div class="row">
                 <div class="col-md-12 ml-auto mr-auto">
                     <div class="card card-profile">
-                        <form id="complaintForm" action="/submit-complaint" method="POST" enctype="multipart/form-data">
+                        <form id="complaintForm" th:action="@{/complaints/update}" method="post"
+                            enctype="multipart/form-data">
                             <div class="card-body">
                                 <!-- Header: ID & Status -->
                                 <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <h5 class="mb-0 text-muted" id="complaint-key">fX9aB2kLmN</h5>
-                                    <span class="badge badge-success text-uppercase" id="status-field"
+                                    <h5 class="mb-0 text-muted" th:id="${'complaint-key'}" th:text="${complaint.id}">
+                                        fX9aB2kLmN</h5>
+                                    <span class="badge" th:id="${'status-field'}"
+                                        th:classappend="${(complaint.status == 'OPEN') ? 'badge-danger' : (complaint.status == 'IN_PROGRESS') ? 'badge-warning' : (complaint.status == 'PENDING') ? 'badge-info' : (complaint.status == 'DONE') ? 'badge-primary' : 'badge-success'}"
+                                        th:text="${complaint.status}" style="cursor: pointer; font-weight: 600;"
+                                        title="Click to change status" onclick="toggleStatus(this)"></span>
+                                    <input type="hidden" name="id" th:value="${complaint.id}" />
+                                    <input type="hidden" name="status" th:value="${complaint.status}"
+                                        id="status-input" />
+                                    <!-- <span class="badge badge-success text-uppercase" id="status-field"
                                         style="cursor: pointer; font-weight: 600;" title="Click to change status">
                                         CLOSED
                                     </span>
-                                    <input type="hidden" name="status" value="CLOSED">
+                                    <input type="hidden" name="status" value="CLOSED"> -->
                                 </div>
 
                                 <!-- Subject (Editable) -->
-                                <h3 class="mb-3" id="subject-field" contenteditable="true"
-                                    data-original="Motor Overheating and Noise"
+                                <h3 class="mb-3" contenteditable="true" th:id="${'subject-field'}"
+                                    th:data-original="${complaint.subject}" th:text="${complaint.subject}"
                                     style="cursor: text; border-bottom: 2px dashed transparent; transition: border-color 0.2s;"
                                     onfocus="this.style.borderBottom='2px dashed #007bff';"
-                                    onblur="this.style.borderBottom='2px dashed transparent';">
-                                    Motor Overheating and Noise
+                                    onblur="updateHiddenInput(this, 'subject-input');">
                                 </h3>
-                                <input type="hidden" name="subject" value="Motor Overheating and Noise">
+                                <input type="hidden" name="subject" th:value="${complaint.subject}"
+                                    id="subject-input" />
 
-                                <!-- Badges: Type, Priority, Category -->
+                                <!-- Badges: Priority, Category -->
                                 <div class="mb-4">
                                     <span class="badge badge-info">Maintenance</span>
-                                    <span class="badge badge-danger" id="priority-field" style="cursor: pointer;"
-                                        title="Click to edit">High Priority</span>
-                                    <input type="hidden" name="priority" value="High Priority">
 
-                                    <span class="badge badge-dark" id="category-field" style="cursor: pointer;"
-                                        title="Click to edit">Mechanical</span>
-                                    <input type="hidden" name="category" value="Mechanical">
+                                    <span class="badge"
+                                        th:classappend="${(complaint.priority == 'HIGH') ? 'badge-danger' : (complaint.priority == 'MEDIUM') ? 'badge-warning' : 'badge-secondary'}"
+                                        th:text="${complaint.priority} + ' Priority'" id="priority-field"
+                                        style="cursor: pointer;" title="Click to edit"
+                                        onclick="cyclePriority(this)"></span>
+                                    <input type="hidden" name="priority" th:value="${complaint.priority}"
+                                        id="priority-input" />
+
+                                    <span class="badge badge-dark" th:text="${complaint.category}" id="category-field"
+                                        style="cursor: pointer;" title="Click to edit"
+                                        onclick="cycleCategory(this)"></span>
+                                    <input type="hidden" name="category" th:value="${complaint.category}"
+                                        id="category-input" />
                                 </div>
 
                                 <!-- Details Grid -->
@@ -73,65 +89,101 @@
                                     <div class="col-md-6">
                                         <p class="mb-2">
                                             <strong>Reporter:</strong>
-                                            <span id="reporter-field" data-original="John Doe (Operator)">
-                                                John Doe (Operator)
+                                            <span th:id="${'reporter-field'}"
+                                                th:data-original="${complaint.reporter.name + ' (' + complaint.reporter.employeeId + ')'}"
+                                                th:text="${complaint.reporter.name + ' (' + complaint.reporter.employeeId + ')'}">
                                             </span>
                                         </p>
-                                        <input type="hidden" name="reporter" value="John Doe (Operator)">
+                                        <input type="hidden" name="reporterName"
+                                            th:value="${complaint.reporter.name}" />
+                                        <input type="hidden" name="reporterEmployeeId"
+                                            th:value="${complaint.reporter.employeeId}" />
 
+                                        <!-- <p class="mb-2">
+                                            <strong>Assignee:</strong>
+                                            <span th:id="${'assignee-field'}" contenteditable="true"
+                                                th:data-original="${complaint.assignee?.name ?: '-'}"
+                                                th:text="${complaint.assignee?.name ?: '-'}"
+                                                style="cursor: text; border-bottom: 1px dashed #ccc;">
+                                            </span>
+                                        </p>
+                                        <input type="hidden" name="assigneeName" th:value="${complaint.assignee?.name}"
+                                            id="assignee-input" /> -->
+
+                                        <!-- Assignee -->
                                         <p class="mb-2">
                                             <strong>Assignee:</strong>
-                                            <span id="assignee-field" contenteditable="true"
-                                                data-original="Alice (Maintenance)"
-                                                style="cursor: text; border-bottom: 1px dashed #ccc;">
-                                                Alice (Maintenance)
-                                            </span>
+                                            <input type="text"
+                                                class="form-control form-control-sm d-inline-block w-auto"
+                                                list="userOptions" id="assigneeInput"
+                                                style="border: none; cursor: text; border-bottom: 1px dashed #ccc;"
+                                                onfocus="this.style.borderBottom='2px dashed #007bff';" />
                                         </p>
-                                        <input type="hidden" name="assignee" value="Alice (Maintenance)">
+                                        <!-- <input type="hidden" name="assigneeName" id="assigneeName" />
+                                        <input type="hidden" name="assigneeEmployeeId" id="assigneeEmployeeId" /> -->
+                                        <input type="hidden" name="assigneeName" id="assigneeName" />
+                                        <input type="hidden" name="assigneeEmployeeId" id="assigneeEmployeeId" />
+
+                                        <datalist id="userOptions">
+                                            <option th:each="user : ${users}"
+                                                th:value="${user.name} + ' (' + ${user.employeeId} + ')'"
+                                                th:data-employee-id="${user.employeeId}">
+                                            </option>
+                                        </datalist>
 
                                         <p class="mb-2">
                                             <strong>Area:</strong>
-                                            <span id="area-field" contenteditable="true"
-                                                data-original="Production Floor A"
+                                            <span th:id="${'area-field'}" contenteditable="true"
+                                                th:data-original="${complaint.area.name}"
+                                                th:text="${complaint.area.name}"
                                                 style="cursor: text; border-bottom: 1px dashed #ccc;">
-                                                Production Floor A
                                             </span>
                                         </p>
-                                        <input type="hidden" name="area" value="Production Floor A">
+                                        <input type="hidden" name="areaName" th:value="${complaint.area.name}"
+                                            id="area-input" />
 
                                         <p class="mb-2">
-                                            <strong>Machine:</strong>
-                                            <span id="machine-field" contenteditable="true" data-original="Conveyor-5"
+                                            <strong>Equipment:</strong>
+                                            <span th:id="${'equipment-field'}" contenteditable="true"
+                                                th:data-original="${complaint.equipment.name}"
+                                                th:text="${complaint.equipment.name}"
                                                 style="cursor: text; border-bottom: 1px dashed #ccc;">
-                                                Conveyor-5
                                             </span>
                                         </p>
-                                        <input type="hidden" name="machine" value="Conveyor-5">
+                                        <input type="hidden" name="equipmentName" th:value="${complaint.equipment.name}"
+                                            id="equipment-input" />
                                     </div>
                                     <div class="col-md-6">
                                         <p class="mb-2">
                                             <strong>Report Date:</strong>
-                                            <span id="report-date-field" data-original="Apr 5, 2025 10:30">
-                                                Apr 5, 2025 10:30
+                                            <span th:id="${'report-date-field'}"
+                                                th:data-original="${#temporals.format(complaint.reportDate, 'MMM d, yyyy HH:mm')}"
+                                                th:text="${#temporals.format(complaint.reportDate, 'MMM d, yyyy HH:mm')}">
                                             </span>
                                         </p>
-                                        <input type="hidden" name="report_date" value="Apr 5, 2025 10:30">
+                                        <input type="hidden" name="reportDate"
+                                            th:value="${#temporals.format(complaint.reportDate, 'yyyy-MM-dd HH:mm')}" />
 
-                                        <p class="mb-2">
+                                        <p class="mb-2" th:if="${complaint.closeTime != null}">
                                             <strong>Close Time:</strong>
-                                            <span id="close-time-field" data-original="Apr 5, 2025 14:45">
-                                                Apr 5, 2025 14:45
+                                            <span th:id="${'close-time-field'}"
+                                                th:data-original="${#temporals.format(complaint.closeTime, 'MMM d, yyyy HH:mm')}"
+                                                th:text="${#temporals.format(complaint.closeTime, 'MMM d, yyyy HH:mm')}">
                                             </span>
                                         </p>
-                                        <input type="hidden" name="close_time" value="Apr 5, 2025 14:45">
+                                        <input type="hidden" name="closeTime"
+                                            th:value="${#temporals.format(complaint.closeTime, 'yyyy-MM-dd HH:mm')}"
+                                            th:if="${complaint.closeTime != null}" />
 
                                         <p class="mb-2">
                                             <strong>Resolution Time:</strong>
-                                            <span id="resolution-time-field" data-original="255 minutes">
-                                                255 minutes
+                                            <span th:id="${'resolution-time-field'}"
+                                                th:data-original="${complaint.totalResolutionTimeMinutes != null ? complaint.totalResolutionTimeMinutes + ' minutes' : '-'}"
+                                                th:text="${complaint.totalResolutionTimeMinutes != null ? complaint.totalResolutionTimeMinutes + ' minutes' : '-'}">
                                             </span>
                                         </p>
-                                        <input type="hidden" name="resolution_time" value="255 minutes">
+                                        <input type="hidden" name="totalResolutionTimeMinutes"
+                                            th:value="${complaint.totalResolutionTimeMinutes}" />
                                     </div>
                                 </div>
 
@@ -141,13 +193,13 @@
                                         <i class="fas fa-align-left mr-2 text-primary"></i> Description
                                     </h5>
                                     <textarea id="description-field" class="form-control" rows="6" readonly
-                                        data-original="The main drive motor is making loud grinding noise and temperature exceeds 90°C. Vibration levels are high during startup."
+                                        th:data-original="${complaint.description}" th:text="${complaint.description}"
                                         style="background-color: #f9f9fb; border: 1px solid #e9ecef; border-radius: 8px; padding: 12px; font-family: 'Segoe UI', sans-serif; cursor: pointer;"
-                                        onclick="this.readOnly = false; this.style.backgroundColor = '#fff'; this.style.boxShadow = '0 0 0 0.2rem rgba(0,123,255,.1)'; this.focus();">
-The main drive motor is making loud grinding noise and temperature exceeds 90°C. Vibration levels are high during startup.
-            </textarea>
-                                    <input type="hidden" name="description"
-                                        value="The main drive motor is making loud grinding noise and temperature exceeds 90°C. Vibration levels are high during startup.">
+                                        onclick="this.readOnly = false; this.style.backgroundColor = '#fff'; this.style.boxShadow = '0 0 0 0.2rem rgba(0,123,255,.1)'; this.focus();"
+                                        onblur="updateHiddenInput(this, 'description-input')">
+                            </textarea>
+                                    <input type="hidden" name="description" th:value="${complaint.description}"
+                                        id="description-input" />
                                 </div>
 
                                 <!-- Action Taken -->
@@ -156,13 +208,13 @@ The main drive motor is making loud grinding noise and temperature exceeds 90°C
                                         <i class="fas fa-wrench mr-2 text-success"></i> Action Taken
                                     </h5>
                                     <textarea id="action-taken-field" class="form-control" rows="6" readonly
-                                        data-original="Replaced AC motor (MTR-2001) and two ball bearings (BRG-8890). Realigned coupling and tested under load for 1 hour."
+                                        th:data-original="${complaint.actionTaken}" th:text="${complaint.actionTaken}"
                                         style="background-color: #f9f9fb; border: 1px solid #e9ecef; border-radius: 8px; padding: 12px; font-family: 'Segoe UI', sans-serif; cursor: pointer;"
-                                        onclick="this.readOnly = false; this.style.backgroundColor = '#fff'; this.style.boxShadow = '0 0 0 0.2rem rgba(0,123,255,.1)'; this.focus();">
-Replaced AC motor (MTR-2001) and two ball bearings (BRG-8890). Realigned coupling and tested under load for 1 hour.
-            </textarea>
-                                    <input type="hidden" name="action_taken"
-                                        value="Replaced AC motor (MTR-2001) and two ball bearings (BRG-8890). Realigned coupling and tested under load for 1 hour.">
+                                        onclick="this.readOnly = false; this.style.backgroundColor = '#fff'; this.style.boxShadow = '0 0 0 0.2rem rgba(0,123,255,.1)'; this.focus();"
+                                        onblur="updateHiddenInput(this, 'action-taken-input')">
+                            </textarea>
+                                    <input type="hidden" name="actionTaken" th:value="${complaint.actionTaken}"
+                                        id="action-taken-input" />
                                 </div>
 
                                 <!-- BEFORE & AFTER IMAGES -->
@@ -194,9 +246,9 @@ Replaced AC motor (MTR-2001) and two ball bearings (BRG-8890). Realigned couplin
                                                             <p class="mb-0 small">No image</p>
                                                         </div>
                                                     </div>
-                                                    <input type="file" name="before_image" accept="image/*"
+                                                    <input type="file" name="imageBeforeFile" accept="image/*"
                                                         style="display: none;"
-                                                        onchange="handleImageUpload(this, 'beforeImagePreview', 'beforeImagePlaceholder')">
+                                                        onchange="handleImageUpload(this, 'beforeImagePreview', 'beforeImagePlaceholder')" />
                                                 </div>
                                             </div>
                                         </div>
@@ -223,7 +275,7 @@ Replaced AC motor (MTR-2001) and two ball bearings (BRG-8890). Realigned couplin
                                                             <p class="mb-0 small">No image</p>
                                                         </div>
                                                     </div>
-                                                    <input type="file" name="after_image" accept="image/*"
+                                                    <input type="file" name="imageAfterFile" accept="image/*"
                                                         style="display: none;"
                                                         onchange="handleImageUpload(this, 'afterImagePreview', 'afterImagePlaceholder')">
                                                 </div>
@@ -243,44 +295,30 @@ Replaced AC motor (MTR-2001) and two ball bearings (BRG-8890). Realigned couplin
                                             <i class="fas fa-plus"></i> Add Part
                                         </button>
                                     </div>
-                                    <!-- Include Modals -->
+
+                                    <!-- Include Parts Modal -->
                                     <div th:replace="~{complaint/part-modal :: part-modal}"></div>
 
                                     <div class="table-responsive">
-                                        <table class="table table-hover table-sm rounded overflow-hidden"
-                                            id="partsTable">
-                                            <thead class="thead-light" style="background-color: #f8f9fa;">
+                                        <table class="table table-hover table-sm" id="partsTable">
+                                            <thead class="thead-light">
                                                 <tr>
-                                                    <th class="pl-3">Part Code</th>
+                                                    <th>Part Code</th>
                                                     <th>Name</th>
                                                     <th>Category</th>
                                                     <th class="text-center">Qty</th>
-                                                    <th class="text-center" style="width: 80px;">Action</th>
+                                                    <th class="text-center">Action</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr data-code="MTR-2001" data-name="AC Motor 1.5kW"
-                                                    data-category="Mechanical">
-                                                    <td><code class="bg-light px-2 py-1 rounded">MTR-2001</code></td>
-                                                    <td>AC Motor 1.5kW</td>
-                                                    <td>Mechanical</td>
+                                                <tr th:each="partDto : ${complaint.partsUsed}">
+                                                    <td><code class="bg-light px-2 py-1 rounded"
+                                                            th:text="${partDto.part.code}"></code></td>
+                                                    <td th:text="${partDto.part.name}"></td>
+                                                    <td th:text="${partDto.part.category}"></td>
                                                     <td class="text-center font-weight-bold" contenteditable="true"
-                                                        data-original="2">2</td>
-                                                    <td class="text-center">
-                                                        <button class="btn btn-link text-danger btn-sm delete-row"
-                                                            type="button">
-                                                            <i class="fas fa-trash-alt"></i>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                                <tr data-code="BRG-8890" data-name="Ball Bearing 6205"
-                                                    data-category="Mechanical">
-                                                    <td class="pl-3"><code
-                                                            class="bg-light px-2 py-1 rounded">BRG-8890</code></td>
-                                                    <td>Ball Bearing 6205</td>
-                                                    <td>Mechanical</td>
-                                                    <td class="text-center font-weight-bold" contenteditable="true"
-                                                        data-original="2">2</td>
+                                                        th:data-original="${partDto.quantity}"
+                                                        th:text="${partDto.quantity}"></td>
                                                     <td class="text-center">
                                                         <button class="btn btn-link text-danger btn-sm delete-row"
                                                             type="button">
@@ -291,17 +329,16 @@ Replaced AC motor (MTR-2001) and two ball bearings (BRG-8890). Realigned couplin
                                             </tbody>
                                         </table>
                                     </div>
-                                    <!-- Hidden field to capture parts table data on submit -->
-                                    <input type="hidden" name="parts_used" id="partsUsedData" value="">
+                                    <input type="hidden" name="partsUsedData" id="partsUsedData" value="" />
                                 </div>
 
                                 <!-- Action Buttons -->
                                 <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-4">
                                     <small class="text-muted">
                                         Last updated:
-                                        <span id="updated-at-field" contenteditable="true"
-                                            data-original="Apr 5, 2025 14:45" style="font-weight: 500;">
-                                            Apr 5, 2025 14:45
+                                        <span th:id="${'updated-at-field'}"
+                                            th:data-original="${#temporals.format(complaint.updatedAt, 'MMM d, yyyy HH:mm')}"
+                                            th:text="${#temporals.format(complaint.updatedAt, 'MMM d, yyyy HH:mm')}">
                                         </span>
                                     </small>
                                     <div>
@@ -315,9 +352,6 @@ Replaced AC motor (MTR-2001) and two ball bearings (BRG-8890). Realigned couplin
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Hidden fields to store dynamic values (will be updated by JS) -->
-                            <input type="hidden" name="complaint_id" value="fX9aB2kLmN">
                         </form>
                     </div>
                 </div>
@@ -326,8 +360,93 @@ Replaced AC motor (MTR-2001) and two ball bearings (BRG-8890). Realigned couplin
     </div>
 
     <!-- Scripts Fragment -->
-    <th:block layout:fragment="scripts">
+    <!-- <th:block layout:fragment="scripts">
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            const USERS = /*[[${users}]]*/[];
+            const AREAS = /*[[${areas}]]*/[];
+            const EQUIPMENTS = /*[[${equipments}]]*/[];
+            /*]]>*/
+        </script>
         <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                // === 1. Sync Function: Input → Hidden Fields ===
+                function setupAutocomplete(inputId, datalistId, dataKey, ...hiddenFieldIds) {
+                    const input = document.getElementById(inputId);
+                    const options = document.querySelectorAll(`#${datalistId} option`);
+
+                    input.addEventListener('input', () => {
+                        const selected = [...options].find(opt => opt.value === input.value);
+                        const value = selected ? selected.dataset[dataKey] : '';
+
+                        hiddenFieldIds.forEach(id => {
+                            const field = document.getElementById(id);
+                            if (field) field.value = value;
+                        });
+                    });
+                }
+
+                // === 2. Initialize Autocomplete Sync ===
+                setupAutocomplete('assigneeInput', 'userOptions', 'employeeId', 'assigneeEmployeeId', 'assigneeName');
+                setupAutocomplete('areaInput', 'areaOptions', 'code', 'areaCode', 'areaName');
+                setupAutocomplete('equipmentInput', 'equipmentOptions', 'code', 'equipmentCode', 'equipmentName');
+
+                // === 3. Prefill from Thymeleaf Data ===
+                const complaint = /*[[${complaint}]]*/ null;
+
+                if (complaint) {
+                    // --- Assignee ---
+                    if (complaint.assignee) {
+                        const name = complaint.assignee.name;
+                        const id = complaint.assignee.employeeId;
+                        if (name && id) {
+                            document.getElementById('assigneeInput').value = `${name} (${id})`;
+                            document.getElementById('assigneeEmployeeId').value = id;
+                            document.getElementById('assigneeName').value = name;
+                        }
+                    }
+
+                    // --- Area ---
+                    if (complaint.area) {
+                        const name = complaint.area.name;
+                        const code = complaint.area.code;
+                        if (name && code) {
+                            document.getElementById('areaInput').value = `${name} (${code})`;
+                            document.getElementById('areaCode').value = code;
+                            document.getElementById('areaName').value = name;
+                        }
+                    }
+
+                    // --- Equipment ---
+                    if (complaint.equipment) {
+                        const name = complaint.equipment.name;
+                        const code = complaint.equipment.code;
+                        if (name && code) {
+                            document.getElementById('equipmentInput').value = `${name} (${code})`;
+                            document.getElementById('equipmentCode').value = code;
+                            document.getElementById('equipmentName').value = name;
+                        }
+                    }
+                }
+
+                // === 4. (Keep your other logic: textarea edit, form submit, etc.) ===
+            });
+
+            function handleImageUpload(input, previewId, placeholderId) {
+                const file = input.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const preview = document.getElementById(previewId);
+                    const placeholder = document.getElementById(placeholderId);
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    placeholder.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+
             document.addEventListener("DOMContentLoaded", function () {
 
                 function makeTextareaEditable(fieldId) {
@@ -523,9 +642,20 @@ Replaced AC motor (MTR-2001) and two ball bearings (BRG-8890). Realigned couplin
                 makeEditable('status-field', 'select', null, getStatusOptions); // Dynamic options
                 makeEditable('priority-field', 'select', ['Low Priority', 'Medium Priority', 'High Priority']);
                 makeEditable('category-field', 'select', ['Mechanical', 'Electrical', 'Software', 'Safety']);
-                makeEditable('assignee-field', 'select', ['Budi', 'Nina', 'Joko', 'Dono']);
-                makeEditable('area-field', 'select', ['Budi', 'Nina', 'Joko', 'Dono']);
-                makeEditable('machine-field', 'select', ['Budi', 'Nina', 'Joko', 'Dono']);
+
+                // makeEditable('assignee-field', 'select',
+                //     USERS.map(u => `${u.name} (${u.employeeId})`)
+                // );
+
+                // Area: "Production Floor A (PF-A)"
+                makeEditable('area-field', 'select',
+                    AREAS.map(a => `${a.name} (${a.code})`)
+                );
+
+                // Equipment: "Conveyor-5 (CV-05)"
+                makeEditable('equipment-field', 'select',
+                    EQUIPMENTS.map(e => `${e.name} (${e.code})`)
+                );
 
                 // Optional: Format datetime-local fields on load (if needed)
                 document.querySelectorAll("span[id*='date'], span[id*='time']").forEach(span => {
@@ -540,21 +670,6 @@ Replaced AC motor (MTR-2001) and two ball bearings (BRG-8890). Realigned couplin
                     span.setAttribute('data-datetime-value', dtLocal); // Store for later use
                 });
 
-                function handleImageUpload(input, previewId, placeholderId) {
-                    const file = input.files[0];
-                    if (!file) return;
-
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        const preview = document.getElementById(previewId);
-                        const placeholder = document.getElementById(placeholderId);
-                        preview.src = e.target.result;
-                        preview.style.display = 'block';
-                        placeholder.style.display = 'none';
-                    };
-                    reader.readAsDataURL(file);
-                }
-
                 document.getElementById('complaintForm').addEventListener('submit', function (e) {
                     // Update hidden inputs from current DOM values
                     document.querySelector('input[name="subject"]').value = document.getElementById('subject-field').innerText.trim();
@@ -563,7 +678,7 @@ Replaced AC motor (MTR-2001) and two ball bearings (BRG-8890). Realigned couplin
                     document.querySelector('input[name="category"]').value = document.getElementById('category-field').innerText.trim();
                     document.querySelector('input[name="assignee"]').value = document.getElementById('assignee-field').innerText.trim();
                     document.querySelector('input[name="area"]').value = document.getElementById('area-field').innerText.trim();
-                    document.querySelector('input[name="machine"]').value = document.getElementById('machine-field').innerText.trim();
+                    document.querySelector('input[name="equipment"]').value = document.getElementById('equipment-field').innerText.trim();
                     document.querySelector('input[name="description"]').value = document.getElementById('description-field').value.trim();
                     document.querySelector('input[name="action_taken"]').value = document.getElementById('action-taken-field').value.trim();
                     document.querySelector('input[name="report_date"]').value = document.getElementById('report-date-field').getAttribute('data-original');
@@ -603,7 +718,116 @@ Replaced AC motor (MTR-2001) and two ball bearings (BRG-8890). Realigned couplin
                 updateHiddenInput('#category-field', 'input[name="category"]');
                 updateHiddenInput('#assignee-field', 'input[name="assignee"]');
                 updateHiddenInput('#area-field', 'input[name="area"]');
-                updateHiddenInput('#machine-field', 'input[name="machine"]');
+                updateHiddenInput('#equipment-field', 'input[name="equipment"]');
+            });
+        </script>
+    </th:block> -->
+
+    <th:block layout:fragment="scripts">
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            const USERS = /*[[${users}]]*/[];
+            const AREAS = /*[[${areas}]]*/[];
+            const EQUIPMENTS = /*[[${equipments}]]*/[];
+            const complaint = /*[[${complaint}]]*/ null;
+            /*]]>*/
+        </script>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                // === 1. Simple Sync: Input → Hidden Fields ===
+                function linkInputToHidden(inputId, ...hiddenIds) {
+                    const input = document.getElementById(inputId);
+                    if (!input) return;
+
+                    input.addEventListener('input', function () {
+                        const value = this.value.trim();
+                        hiddenIds.forEach(id => {
+                            const field = document.getElementById(id);
+                            if (field) field.value = value;
+                        });
+                    });
+                }
+
+                // === 2. Prefill Input from Data ===
+                function setTextInput(inputId, value) {
+                    const input = document.getElementById(inputId);
+                    if (input) input.value = value;
+                }
+
+                // === 3. Initialize Autocomplete Sync ===
+                linkInputToHidden('assigneeInput', 'assigneeName', 'assigneeEmployeeId');
+                linkInputToHidden('areaInput', 'areaName', 'areaCode');
+                linkInputToHidden('equipmentInput', 'equipmentName', 'equipmentCode');
+
+                // === 4. Prefill from Complaint Data ===
+                
+                console.log(complaint);
+
+                if (complaint) {
+                    // Assignee
+                    if (complaint.assignee) {
+                        console.log(`${complaint.assignee.name} (${complaint.assignee.employeeId})`);
+                        setTextInput('assigneeInput', `${complaint.assignee.name} (${complaint.assignee.employeeId})`);
+                        setTextInput('assigneeName', complaint.assignee.name);
+                        setTextInput('assigneeEmployeeId', complaint.assignee.employeeId);
+                    }
+
+                    // Area
+                    if (complaint.area) {
+                        setTextInput('areaInput', `${complaint.area.name} (${complaint.area.code})`);
+                        setTextInput('areaName', complaint.area.name);
+                        setTextInput('areaCode', complaint.area.code);
+                    }
+
+                    // Equipment
+                    if (complaint.equipment) {
+                        setTextInput('equipmentInput', `${complaint.equipment.name} (${complaint.equipment.code})`);
+                        setTextInput('equipmentName', complaint.equipment.name);
+                        setTextInput('equipmentCode', complaint.equipment.code);
+                    }
+                }
+
+                // === 5. Image Upload Preview ===
+                window.handleImageUpload = function (input, previewId, placeholderId) {
+                    const file = input.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const preview = document.getElementById(previewId);
+                        const placeholder = document.getElementById(placeholderId);
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                        if (placeholder) placeholder.style.display = 'none';
+                    };
+                    reader.readAsDataURL(file);
+                };
+
+                // === 6. Form Submit: Sync Dynamic Fields ===
+                document.getElementById('complaintForm').addEventListener('submit', function (e) {
+                    // Sync editable subject
+                    const subjectField = document.getElementById('subject-field');
+                    if (subjectField) {
+                        document.querySelector('input[name="subject"]').value = subjectField.innerText.trim();
+                    }
+
+                    // Sync status, priority, category
+                    const statusField = document.getElementById('status-field');
+                    const priorityField = document.getElementById('priority-field');
+                    const categoryField = document.getElementById('category-field');
+
+                    if (statusField) document.getElementById('status-input').value = statusField.innerText.trim();
+                    if (priorityField) document.getElementById('priority-input').value = priorityField.innerText.trim();
+                    if (categoryField) document.getElementById('category-input').value = categoryField.innerText.trim();
+
+                    // Sync description and action taken
+                    const description = document.getElementById('description-field');
+                    const actionTaken = document.getElementById('action-taken-field');
+
+                    if (description) document.getElementById('description-input').value = description.value.trim();
+                    if (actionTaken) document.getElementById('action-taken-input').value = actionTaken.value.trim();
+                });
             });
         </script>
     </th:block>

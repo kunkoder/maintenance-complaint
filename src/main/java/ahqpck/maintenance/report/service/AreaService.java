@@ -78,10 +78,13 @@ public class AreaService {
         area.setDescription(dto.getDescription());
 
         // Map responsiblePerson
-        if (dto.getResponsiblePerson() != null && dto.getResponsiblePerson().getId() != null) {
-            String userId = dto.getResponsiblePerson().getId();
-            area.setResponsiblePerson(userRepository.findById(userId)
-                    .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId)));
+        if (dto.getResponsiblePerson() != null && dto.getResponsiblePerson().getEmployeeId() != null) {
+            String empId = dto.getResponsiblePerson().getEmployeeId();
+
+            User user = userRepository.findByEmployeeId(empId)
+                    .orElseThrow(() -> new IllegalArgumentException("User not found with employeeId: " + empId));
+
+            area.setResponsiblePerson(user);
         } else {
             throw new IllegalArgumentException("Responsible person is required");
         }

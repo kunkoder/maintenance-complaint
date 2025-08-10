@@ -130,82 +130,52 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr class="table-row-hover" data-id="fX9aB2kLmN">
-                                            <td><a href="/complaints/fX9aB2kLmN"
-                                                    class="font-weight-bold">fX9aB2kLmN</a>
+                                        <tr th:each="complaint : ${complaints.content}" class="table-row-hover"
+                                            th:data-id="${complaint.id}">
+
+                                            <!-- Code -->
+                                            <td data-field="id">
+                                                <a th:href="@{/complaints/{id}(id=${complaint.id})}"
+                                                    class="font-weight-bold" th:text="${complaint.id}"></a>
                                             </td>
-                                            <td>Apr 5, 2025</td>
-                                            <td>Production Floor A</td>
-                                            <td>Conveyor-5</td>
-                                            <td>Motor Overheating and Noise</td>
-                                            <td>Alice (Maintenance)</td>
-                                            <td><span class="badge badge-success badge-pill px-3 py-2">CLOSED</span>
+
+                                            <!-- Date -->
+                                            <td data-field="reportDate"
+                                                th:text="${#temporals.format(complaint.reportDate, 'MMM d, yyyy')}">
+                                                5, 2025</td>
+
+                                            <!-- Area -->
+                                            <td data-field="area" th:text="${complaint.area?.name ?: '-'}">
+                                                Floor A</td>
+
+                                            <!-- Machine / Equipment -->
+                                            <td data-field="equipment" th:text="${complaint.equipment?.name ?: '-'}">
+                                                Conveyor-5</td>
+
+                                            <!-- Subject -->
+                                            <td data-field="subject" th:text="${complaint.subject}">
+                                                and Noise</td>
+
+                                            <!-- Assignee -->
+                                            <td data-field="assignee" th:data-user-id="${complaint.assignee?.id}"
+                                                th:text="${complaint.assignee?.name ?: '-'}"></td>
+
+                                            <!-- Status -->
+                                            <td data-field="status">
+                                                <span class="badge badge-pill px-3 py-2" th:classappend="${
+                      complaint.status == 'OPEN' ? 'badge-danger' :
+                      complaint.status == 'IN_PROGRESS' ? 'badge-warning' :
+                      complaint.status == 'PENDING' ? 'badge-info' :
+                      'badge-success'
+                  }" th:text="${complaint.status}"></span>
                                             </td>
-                                            <td>255 min</td>
-                                        </tr>
-                                        <tr class="table-row-hover" data-id="aB3cD5eF78">
-                                            <td><a href="/complaints/aB3cD5eF78"
-                                                    class="font-weight-bold">aB3cD5eF78</a>
+
+                                            <!-- Resolution Time -->
+                                            <td data-field="totalResolutionTimeMinutes">
+                                                <span th:if="${complaint.totalResolutionTimeMinutes != null}"
+                                                    th:text="${complaint.totalResolutionTimeMinutes + ' min'}"></span>
+                                                <span th:if="${complaint.totalResolutionTimeMinutes == null}">-</span>
                                             </td>
-                                            <td>Apr 4, 2025</td>
-                                            <td>Assembly Line 3</td>
-                                            <td>Press-Machine-2</td>
-                                            <td>Hydraulic Leak Detected</td>
-                                            <td>Bob (Mechanic)</td>
-                                            <td><span class="badge badge-warning badge-pill px-3 py-2">PENDING</span>
-                                            </td>
-                                            <td>180 min</td>
-                                        </tr>
-                                        <tr class="table-row-hover" data-id="xY7zR1wQ90">
-                                            <td><a href="/complaints/xY7zR1wQ90"
-                                                    class="font-weight-bold">xY7zR1wQ90</a>
-                                            </td>
-                                            <td>Apr 3, 2025</td>
-                                            <td>Paint Booth B</td>
-                                            <td>Spray-Robot-7</td>
-                                            <td>Software Crash on Startup</td>
-                                            <td>Carol (Technician)</td>
-                                            <td><span class="badge badge-primary badge-pill px-3 py-2">INPROGRESS</span>
-                                            </td>
-                                            <td>120 min</td>
-                                        </tr>
-                                        <tr class="table-row-hover" data-id="kL4mN8oP21">
-                                            <td><a href="/complaints/kL4mN8oP21"
-                                                    class="font-weight-bold">kL4mN8oP21</a>
-                                            </td>
-                                            <td>Apr 2, 2025</td>
-                                            <td>Warehouse</td>
-                                            <td>Forklift-EV12</td>
-                                            <td>Battery Not Charging</td>
-                                            <td>Dan (Electrical)</td>
-                                            <td><span class="badge badge-danger badge-pill px-3 py-2">OPEN</span></td>
-                                            <td>45 min</td>
-                                        </tr>
-                                        <tr class="table-row-hover" data-id="rT6uV3xZ44">
-                                            <td><a href="/complaints/rT6uV3xZ44"
-                                                    class="font-weight-bold">rT6uV3xZ44</a>
-                                            </td>
-                                            <td>Apr 1, 2025</td>
-                                            <td>Packaging Zone</td>
-                                            <td>Sealer-Machine-9</td>
-                                            <td>Overheating and Belt Slippage</td>
-                                            <td>Alice (Maintenance)</td>
-                                            <td><span class="badge badge-success badge-pill px-3 py-2">CLOSED</span>
-                                            </td>
-                                            <td>310 min</td>
-                                        </tr>
-                                        <tr class="table-row-hover" data-id="pQ2sM9nL55">
-                                            <td><a href="/complaints/pQ2sM9nL55"
-                                                    class="font-weight-bold">pQ2sM9nL55</a>
-                                            </td>
-                                            <td>Mar 30, 2025</td>
-                                            <td>Quality Control</td>
-                                            <td>Inspection-Cam-4</td>
-                                            <td>Faulty Image Recognition</td>
-                                            <td>Carol (Technician)</td>
-                                            <td><span class="badge badge-warning badge-pill px-3 py-2">PENDING</span>
-                                            </td>
-                                            <td>95 min</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -271,6 +241,15 @@
     <!-- Scripts Fragment -->
     <th:block layout:fragment="scripts">
         <!-- <script th:src="@{/js/example.js}"></script> -->
+        <script>
+            // Auto-show Flash Modal
+            $(document).ready(function () {
+                if ($('#flashMessageModalContainer').length) {
+                    console.log("modal");
+                    $('#flashMessageModal').modal('show');
+                }
+            });
+        </script>
     </th:block>
 
 </body>

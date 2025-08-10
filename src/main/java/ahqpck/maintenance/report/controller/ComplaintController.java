@@ -23,6 +23,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
@@ -41,6 +42,7 @@ public class ComplaintController {
     private final EquipmentService equipmentService;
     private final PartService partService;
     private final AreaService areaService;
+    private final UserService userService;
 
     // === LIST COMPLAINTS ===
     @GetMapping
@@ -54,7 +56,8 @@ public class ComplaintController {
 
         try {
             int zeroBasedPage = page - 1;
-            Page<ComplaintDTO> complaintPage = complaintService.getAllComplaints(keyword, zeroBasedPage, size, sortBy, asc);
+            Page<ComplaintDTO> complaintPage = complaintService.getAllComplaints(keyword, zeroBasedPage, size, sortBy,
+                    asc);
 
             model.addAttribute("complaints", complaintPage);
             model.addAttribute("keyword", keyword);
@@ -64,7 +67,7 @@ public class ComplaintController {
             model.addAttribute("asc", asc);
 
             model.addAttribute("title", "Complaint List");
-            model.addAttribute("sortFields", new String[]{
+            model.addAttribute("sortFields", new String[] {
                     "id", "subject", "status", "priority", "category",
                     "reportDate", "updatedAt", "closeTime"
             });
@@ -73,7 +76,7 @@ public class ComplaintController {
             model.addAttribute("users", getAllUsersForDropdown());
             model.addAttribute("areas", getAllAreasForDropdown());
             model.addAttribute("equipments", getAllEquipmentsForDropdown());
-            model.addAttribute("parts", getAllPartsForDropdown());
+            // model.addAttribute("parts", getAllPartsForDropdown());
 
             // Empty DTO for create form
             model.addAttribute("complaintDTO", new ComplaintDTO());
@@ -85,20 +88,49 @@ public class ComplaintController {
         return "complaint/index";
     }
 
+    @GetMapping("/{id}")
+    public String getComplaintDetail(@PathVariable String id, Model model) {
+        try {
+            ComplaintDTO complaintDTO = complaintService.getComplaintById(id);
+
+            System.out.println(complaintDTO);
+            model.addAttribute("complaint", complaintDTO);
+            model.addAttribute("title", "Complaint Detail");
+
+            // Load dropdown data
+            model.addAttribute("users", getAllUsersForDropdown());
+            model.addAttribute("areas", getAllAreasForDropdown());
+            model.addAttribute("equipments", getAllEquipmentsForDropdown());
+
+            return "complaint/detail"; // → src/main/resources/templates/complaint/detail.html
+
+        } catch (NotFoundException e) {
+            model.addAttribute("error", "Complaint not found: " + e.getMessage());
+            // return "error/404"; // or redirect to list
+            return "complaint/detail";
+        } catch (Exception e) {
+            model.addAttribute("error", "Failed to load complaint: " + e.getMessage());
+            // return "error/generic";
+            return "complaint/detail";
+        }
+    }
+
     // === CREATE COMPLAINT ===
     @PostMapping
     public String createComplaint(
             @Valid @ModelAttribute ComplaintDTO complaintDTO,
             BindingResult bindingResult,
+            @RequestParam(value = "imageBefore", required = false) MultipartFile imageBefore,
             RedirectAttributes ra) {
 
+        System.out.println("dto complaint" + complaintDTO);
         if (bindingResult.hasErrors()) {
             handleBindingErrors(bindingResult, ra, complaintDTO);
             return "redirect:/complaints";
         }
 
         try {
-            complaintService.createComplaint(complaintDTO);
+            complaintService.createComplaint(complaintDTO, imageBefore);
             ra.addFlashAttribute("success", "Complaint created successfully.");
             return "redirect:/complaints";
 
@@ -150,8 +182,9 @@ public class ComplaintController {
     private void handleBindingErrors(BindingResult bindingResult, RedirectAttributes ra, ComplaintDTO dto) {
         String errorMessage = bindingResult.getAllErrors().stream()
                 .map(error -> {
-                    String field = (error instanceof org.springframework.validation.FieldError) ?
-                            ((org.springframework.validation.FieldError) error).getField() : "Input";
+                    String field = (error instanceof org.springframework.validation.FieldError)
+                            ? ((org.springframework.validation.FieldError) error).getField()
+                            : "Input";
                     String message = error.getDefaultMessage();
                     return field + ": " + message;
                 })
@@ -161,19 +194,11 @@ public class ComplaintController {
         ra.addFlashAttribute("complaintDTO", dto);
     }
 
-    // private List<UserDTO> getAllUsersForDropdown() {
-    //     return userService.getAllUsers(null, 0, Integer.MAX_VALUE, "name", true)
-    //             .getContent().stream()
-    //             .map(this::mapToUserDTO)
-    //             .collect(Collectors.toList());
-    // }
-
     private List<UserDTO> getAllUsersForDropdown() {
-        return userRepository.findAll().stream()
-        .map(this::mapToUserDTO)
-        .collect(Collectors.toList());
+        return userService.getAllUsers(null, 0, Integer.MAX_VALUE, "name", true)
+                .getContent().stream()
+                .collect(Collectors.toList());
     }
-
 
     private List<AreaDTO> getAllAreasForDropdown() {
         return areaService.getAllAreas(null, 0, Integer.MAX_VALUE, "name", true)
@@ -181,70 +206,12 @@ public class ComplaintController {
                 .collect(Collectors.toList());
     }
 
-    // private List<AreaDTO> getAllAreasForDropdown() {
-    //     return areaRepository.findAll().stream()
-    //     .map(this::mapToAreaDTO)
-    //     .collect(Collectors.toList());
-    // }
-
     private List<EquipmentDTO> getAllEquipmentsForDropdown() {
         return equipmentService.getAllEquipments(null, 0, Integer.MAX_VALUE, "name", true)
                 .getContent().stream()
                 .collect(Collectors.toList());
     }
-
-    // private List<EquipmentDTO> getAllEquipmentsForDropdown() {
-    //     return equipmentRepository.findAll().stream()
-    //     .map(this::mapToEquipmentDTO)
-    //     .collect(Collectors.toList());
-    // }
-
-    private List<PartDTO> getAllPartsForDropdown() {
-        return partService.getAllParts(null, 0, Integer.MAX_VALUE, "name", true)
-                .getContent().stream()
-                .collect(Collectors.toList());
-    }
-
-    // Map User → UserDTO
-    private UserDTO mapToUserDTO(User user) {
-        UserDTO dto = new UserDTO();
-        dto.setId(user.getId());
-        dto.setName(user.getName());
-        dto.setEmployeeId(user.getEmployeeId());
-        dto.setEmail(user.getEmail());
-        dto.setStatus(user.getStatus());
-        return dto;
-    }
-
-    // Map Area → AreaDTO (minimal)
-    private AreaDTO mapToAreaDTO(Area area) {
-        AreaDTO dto = new AreaDTO();
-        dto.setId(area.getId());
-        dto.setCode(area.getCode());
-        dto.setName(area.getName());
-        dto.setStatus(area.getStatus());
-        return dto;
-    }
-
-    private EquipmentDTO mapToEquipmentDTO(Equipment equipment) {
-        EquipmentDTO dto = new EquipmentDTO();
-        dto.setId(equipment.getId());
-        dto.setCode(equipment.getCode());
-        dto.setName(equipment.getName());
-        return dto;
-    }
 }
-
-
-
-
-
-
-
-
-
-
-
 
 // package ahqpck.maintenance.report.controller;
 
@@ -256,16 +223,16 @@ public class ComplaintController {
 // @Controller
 // public class ComplaintController {
 
-//     @GetMapping("/complaints")
-//     public String index(Model model) {
-//         model.addAttribute("title", "Complaint List");
-//         return "complaint/index";
-//     }
-    
-//     @GetMapping("/complaints/{id}")
-//     public String detail(@PathVariable("id") String id, Model model) {
-//         model.addAttribute("title", "Complaint Detail");
-//         model.addAttribute("complaintId", id);
-//         return "complaint/detail";
-//     }
+// @GetMapping("/complaints")
+// public String index(Model model) {
+// model.addAttribute("title", "Complaint List");
+// return "complaint/index";
+// }
+
+// @GetMapping("/complaints/{id}")
+// public String detail(@PathVariable("id") String id, Model model) {
+// model.addAttribute("title", "Complaint Detail");
+// model.addAttribute("complaintId", id);
+// return "complaint/detail";
+// }
 // }

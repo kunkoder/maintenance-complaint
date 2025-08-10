@@ -42,7 +42,7 @@ public class Area {
     private Status status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "responsible_person", referencedColumnName = "employee_id", nullable = false)
     private User responsiblePerson;
 
     @OneToMany(mappedBy = "area", fetch = FetchType.LAZY)

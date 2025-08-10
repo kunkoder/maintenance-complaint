@@ -19,10 +19,8 @@ public class ComplaintDTO {
 
     private String id;
 
-    @NotNull(message = "Report date is mandatory")
     private LocalDateTime reportDate;
 
-    @NotNull(message = "Updated at is mandatory")
     private LocalDateTime updatedAt;
 
     @NotNull(message = "Area is mandatory")
@@ -53,7 +51,6 @@ public class ComplaintDTO {
     private String imageBefore;
     private String imageAfter;
 
-    @NotNull(message = "Status is mandatory")
     private Complaint.Status status;
 
     private LocalDateTime closeTime;

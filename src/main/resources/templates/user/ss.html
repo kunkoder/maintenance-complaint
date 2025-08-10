@@ -1,584 +1,388 @@
-<div th:fragment="modal">
-    <!-- Modal Add -->
-    <div class="modal fade" id="addRowModal" tabindex="-1" role="dialog" aria-labelledby="addRowModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white no-bd">
-                    <h5 class="modal-title" id="addRowModalLabel">Add New User</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body p-4">
-                    <form th:action="@{/users}" th:object="${userDTO}" method="post" enctype="multipart/form-data"
-                        id="formAdd">
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
 
-                        <!-- Full Name -->
-                        <div class="form-row">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label>Full Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" th:field="*{name}">
-                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}"
-                                        th:errors="*{name}">Please enter a full name.
-                                    </div>
-                                </div>
+<head>
+    <title th:text="${title}">Complaint Detail</title>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="row">
+        <div class="col-md-12 ml-auto mr-auto">
+            <div class="card card-profile">
+                <form id="complaintForm" th:action="@{/complaints/update}" method="post" enctype="multipart/form-data">
+                    <div class="card-body">
+                        <!-- Header: ID & Status -->
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="mb-0 text-muted" th:id="${'complaint-key'}" th:text="${complaint.id}">fX9aB2kLmN</h5>
+                            <span class="badge"
+                                  th:classappend="${complaint.status} == 'OPEN' ? 'badge-danger' :
+                                                 ${complaint.status} == 'IN_PROGRESS' ? 'badge-warning' :
+                                                 ${complaint.status} == 'PENDING' ? 'badge-info' :
+                                                 ${complaint.status} == 'DONE' ? 'badge-primary' :
+                                                 'badge-success'"
+                                  th:text="${complaint.status}"
+                                  style="cursor: pointer; font-weight: 600;"
+                                  title="Click to change status"
+                                  onclick="toggleStatus(this)"></span>
+                            <input type="hidden" name="id" th:value="${complaint.id}" />
+                            <input type="hidden" name="status" th:value="${complaint.status}" id="status-input" />
+                        </div>
+
+                        <!-- Subject (Editable) -->
+                        <h3 class="mb-3"
+                            contenteditable="true"
+                            th:id="${'subject-field'}"
+                            th:data-original="${complaint.subject}"
+                            th:text="${complaint.subject}"
+                            style="cursor: text; border-bottom: 2px dashed transparent; transition: border-color 0.2s;"
+                            onfocus="this.style.borderBottom='2px dashed #007bff';"
+                            onblur="updateHiddenInput(this, 'subject-input');">
+                        </h3>
+                        <input type="hidden" name="subject" th:value="${complaint.subject}" id="subject-input" />
+
+                        <!-- Badges: Priority, Category -->
+                        <div class="mb-4">
+                            <span class="badge badge-info">Maintenance</span>
+
+                            <span class="badge"
+                                  th:classappend="${complaint.priority} == 'HIGH' ? 'badge-danger' :
+                                                 ${complaint.priority} == 'MEDIUM' ? 'badge-warning' :
+                                                 'badge-secondary'"
+                                  th:text="${complaint.priority} + ' Priority'"
+                                  id="priority-field"
+                                  style="cursor: pointer;"
+                                  title="Click to edit"
+                                  onclick="cyclePriority(this)"></span>
+                            <input type="hidden" name="priority" th:value="${complaint.priority}" id="priority-input" />
+
+                            <span class="badge badge-dark"
+                                  th:text="${complaint.category}"
+                                  id="category-field"
+                                  style="cursor: pointer;"
+                                  title="Click to edit"
+                                  onclick="cycleCategory(this)"></span>
+                            <input type="hidden" name="category" th:value="${complaint.category}" id="category-input" />
+                        </div>
+
+                        <!-- Details Grid -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <p class="mb-2">
+                                    <strong>Reporter:</strong>
+                                    <span th:id="${'reporter-field'}"
+                                          th:data-original="${complaint.reporter.name + ' (' + complaint.reporter.employeeId + ')'}"
+                                          th:text="${complaint.reporter.name + ' (' + complaint.reporter.employeeId + ')'}">
+                                    </span>
+                                </p>
+                                <input type="hidden" name="reporterName" th:value="${complaint.reporter.name}" />
+                                <input type="hidden" name="reporterEmployeeId" th:value="${complaint.reporter.employeeId}" />
+
+                                <p class="mb-2">
+                                    <strong>Assignee:</strong>
+                                    <span th:id="${'assignee-field'}"
+                                          contenteditable="true"
+                                          th:data-original="${complaint.assignee?.name ?: '-'}"
+                                          th:text="${complaint.assignee?.name ?: '-'}"
+                                          style="cursor: text; border-bottom: 1px dashed #ccc;">
+                                    </span>
+                                </p>
+                                <input type="hidden" name="assigneeName" th:value="${complaint.assignee?.name}" id="assignee-input" />
+
+                                <p class="mb-2">
+                                    <strong>Area:</strong>
+                                    <span th:id="${'area-field'}"
+                                          contenteditable="true"
+                                          th:data-original="${complaint.area.name}"
+                                          th:text="${complaint.area.name}"
+                                          style="cursor: text; border-bottom: 1px dashed #ccc;">
+                                    </span>
+                                </p>
+                                <input type="hidden" name="areaName" th:value="${complaint.area.name}" id="area-input" />
+
+                                <p class="mb-2">
+                                    <strong>Equipment:</strong>
+                                    <span th:id="${'equipment-field'}"
+                                          contenteditable="true"
+                                          th:data-original="${complaint.equipment.name}"
+                                          th:text="${complaint.equipment.name}"
+                                          style="cursor: text; border-bottom: 1px dashed #ccc;">
+                                    </span>
+                                </p>
+                                <input type="hidden" name="equipmentName" th:value="${complaint.equipment.name}" id="equipment-input" />
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-2">
+                                    <strong>Report Date:</strong>
+                                    <span th:id="${'report-date-field'}"
+                                          th:data-original="${#temporals.format(complaint.reportDate, 'MMM d, yyyy HH:mm')}"
+                                          th:text="${#temporals.format(complaint.reportDate, 'MMM d, yyyy HH:mm')}">
+                                    </span>
+                                </p>
+                                <input type="hidden" name="reportDate" th:value="${#temporals.format(complaint.reportDate, 'yyyy-MM-dd HH:mm')}" />
+
+                                <p class="mb-2" th:if="${complaint.closeTime != null}">
+                                    <strong>Close Time:</strong>
+                                    <span th:id="${'close-time-field'}"
+                                          th:data-original="${#temporals.format(complaint.closeTime, 'MMM d, yyyy HH:mm')}"
+                                          th:text="${#temporals.format(complaint.closeTime, 'MMM d, yyyy HH:mm')}">
+                                    </span>
+                                </p>
+                                <input type="hidden" name="closeTime" th:value="${#temporals.format(complaint.closeTime, 'yyyy-MM-dd HH:mm')}" th:if="${complaint.closeTime != null}" />
+
+                                <p class="mb-2">
+                                    <strong>Resolution Time:</strong>
+                                    <span th:id="${'resolution-time-field'}"
+                                          th:data-original="${complaint.totalResolutionTimeMinutes != null ? complaint.totalResolutionTimeMinutes + ' minutes' : '-'}"
+                                          th:text="${complaint.totalResolutionTimeMinutes != null ? complaint.totalResolutionTimeMinutes + ' minutes' : '-'}">
+                                    </span>
+                                </p>
+                                <input type="hidden" name="totalResolutionTimeMinutes" th:value="${complaint.totalResolutionTimeMinutes}" />
                             </div>
                         </div>
 
-                        <!-- Employee ID & Email -->
-                        <div class="form-row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Employee ID <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" th:field="*{employeeId}">
-                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('employeeId')}"
-                                        th:errors="*{employeeId}">Please enter an employee ID.
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Email <span class="text-danger">*</span></label>
-                                    <input type="email" class="form-control" th:field="*{email}">
-                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}"
-                                        th:errors="*{email}">Please enter a valid email.
-                                    </div>
-                                </div>
-                            </div>
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <h5 class="d-flex align-items-center mb-2">
+                                <i class="fas fa-align-left mr-2 text-primary"></i> Description
+                            </h5>
+                            <textarea id="description-field" class="form-control" rows="6" readonly
+                                      th:data-original="${complaint.description}"
+                                      th:text="${complaint.description}"
+                                      style="background-color: #f9f9fb; border: 1px solid #e9ecef; border-radius: 8px; padding: 12px; font-family: 'Segoe UI', sans-serif; cursor: pointer;"
+                                      onclick="this.readOnly = false; this.style.backgroundColor = '#fff'; this.style.boxShadow = '0 0 0 0.2rem rgba(0,123,255,.1)'; this.focus();"
+                                      onblur="updateHiddenInput(this, 'description-input')">
+                            </textarea>
+                            <input type="hidden" name="description" th:value="${complaint.description}" id="description-input" />
                         </div>
 
-                        <!-- Password & Roles -->
-                        <div class="form-row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Password <span class="text-danger">*</span></label>
-                                    <input type="password" class="form-control" th:field="*{password}">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Role(s) <span class="text-danger">*</span></label>
+                        <!-- Action Taken -->
+                        <div class="mb-4">
+                            <h5 class="d-flex align-items-center mb-2">
+                                <i class="fas fa-wrench mr-2 text-success"></i> Action Taken
+                            </h5>
+                            <textarea id="action-taken-field" class="form-control" rows="6" readonly
+                                      th:data-original="${complaint.actionTaken}"
+                                      th:text="${complaint.actionTaken}"
+                                      style="background-color: #f9f9fb; border: 1px solid #e9ecef; border-radius: 8px; padding: 12px; font-family: 'Segoe UI', sans-serif; cursor: pointer;"
+                                      onclick="this.readOnly = false; this.style.backgroundColor = '#fff'; this.style.boxShadow = '0 0 0 0.2rem rgba(0,123,255,.1)'; this.focus();"
+                                      onblur="updateHiddenInput(this, 'action-taken-input')">
+                            </textarea>
+                            <input type="hidden" name="actionTaken" th:value="${complaint.actionTaken}" id="action-taken-input" />
+                        </div>
 
-                                    <!-- Hidden select (for form submission) -->
-                                    <select id="roleSelect" name="roleNames" multiple style="display: none;">
-                                        <option th:each="role : ${roles}" th:value="${role.name}"
-                                            th:text="${role.name}"></option>
-                                    </select>
-
-                                    <!-- Custom tag input UI -->
-                                    <div class="tag-input" id="tagInput">
-                                        <div class="tag-list" id="tagList">
-                                            <!-- Tags will be added here dynamically -->
+                        <!-- BEFORE & AFTER IMAGES -->
+                        <div class="mb-4">
+                            <h5 class="d-flex align-items-center mb-3">
+                                <i class="fas fa-images mr-2 text-primary"></i> Visual Documentation
+                            </h5>
+                            <div class="row">
+                                <!-- BEFORE REPAIR -->
+                                <div class="col-md-6">
+                                    <div class="card border-light shadow-sm h-50">
+                                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                            <strong class="text-warning">
+                                                <i class="fas fa-camera mr-1"></i> Before Repair
+                                            </strong>
                                         </div>
-                                        <input type="text" id="tagSearch" class="tag-input-field"
-                                            placeholder="Add role..." list="roleOptions">
+                                        <div class="card-body d-flex flex-column align-items-center text-center p-3"
+                                             style="cursor: pointer; background-color: #fcfcfd;"
+                                             onclick="this.querySelector('input[type=file]').click();">
+                                            <div id="beforeImageContainer" class="w-100 d-flex justify-content-center">
+                                                <img id="beforeImagePreview"
+                                                     th:src="@{/upload/complaint/image/before/} + ${complaint.imageBefore}"
+                                                     th:if="${complaint.imageBefore != null}"
+                                                     alt="Before Repair Preview"
+                                                     class="img-fluid rounded"
+                                                     style="max-height: 300px; object-fit: scale-down;" />
+                                                <div id="beforeImagePlaceholder" class="text-muted" th:if="${complaint.imageBefore == null}">
+                                                    <i class="fas fa-image fa-2x mb-2" style="opacity: 0.3;"></i>
+                                                    <p class="mb-0 small">No image</p>
+                                                </div>
+                                            </div>
+                                            <input type="file" name="imageBeforeFile" accept="image/*" style="display: none;"
+                                                   onchange="updateImagePreview(this, 'beforeImagePreview', 'beforeImagePlaceholder')" />
+                                        </div>
                                     </div>
-
-                                    <!-- Datalist for autocomplete -->
-                                    <datalist id="roleOptions">
-                                        <option th:each="role : ${roles}" th:value="${role.name}"></option>
-                                    </datalist>
-
-                                    <!-- Validation error -->
-                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('roleNames')}"
-                                        th:errors="*{roleNames}">
-                                        Please select at least one role.
+                                </div>
+                                <!-- AFTER REPAIR -->
+                                <div class="col-md-6">
+                                    <div class="card border-light shadow-sm h-50">
+                                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                            <strong class="text-success">
+                                                <i class="fas fa-check-circle mr-1"></i> After Repair
+                                            </strong>
+                                        </div>
+                                        <div class="card-body d-flex flex-column align-items-center text-center p-3"
+                                             style="cursor: pointer; background-color: #fcfcfd;"
+                                             onclick="this.querySelector('input[type=file]').click();">
+                                            <div id="afterImageContainer" class="w-100 d-flex justify-content-center">
+                                                <img id="afterImagePreview"
+                                                     th:src="@{/upload/complaint/image/after/} + ${complaint.imageAfter}"
+                                                     th:if="${complaint.imageAfter != null}"
+                                                     alt="After Repair Preview"
+                                                     class="img-fluid rounded"
+                                                     style="max-height: 300px; object-fit: scale-down;" />
+                                                <div id="afterImagePlaceholder" class="text-muted" th:if="${complaint.imageAfter == null}">
+                                                    <i class="fas fa-image fa-2x mb-2" style="opacity: 0.3;"></i>
+                                                    <p class="mb-0 small">No image</p>
+                                                </div>
+                                            </div>
+                                            <input type="file" name="imageAfterFile" accept="image/*" style="display: none;"
+                                                   onchange="updateImagePreview(this, 'afterImagePreview', 'afterImagePlaceholder')" />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Image Upload -->
-                        <div class="form-row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Image <span class="text-muted">(optional)</span></label>
-                                    <div class="custom-file">
-                                        <input type="file" class="custom-file-input" id="addImageInput" name="imageFile"
-                                            accept="image/*">
-                                        <label class="custom-file-label" for="addImageInput">Choose file</label>
-                                    </div>
-                                    <div class="mt-2">
-                                        <img id="addImagePreview" src="" alt="Image Preview" class="img-thumbnail"
-                                            style="max-height: 150px; display: none;">
-                                    </div>
-                                </div>
+                        <!-- Parts Used -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="d-flex align-items-center mb-0">
+                                    <i class="fas fa-cogs mr-2 text-secondary"></i> Parts Used
+                                </h5>
+                                <button type="button" class="btn btn-primary btn-sm btn-round"
+                                        data-toggle="modal" data-target="#addPartModal">
+                                    <i class="fas fa-plus"></i> Add Part
+                                </button>
                             </div>
+
+                            <!-- Include Parts Modal -->
+                            <div th:replace="~{complaint/part-modal :: part-modal}"></div>
+
+                            <div class="table-responsive">
+                                <table class="table table-hover table-sm" id="partsTable">
+                                    <thead class="thead-light">
+                                    <tr>
+                                        <th>Part Code</th>
+                                        <th>Name</th>
+                                        <th>Category</th>
+                                        <th class="text-center">Qty</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="partDto : ${complaint.partsUsed}">
+                                        <td><code class="bg-light px-2 py-1 rounded" th:text="${partDto.part.code}"></code></td>
+                                        <td th:text="${partDto.part.name}"></td>
+                                        <td th:text="${partDto.part.category}"></td>
+                                        <td class="text-center font-weight-bold" contenteditable="true"
+                                            th:data-original="${partDto.quantity}"
+                                            th:text="${partDto.quantity}"></td>
+                                        <td class="text-center">
+                                            <button class="btn btn-link text-danger btn-sm delete-row" type="button">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <input type="hidden" name="partsUsedData" id="partsUsedData" value="" />
                         </div>
 
-                    </form>
-                </div>
-                <div class="modal-footer border-0 pt-2 pb-4 px-4 d-flex justify-content-between">
-                    <small class="text-muted">
-                        <i class="fas fa-asterisk text-danger mr-1"></i> Required fields
-                    </small>
-                    <div>
-                        <button type="button" class="btn btn-danger btn-border" data-dismiss="modal">Cancel</button>
-                        <button type="submit" form="formAdd" class="btn btn-primary ml-2">Save User</button>
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-4">
+                            <small class="text-muted">
+                                Last updated:
+                                <span th:id="${'updated-at-field'}"
+                                      th:data-original="${#temporals.format(complaint.updatedAt, 'MMM d, yyyy HH:mm')}"
+                                      th:text="${#temporals.format(complaint.updatedAt, 'MMM d, yyyy HH:mm')}">
+                                </span>
+                            </small>
+                            <div>
+                                <button type="button" class="btn btn-danger btn-border btn-round mr-2"
+                                        data-toggle="modal" data-target="#deleteConfirmModal">
+                                    <i class="fas fa-trash-alt"></i> Delete
+                                </button>
+                                <button type="submit" class="btn btn-primary btn-round" id="saveChangesBtn">
+                                    <i class="fas fa-save"></i> Save Changes
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>
 
-    <!-- Modal Edit -->
-    <div class="modal fade" id="editRowModal" tabindex="-1" role="dialog" aria-labelledby="editRowModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white no-bd">
-                    <h5 class="modal-title" id="editRowModalLabel">Edit User</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body p-4">
-                    <form th:action="@{/users/update}" th:object="${user}" method="post" enctype="multipart/form-data"
-                        id="formEdit">
-                        <input type="hidden" name="id" id="editId">
+    <!-- Include Modals -->
+    <div th:replace="~{complaint/modal :: deleteConfirmModal}"></div>
 
-                        <!-- Full Name -->
-                        <div class="form-group">
-                            <label>Full Name <span class="text-danger">*</span></label>
-                            <input type="text" name="name" class="form-control" id="editName" required>
-                            <div class="invalid-feedback">Please enter a name.</div>
-                        </div>
-
-                        <!-- Employee ID & Email -->
-                        <div class="form-row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Employee ID <span class="text-danger">*</span></label>
-                                    <input type="text" name="employeeId" class="form-control" id="editEmployeeId"
-                                        required>
-                                    <div class="invalid-feedback">Please enter an employee ID.</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Email <span class="text-danger">*</span></label>
-                                    <input type="email" name="email" class="form-control" id="editEmail" required>
-                                    <div class="invalid-feedback">Please enter a valid email.</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Password & Role -->
-                        <div class="form-row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Password <span class="text-muted">(leave blank to keep
-                                            current)</span></label>
-                                    <input type="password" name="password" class="form-control" id="editPassword">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Role(s) <span class="text-danger">*</span></label>
-
-                                    <!-- Hidden select (for form submission) -->
-                                    <select id="roleSelect" name="roleNames" multiple style="display: none;">
-                                        <option th:each="role : ${roles}" th:value="${role.name}"
-                                            th:text="${role.name}"></option>
-                                    </select>
-
-                                    <div class="tag-input" id="editTagInput">
-                                        <div class="tag-list" id="editTagList"></div>
-                                        <input type="text" id="editTagSearch" class="tag-input-field"
-                                            placeholder="Add role..." list="roleOptions">
-                                    </div>
-
-                                    <!-- Hidden select -->
-                                    <select id="editRoleSelect" name="roleNames" multiple
-                                        style="display: none;"></select>
-
-                                    <!-- Datalist for autocomplete -->
-                                    <datalist id="roleOptions">
-                                        <option th:each="role : ${roles}" th:value="${role.name}"></option>
-                                    </datalist>
-
-                                    <!-- Validation error -->
-                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('roleNames')}"
-                                        th:errors="*{roleNames}">
-                                        Please select at least one role.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Image Upload & Status Toggle -->
-                        <div class="form-row">
-                            <!-- Image Upload & Management -->
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Current Image <span class="text-muted">(optional)</span></label>
-                                    <div class="mb-2">
-                                        <img id="editImagePreview" src="" alt="No image" class="img-thumbnail"
-                                            style="max-height: 150px; display: none;">
-                                    </div>
-
-                                    <!-- Delete Image Checkbox -->
-                                    <div class="custom-control custom-checkbox mb-2">
-                                        <input type="checkbox" class="custom-control-input" id="deleteImage"
-                                            name="deleteImage" value="true">
-                                        <label class="custom-control-label" for="deleteImage">
-                                            <small>Remove current image</small>
-                                        </label>
-                                    </div>
-
-                                    <div class="custom-file">
-                                        <input type="file" class="custom-file-input" id="editImageInput"
-                                            name="imageFile" accept="image/*">
-                                        <label class="custom-file-label" for="editImageInput">Change image...</label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Status</label>
-                                    <div class="d-flex align-items-center mt-2">
-                                        <input type="checkbox" class="switch" id="editStatusSwitch">
-                                        <label class="switch-label mr-2 mb-0" for="editStatusSwitch"></label>
-                                        <span class="switch-text" id="editStatusText"></span>
-                                        <input type="hidden" name="status" id="editStatusTextHidden">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer border-0 pt-2 pb-4 px-4 d-flex justify-content-between">
-                    <small class="text-muted">
-                        <i class="fas fa-asterisk text-danger mr-1"></i> Required fields
-                    </small>
-                    <div>
-                        <button type="button" class="btn btn-danger btn-border" data-dismiss="modal">Cancel</button>
-                        <button type="submit" form="formEdit" class="btn btn-primary ml-2">Save Changes</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Delete -->
-    <div class="modal fade" id="deleteRowModal" tabindex="-1" role="dialog" aria-labelledby="deleteRowModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white no-bd">
-                    <h5 class="modal-title" id="deleteRowModalLabel">Delete User</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body p-4">
-                    <p>Are you sure you want to delete this user?</p>
-                    <strong id="deleteDocName" class="text-dark"></strong>
-                    <p class="text-muted mt-2 mb-0">This action cannot be undone.</p>
-                </div>
-                <div class="modal-footer border-0 pt-2 pb-4 px-4">
-                    <button type="button" class="btn btn-secondary btn-border" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger ml-2" id="confirmDeleteButton">Yes, Delete</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Flash Message Modal (Success or Error) -->
-    <div th:if="${error != null or success != null}" id="flashMessageModalContainer">
-        <div class="modal fade" id="flashMessageModal" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header"
-                        th:classappend="${error} ? 'bg-danger text-white' : 'bg-success text-white'">
-                        <h5 class="modal-title">
-                            <i
-                                th:class="${error} ? 'fas fa-exclamation-triangle mr-2' : 'fas fa-check-circle mr-2'"></i>
-                            <span th:text="${error} ? 'Error' : 'Success'">Status</span>
-                        </h5>
-                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body py-4">
-                        <div th:if="${error}" class="text-center">
-                            <ul class="list-unstyled">
-                                <li th:each="err : ${#strings.listSplit(error, '|')}">
-                                    <p class="mb-2" th:text="${err.trim()}">Error</p>
-                                </li>
-                            </ul>
-                        </div>
-                        <div th:if="${success}" class="text-center">
-                            <p th:text="${success}">Success</p>
-                        </div>
-                    </div>
-                    <div class="modal-footer mt--3">
-                        <button type="button" class="btn" th:classappend="${error} ? 'btn-danger' : 'btn-success'"
-                            data-dismiss="modal">OK</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <style>
-        /* --- Switch Toggle Styling --- */
-        .switch {
-            position: absolute;
-            width: 0;
-            height: 0;
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .switch+.switch-label {
-            position: relative;
-            background: #1a2035;
-            width: 50px;
-            height: 24px;
-            border-radius: 24px;
-            cursor: pointer;
-            transition: background 0.2s ease-in-out;
-            display: inline-block;
-            flex-shrink: 0;
-        }
-
-        .switch+.switch-label::after {
-            content: "";
-            background: #fff;
-            width: 20px;
-            height: 20px;
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            border-radius: 50%;
-            transition: left 0.3s ease-in-out;
-        }
-
-        .switch:checked+.switch-label {
-            background: #6861CE;
-        }
-
-        .switch:checked+.switch-label::after {
-            left: 28px;
-        }
-
-        .switch-text {
-            font-size: 0.9rem;
-            color: #6c757d;
-            margin-left: 8px;
-            transition: color 0.2s ease-in-out;
-        }
-
-        .switch:checked~.switch-text {
-            color: #495057;
-            font-weight: 500;
-        }
-
-        .switch:focus+.switch-label {
-            box-shadow: 0 0 0 2px rgba(104, 97, 206, 0.25);
-        }
-
-        /* Tag Input Container - Bootstrap-like */
-        .tag-input {
-            /* Match .form-control */
-            border: 1px solid #ebedf2;
-            border-radius: 0.25rem;
-            /* 6px - Bootstrap default */
-            padding: 0.375rem 0.75rem;
-            /* 6px 12px - Bootstrap padding */
-            min-height: calc(1.5em + 0.75rem + 2px);
-            /* ~42px, matches input height */
-            line-height: 1.5;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 0.375rem;
-            /* 6px gap between tags */
-            background-color: #fff;
-            background-clip: padding-box;
-            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-            cursor: text;
-            width: 100%;
-        }
-
-        /* Focus style like Bootstrap */
-        .tag-input:focus-within {
-            border-color: #3e93ff;
-            outline: 0;
-        }
-
-        /* Optional: Disabled state */
-        .tag-input:has(input:disabled) {
-            background-color: #e9ecef;
-            opacity: 1;
-            pointer-events: none;
-        }
-
-        /* Tag List */
-        .tag-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin: 0;
-            padding: 0;
-            list-style: none;
-        }
-
-        /* Individual Tag */
-        .tag {
-            background: #007bff;
-            color: white;
-            border-radius: 20px;
-            padding: 4px 10px;
-            font-size: 0.875rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-weight: 500;
-        }
-
-        .tag .remove-tag {
-            margin-left: 4px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #fff;
-            opacity: 0.8;
-            cursor: pointer;
-            line-height: 1;
-        }
-
-        .tag .remove-tag:hover {
-            opacity: 1;
-        }
-
-        /* Input Field inside Tag Input */
-        .tag-input-field {
-            border: none;
-            outline: none;
-            font-size: 0.9rem;
-            padding: 4px;
-            flex: 1;
-            min-width: 120px;
-        }
-
-        .tag-input-field::placeholder {
-            color: #999;
-        }
-    </style>
-
-    <!-- JavaScript -->
-    <script>
-        // Image Preview for Add
-        document.getElementById('addImageInput').onchange = function (evt) {
-            const preview = document.getElementById('addImagePreview');
-            const file = evt.target.files[0];
-            if (file && file.type.match('image.*')) {
-                const reader = new FileReader();
-                reader.onload = function () {
-                    preview.src = reader.result;
-                    preview.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            }
-        };
-
-        // Image Preview for Edit
-        document.getElementById('editImageInput').onchange = function (evt) {
-            const preview = document.getElementById('editImagePreview');
-            const file = evt.target.files[0];
-            if (file && file.type.match('image.*')) {
-                const reader = new FileReader();
-                reader.onload = function () {
-                    preview.src = reader.result;
-                    preview.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            }
-        };
-
-
-        document.addEventListener("DOMContentLoaded", function () {
-            const tagInput = document.getElementById("tagInput");
-            const tagSearch = document.getElementById("tagSearch");
-            const tagList = document.getElementById("tagList");
-            const hiddenSelect = document.getElementById("roleSelect");
-            const datalist = document.getElementById("roleOptions");
-            const options = Array.from(datalist.options).map(opt => opt.value);
-
-            // Sync tags to hidden select
-            function syncSelect() {
-                const selectedValues = Array.from(tagList.querySelectorAll(".tag")).map(tag => tag.dataset.value);
-                // Clear and repopulate hidden select
-                hiddenSelect.innerHTML = "";
-                selectedValues.forEach(value => {
-                    const option = document.createElement("option");
-                    option.value = value;
-                    option.selected = true;
-                    hiddenSelect.appendChild(option);
-                });
-            }
-
-            // Add a tag
-            function addTag(value) {
-                if (!value || Array.from(tagList.querySelectorAll(".tag")).some(tag => tag.dataset.value === value)) return;
-
-                const tag = document.createElement("div");
-                tag.className = "tag";
-                tag.dataset.value = value;
-
-                tag.innerHTML = `
-            ${value}
-            <span class="remove-tag" onclick="removeTag(this)">×</span>
-        `;
-
-                tagList.appendChild(tag);
-                syncSelect();
-            }
-
-            // Remove a tag
-            window.removeTag = function (el) {
-                const tag = el.parentElement;
-                tag.remove();
-                syncSelect();
-            };
-
-            // Add tag on Enter, Tab, or comma
-            tagSearch.addEventListener("keydown", function (e) {
-                if (e.key === "Enter" || e.key === "," || e.key === "Tab") {
-                    e.preventDefault();
-                    const value = tagSearch.value.trim().replace(/,$/, "");
-                    if (options.includes(value)) {
-                        addTag(value);
-                        tagSearch.value = "";
-                    }
-                }
-            });
-
-            // Allow clicking on datalist options
-            tagSearch.addEventListener("change", function () {
-                const value = tagSearch.value.trim();
-                if (options.includes(value)) {
-                    addTag(value);
-                    tagSearch.value = "";
-                }
-            });
-
-            // Focus search when clicking container
-            tagInput.addEventListener("click", function () {
-                tagSearch.focus();
-            });
-
-            // Prevent form submission on Enter in search
-            tagSearch.addEventListener("keydown", function (e) {
-                if (e.key === "Enter") {
-                    e.preventDefault();
-                }
-            });
-        });
-
-        
-    </script>
+    <!-- JavaScript for interactivity -->
+    <script th:replace="~{complaint/detail-js :: scripts}"></script>
 </div>
+</body>
+</html>
+<div th:fragment="scripts">
+<script>
+    function updateHiddenInput(element, hiddenId) {
+        document.getElementById(hiddenId).value = element.textContent.trim();
+    }
+
+    function updateImagePreview(input, imgId, placeholderId) {
+        const file = input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById(imgId);
+                const placeholder = document.getElementById(placeholderId);
+                img.src = e.target.result;
+                img.style.display = 'block';
+                if (placeholder) placeholder.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function toggleStatus(span) {
+        const statuses = ['OPEN', 'IN_PROGRESS', 'PENDING', 'DONE', 'CLOSED'];
+        const current = span.textContent.trim();
+        const index = statuses.indexOf(current);
+        const next = statuses[(index + 1) % statuses.length];
+        span.textContent = next;
+        document.getElementById('status-input').value = next;
+
+        // Update badge color
+        span.className = 'badge';
+        if (next === 'OPEN') span.classList.add('badge-danger');
+        else if (next === 'IN_PROGRESS') span.classList.add('badge-warning');
+        else if (next === 'PENDING') span.classList.add('badge-info');
+        else if (next === 'DONE') span.classList.add('badge-primary');
+        else span.classList.add('badge-success');
+    }
+
+    function cyclePriority(span) {
+        const priorities = ['LOW', 'MEDIUM', 'HIGH'];
+        const current = span.textContent.replace(' Priority', '');
+        const index = priorities.indexOf(current);
+        const next = priorities[(index + 1) % priorities.length];
+        span.textContent = next + ' Priority';
+        document.getElementById('priority-input').value = next;
+
+        span.className = 'badge';
+        if (next === 'HIGH') span.classList.add('badge-danger');
+        else if (next === 'MEDIUM') span.classList.add('badge-warning');
+        else span.classList.add('badge-secondary');
+    }
+
+    function cycleCategory(span) {
+        const categories = ['MECHANICAL', 'ELECTRICAL', 'IT'];
+        const current = span.textContent;
+        const index = categories.indexOf(current);
+        const next = categories[(index + 1) % categories.length];
+        span.textContent = next;
+        document.getElementById('category-input').value = next;
+    }
+</script>
+</div>
+
+
+
+
+
+
+
