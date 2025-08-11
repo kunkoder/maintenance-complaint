@@ -1,187 +1,211 @@
 <div th:fragment="part-modal">
-  <!-- Modal Add Part -->
-<!-- Modal Add Part -->
-<div class="modal fade" id="addPartModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Select Part</h5>
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <!-- Inside modal-body, before table -->
-<div class="form-row mb-3 align-items-center">
-  <div class="col">
-      <input 
-          type="text" 
-          id="partSearch" 
-          class="form-control" 
-          placeholder="Search by code, name, or category..." />
-  </div>
-  <div class="col-auto">
-      <button 
-          type="button" 
-          id="searchBtn" 
-          class="btn btn-primary btn-sm">
-          <i class="fas fa-search"></i> Search
-      </button>
-  </div>
-</div>
-        <!-- Search will be injected here -->
-        <div class="table-responsive">
-          <table class="table table-hover" id="partSearchResults">
-            <thead>
-              <tr>
-                <th>Code</th>
-                <th>Name</th>
-                <th>Category</th>
-                <th>Stock</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
+    <!-- Modal Add Part -->
+    <!-- Modal Add Part -->
+    <div class="modal fade" id="addPartModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Select Part</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Inside modal-body, before table -->
+                    <div class="form-row mb-3 align-items-center">
+                        <div class="col">
+                            <input type="text" id="partSearch" class="form-control"
+                                placeholder="Search by code, name, or category..." />
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" id="searchBtn" class="btn btn-primary btn-sm">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Search will be injected here -->
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="partSearchResults">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Stock</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <!-- Pagination will be injected here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
         </div>
-        <!-- Pagination will be injected here -->
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-      </div>
     </div>
-  </div>
-</div>
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-      // === Global State ===
-      let currentPage = 0;
-      let currentSearch = '';
-      const pageSize = 10;
 
-      // === Add Part to Main Table ===
-      window.addPartToTable = function(part) {
-          const tbody = document.getElementById('partsTable').querySelector('tbody');
-          const existing = tbody.querySelector(`tr[data-part-code="${part.code}"]`);
+    <!-- Modal Delete -->
+    <div class="modal fade" id="deleteRowModal" tabindex="-1" role="dialog" aria-labelledby="deleteRowModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white no-bd">
+                    <h5 class="modal-title" id="deleteRowModalLabel">Delete Complaint</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-4">
+                    <p>Are you sure you want to delete this complaint?</p>
+                    <strong id="deleteDocName" class="text-dark"></strong>
+                    <p class="text-muted mt-2 mb-0">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-border" data-dismiss="modal">Cancel</button>
+                    <a href="#" id="confirmDeleteButton" class="btn btn-danger ml-2">Yes, Delete</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // === Global State ===
+            let currentPage = 0;
+            let currentSearch = '';
+            const pageSize = 10;
 
-          if (existing) {
-              const qtyCell = existing.querySelector('td:nth-child(4)');
-              const newQty = parseInt(qtyCell.getAttribute('data-original')) + 1;
-              qtyCell.setAttribute('data-original', newQty);
-              qtyCell.textContent = newQty;
-          } else {
-              const tr = document.createElement('tr');
-              tr.setAttribute('data-part-code', part.code);
-              tr.innerHTML = `
-                  <td><code class="bg-light px-2 py-1 rounded">${part.code}</code></td>
-                  <td>${part.name}</td>
-                  <td>${part.category}</td>
-                  <td class="text-center font-weight-bold"
-                      contenteditable="true"
-                      data-original="1"
-                      onclick="this.textContent = this.getAttribute('data-original'); this.focus();"
-                      onblur="this.setAttribute('data-original', this.textContent.trim());">
-                      1
-                  </td>
-                  <td class="text-center">
-                      <button class="btn btn-link text-danger btn-sm delete-row" type="button">
-                          <i class="fas fa-trash-alt"></i>
-                      </button>
-                  </td>
-              `;
-              tbody.appendChild(tr);
+            // === Add Part to Main Table ===
+            window.addPartToTable = function (part) {
+                const tbody = document.getElementById('partsTable').querySelector('tbody');
+                const existing = tbody.querySelector(`tr[data-part-code="${part.code}"]`);
 
-              tr.querySelector('.delete-row').addEventListener('click', function () {
-                  tr.remove();
-                  updatePartsUsedData();
-              });
-          }
+                if (existing) {
+                    const qtyCell = existing.querySelector('td:nth-child(4)');
+                    const newQty = parseInt(qtyCell.getAttribute('data-original')) + 1;
+                    qtyCell.setAttribute('data-original', newQty);
+                    qtyCell.textContent = newQty;
+                } else {
+                    const tr = document.createElement('tr');
+                    tr.setAttribute('data-part-code', part.code);
+                    tr.setAttribute('data-part-id', part.id); // 👈 STORE ID ON ROW
+                    tr.innerHTML = `
+            <td><code class="bg-light px-2 py-1 rounded">${part.code}</code></td>
+            <td>${part.name}</td>
+            <td>${part.category}</td>
+            <td class="text-center font-weight-bold"
+                contenteditable="true"
+                data-original="1"
+                onclick="this.textContent = this.getAttribute('data-original'); this.focus();"
+                onblur="this.setAttribute('data-original', this.textContent.trim());">
+                1
+            </td>
+            <td class="text-center">
+                <button class="btn btn-link text-danger btn-sm delete-row" type="button">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </td>
+        `;
+                    tbody.appendChild(tr);
 
-          updatePartsUsedInputs();
-          updatePartsUsedData();
-      };
+                    tr.querySelector('.delete-row').addEventListener('click', function () {
+                        tr.remove();
+                        updatePartsUsedData();
+                    });
+                }
 
-      // === Sync Table to Hidden Input ===
-      function updatePartsUsedInputs() {
-    const container = document.getElementById('partsUsedInputs');
-    container.innerHTML = ''; // Clear existing
+                updatePartsUsedInputs();
+                updatePartsUsedData();
+            };
 
-    const rows = document.querySelectorAll('#partsTable tbody tr');
-    rows.forEach((row, index) => {
-        const code = row.querySelector('code').textContent.trim();
-        const name = row.querySelector('td:nth-child(2)').textContent.trim();
-        const category = row.querySelector('td:nth-child(3)').textContent.trim();
-        const qty = row.querySelector('td:nth-child(4)').getAttribute('data-original') || '1';
+            // === Sync Table to Hidden Input ===
+            function updatePartsUsedInputs() {
+                const container = document.getElementById('partsUsedInputs');
+                container.innerHTML = ''; // Clear existing
 
-        // Helper to create hidden input
-        function addField(name, value) {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = name;
-            input.value = value;
-            container.appendChild(input);
-        }
+                const rows = document.querySelectorAll('#partsTable tbody tr');
+                rows.forEach((row, index) => {
+                    const code = row.querySelector('code').textContent.trim();
+                    const name = row.querySelector('td:nth-child(2)').textContent.trim();
+                    const category = row.querySelector('td:nth-child(3)').textContent.trim();
+                    const qty = row.querySelector('td:nth-child(4)').getAttribute('data-original') || '1';
+                    const id = row.getAttribute('data-part-id'); // Assumes you store ID on the row
 
-        // Add all fields
-        addField(`partsUsed[${index}].part.code`, code);
-        addField(`partsUsed[${index}].part.name`, name);
-        addField(`partsUsed[${index}].part.category`, category);
-        addField(`partsUsed[${index}].quantity`, qty);
-    });
-}
-      function updatePartsUsedData() {
-          const parts = [];
-          document.querySelectorAll('#partsTable tbody tr').forEach(row => {
-              parts.push({
-                  code: row.querySelector('code').textContent,
-                  name: row.querySelector('td:nth-child(2)').textContent,
-                  category: row.querySelector('td:nth-child(3)').textContent,
-                  qty: row.querySelector('td:nth-child(4)').getAttribute('data-original')
-              });
-          });
-          document.getElementById('partsUsedData').value = JSON.stringify(parts);
-      }
+                    // Helper to create hidden input
+                    function addField(name, value) {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = name;
+                        input.value = value;
+                        container.appendChild(input);
+                    }
 
-      // === Load Parts from API ===
-      function loadParts(search = '', page = 0) {
-          const url = new URL('/api/parts', window.location.origin);
-          url.searchParams.append('keyword', search);
-          url.searchParams.append('page', page);
-          url.searchParams.append('size', pageSize);
-          url.searchParams.append('sortBy', 'name');
-          url.searchParams.append('asc', 'true');
+                    // Add all fields
+                    addField(`partsUsed[${index}].part.code`, code);
+                    addField(`partsUsed[${index}].part.name`, name);
+                    addField(`partsUsed[${index}].part.category`, category);
+                    addField(`partsUsed[${index}].part.id`, id); // 👈 ADD THIS LINE
+                    addField(`partsUsed[${index}].quantity`, qty);
+                });
+            }
+            
+            function updatePartsUsedData() {
+                const parts = [];
+                document.querySelectorAll('#partsTable tbody tr').forEach(row => {
+                    parts.push({
+                        id: row.getAttribute('data-part-id'), // 👈 ADD THIS
+                        code: row.querySelector('code').textContent,
+                        name: row.querySelector('td:nth-child(2)').textContent,
+                        category: row.querySelector('td:nth-child(3)').textContent,
+                        qty: row.querySelector('td:nth-child(4)').getAttribute('data-original')
+                    });
+                });
+                document.getElementById('partsUsedData').value = JSON.stringify(parts);
+            }
 
-          fetch(url)
-              .then(response => response.json())
-              .then(data => {
-                  renderParts(data);
-                  renderPagination(data, page);
-              })
-              .catch(err => {
-                  console.error('Failed to load parts:', err);
-                  const tbody = document.querySelector('#partSearchResults tbody');
-                  tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Failed to load parts.</td></tr>';
-                  document.getElementById('partsPagination').innerHTML = '';
-              });
-      }
+            // === Load Parts from API ===
+            function loadParts(search = '', page = 0) {
+                const url = new URL('/api/parts', window.location.origin);
+                url.searchParams.append('keyword', search);
+                url.searchParams.append('page', page);
+                url.searchParams.append('size', pageSize);
+                url.searchParams.append('sortBy', 'name');
+                url.searchParams.append('asc', 'true');
 
-      // === Render Parts Table ===
-      function renderParts(data) {
-          const tbody = document.querySelector('#partSearchResults tbody');
-          tbody.innerHTML = '';
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        renderParts(data);
+                        renderPagination(data, page);
+                    })
+                    .catch(err => {
+                        console.error('Failed to load parts:', err);
+                        const tbody = document.querySelector('#partSearchResults tbody');
+                        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Failed to load parts.</td></tr>';
+                        document.getElementById('partsPagination').innerHTML = '';
+                    });
+            }
 
-          if (data.content.length === 0) {
-              tbody.innerHTML = '<tr><td colspan="5" class="text-center">No parts found.</td></tr>';
-              return;
-          }
+            // === Render Parts Table ===
+            function renderParts(data) {
+                const tbody = document.querySelector('#partSearchResults tbody');
+                tbody.innerHTML = '';
 
-          data.content.forEach(part => {
-              const tr = document.createElement('tr');
-              tr.innerHTML = `
+                if (data.content.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center">No parts found.</td></tr>';
+                    return;
+                }
+
+                data.content.forEach(part => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
                   <td><code>${part.code}</code></td>
                   <td>${part.name}</td>
                   <td><span class="badge badge-secondary">${part.category}</span></td>
                   <td class="text-center">${part.stockQuantity}</td>
                   <td class="text-center">
                       <a href="javascript:void(0)" class="btn btn-primary btn-sm add-from-modal"
+                         data-id="${part.id}"
                          data-code="${part.code}"
                          data-name="${part.name}"
                          data-category="${part.category}">
@@ -189,83 +213,84 @@
                       </a>
                   </td>
               `;
-              tbody.appendChild(tr);
-          });
+                    tbody.appendChild(tr);
+                });
 
-          // Attach Add listeners
-          document.querySelectorAll('.add-from-modal').forEach(btn => {
-              btn.addEventListener('click', function (e) {
-                  e.preventDefault();
-                  const part = {
-                      code: this.dataset.code,
-                      name: this.dataset.name,
-                      category: this.dataset.category
-                  };
-                  addPartToTable(part);
-                  $('#addPartModal').modal('hide');
-              });
-          });
-      }
+                // Attach Add listeners
+                document.querySelectorAll('.add-from-modal').forEach(btn => {
+                    btn.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const part = {
+                            id: this.dataset.id,        // 👈 ADD THIS
+                            code: this.dataset.code,
+                            name: this.dataset.name,
+                            category: this.dataset.category
+                        };
+                        addPartToTable(part);
+                        $('#addPartModal').modal('hide');
+                    });
+                });
+            }
 
-      // === Render Pagination ===
-      function renderPagination(data, currentPage) {
-          const pagination = document.getElementById('partsPagination');
-          pagination.innerHTML = '';
+            // === Render Pagination ===
+            function renderPagination(data, currentPage) {
+                const pagination = document.getElementById('partsPagination');
+                pagination.innerHTML = '';
 
-          // Previous Button
-          const prevLi = document.createElement('li');
-          prevLi.className = data.hasPrevious ? 'page-item' : 'page-item disabled';
-          prevLi.innerHTML = `<a class="page-link" href="#">Prev</a>`;
-          prevLi.addEventListener('click', (e) => {
-              e.preventDefault();
-              if (data.hasPrevious) loadParts(currentSearch, currentPage - 1);
-          });
-          pagination.appendChild(prevLi);
+                // Previous Button
+                const prevLi = document.createElement('li');
+                prevLi.className = data.hasPrevious ? 'page-item' : 'page-item disabled';
+                prevLi.innerHTML = `<a class="page-link" href="#">Prev</a>`;
+                prevLi.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (data.hasPrevious) loadParts(currentSearch, currentPage - 1);
+                });
+                pagination.appendChild(prevLi);
 
-          // Page Numbers (max 5 buttons)
-          const startPage = Math.max(0, currentPage - 2);
-          const endPage = Math.min(data.totalPages, startPage + 5);
+                // Page Numbers (max 5 buttons)
+                const startPage = Math.max(0, currentPage - 2);
+                const endPage = Math.min(data.totalPages, startPage + 5);
 
-          for (let i = startPage; i < endPage; i++) {
-              const li = document.createElement('li');
-              li.className = i === currentPage ? 'page-item active' : 'page-item';
-              li.innerHTML = `<a class="page-link" href="#">${i + 1}</a>`;
-              li.addEventListener('click', (e) => {
-                  e.preventDefault();
-                  loadParts(currentSearch, i);
-              });
-              pagination.appendChild(li);
-          }
+                for (let i = startPage; i < endPage; i++) {
+                    const li = document.createElement('li');
+                    li.className = i === currentPage ? 'page-item active' : 'page-item';
+                    li.innerHTML = `<a class="page-link" href="#">${i + 1}</a>`;
+                    li.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        loadParts(currentSearch, i);
+                    });
+                    pagination.appendChild(li);
+                }
 
-          // Next Button
-          const nextLi = document.createElement('li');
-          nextLi.className = data.hasNext ? 'page-item' : 'page-item disabled';
-          nextLi.innerHTML = `<a class="page-link" href="#">Next</a>`;
-          nextLi.addEventListener('click', (e) => {
-              e.preventDefault();
-              if (data.hasNext) loadParts(currentSearch, currentPage + 1);
-          });
-          pagination.appendChild(nextLi);
-      }
+                // Next Button
+                const nextLi = document.createElement('li');
+                nextLi.className = data.hasNext ? 'page-item' : 'page-item disabled';
+                nextLi.innerHTML = `<a class="page-link" href="#">Next</a>`;
+                nextLi.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (data.hasNext) loadParts(currentSearch, currentPage + 1);
+                });
+                pagination.appendChild(nextLi);
+            }
 
-      // === Search Input ===
-      const searchInput = document.getElementById('partSearch');
-      if (searchInput) {
-          searchInput.addEventListener('input', function () {
-              currentSearch = this.value.trim();
-              loadParts(currentSearch, 0); // Reset to page 0
-          });
-      }
+            // === Search Input ===
+            const searchInput = document.getElementById('partSearch');
+            if (searchInput) {
+                searchInput.addEventListener('input', function () {
+                    currentSearch = this.value.trim();
+                    loadParts(currentSearch, 0); // Reset to page 0
+                });
+            }
 
-      // === Load Parts When Modal Opens ===
-      $('#addPartModal').on('shown.bs.modal', function () {
-    const modalBody = document.querySelector('#addPartModal .modal-body');
-    
-    // Add search UI if not exists
-    if (!document.getElementById('partSearch')) {
-        const searchDiv = document.createElement('div');
-        searchDiv.className = 'form-row mb-3 align-items-center';
-        searchDiv.innerHTML = `
+            // === Load Parts When Modal Opens ===
+            $('#addPartModal').on('shown.bs.modal', function () {
+                const modalBody = document.querySelector('#addPartModal .modal-body');
+
+                // Add search UI if not exists
+                if (!document.getElementById('partSearch')) {
+                    const searchDiv = document.createElement('div');
+                    searchDiv.className = 'form-row mb-3 align-items-center';
+                    searchDiv.innerHTML = `
             <div class="col">
                 <input type="text" id="partSearch" class="form-control" 
                        placeholder="Search by code, name, or category..." />
@@ -276,48 +301,48 @@
                 </button>
             </div>
         `;
-        modalBody.insertBefore(searchDiv, modalBody.firstChild);
-    }
+                    modalBody.insertBefore(searchDiv, modalBody.firstChild);
+                }
 
-    // Add pagination if not exists
-    if (!document.getElementById('partsPagination')) {
-        const paginationNav = document.createElement('nav');
-        paginationNav.innerHTML = `
+                // Add pagination if not exists
+                if (!document.getElementById('partsPagination')) {
+                    const paginationNav = document.createElement('nav');
+                    paginationNav.innerHTML = `
             <ul class="pagination justify-content-center" id="partsPagination"></ul>
         `;
-        modalBody.appendChild(paginationNav);
-    }
+                    modalBody.appendChild(paginationNav);
+                }
 
-    // Attach events (only once)
-    const searchInput = document.getElementById('partSearch');
-    const searchBtn = document.getElementById('searchBtn');
+                // Attach events (only once)
+                const searchInput = document.getElementById('partSearch');
+                const searchBtn = document.getElementById('searchBtn');
 
-    // Prevent Enter from submitting
-    searchInput.removeEventListener('keypress', handleKeyPress); // Avoid duplicates
-    searchInput.addEventListener('keypress', handleKeyPress);
+                // Prevent Enter from submitting
+                searchInput.removeEventListener('keypress', handleKeyPress); // Avoid duplicates
+                searchInput.addEventListener('keypress', handleKeyPress);
 
-    // Search button
-    searchBtn.removeEventListener('click', handleSearchClick);
-    searchBtn.addEventListener('click', handleSearchClick);
+                // Search button
+                searchBtn.removeEventListener('click', handleSearchClick);
+                searchBtn.addEventListener('click', handleSearchClick);
 
-    // Load initial data
-    loadParts(currentSearch, currentPage);
-});
+                // Load initial data
+                loadParts(currentSearch, currentPage);
+            });
 
-// === Reusable Event Handlers ===
-function handleKeyPress(e) {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        document.getElementById('searchBtn').click();
-    }
-}
+            // === Reusable Event Handlers ===
+            function handleKeyPress(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('searchBtn').click();
+                }
+            }
 
-function handleSearchClick() {
-    const searchInput = document.getElementById('partSearch');
-    currentSearch = searchInput.value.trim();
-    currentPage = 0;
-    loadParts(currentSearch, currentPage);
-}
-  });
-</script>
+            function handleSearchClick() {
+                const searchInput = document.getElementById('partSearch');
+                currentSearch = searchInput.value.trim();
+                currentPage = 0;
+                loadParts(currentSearch, currentPage);
+            }
+        });
+    </script>
 </div>

@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import ahqpck.maintenance.report.entity.Complaint;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -19,11 +21,12 @@ public class ComplaintDTO {
 
     private String id;
 
+    // private String code;
+
     private LocalDateTime reportDate;
 
     private LocalDateTime updatedAt;
 
-    @NotNull(message = "Area is mandatory")
     private AreaDTO area;
 
     @NotNull(message = "Equipment is mandatory")
@@ -32,7 +35,6 @@ public class ComplaintDTO {
     @NotNull(message = "Reporter is mandatory")
     private UserDTO reporter;
 
-    @NotBlank(message = "Subject is mandatory")
     private String subject;
 
     private String description;
@@ -46,16 +48,19 @@ public class ComplaintDTO {
     @NotNull(message = "Category is mandatory")
     private Complaint.Category category;
 
+    private Complaint.Status status;
+
     private String actionTaken;
 
     private String imageBefore;
     private String imageAfter;
 
-    private Complaint.Status status;
-
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime closeTime;
 
     private Integer totalResolutionTimeMinutes;
+
+    private String resolutionTimeDisplay;
 
     @Valid
     private List<ComplaintPartDTO> partsUsed = new ArrayList<>();

@@ -16,6 +16,7 @@ import ahqpck.maintenance.report.service.ComplaintService;
 import ahqpck.maintenance.report.service.EquipmentService;
 import ahqpck.maintenance.report.service.PartService;
 import ahqpck.maintenance.report.service.UserService;
+import ahqpck.maintenance.report.util.ImportUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,6 +31,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
@@ -95,6 +97,7 @@ public class ComplaintController {
     public String getComplaintDetail(@PathVariable String id, Model model) {
         try {
             ComplaintDTO complaintDTO = complaintService.getComplaintById(id);
+            System.out.println("id => " + complaintDTO);
             model.addAttribute("complaint", complaintDTO);
             model.addAttribute("title", "Complaint Detail");
 
@@ -150,6 +153,7 @@ public class ComplaintController {
             BindingResult bindingResult,
             RedirectAttributes ra) {
 
+                System.out.println(complaintDTO);
         if (bindingResult.hasErrors()) {
             handleBindingErrors(bindingResult, ra, complaintDTO);
             return "redirect:/complaints";
@@ -166,11 +170,13 @@ public class ComplaintController {
             // System.out.println(partsUsedJson);
             complaintService.updateComplaint(complaintDTO);
             ra.addFlashAttribute("success", "Complaint updated successfully.");
+            // ra.addFlashAttribute("complaintDTO", complaintDTO);
             return "redirect:/complaints";
 
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
             ra.addFlashAttribute("complaintDTO", complaintDTO);
+            // return "complaint/detail";
             return "redirect:/complaints";
         }
     }
@@ -186,6 +192,47 @@ public class ComplaintController {
         }
         return "redirect:/complaints";
     }
+
+    // @PostMapping("/import")
+    // public String importComplaints(
+    //         @RequestParam("data") String dataJson,
+    //         @RequestParam(value = "sheet", required = false) String sheet,
+    //         @RequestParam(value = "headerRow", required = false) Integer headerRow,
+    //         RedirectAttributes ra) {
+
+    //     try {
+    //         ObjectMapper mapper = new ObjectMapper();
+    //         List<Map<String, Object>> data = mapper.readValue(dataJson,
+    //                 new TypeReference<List<Map<String, Object>>>() {
+    //                 });
+
+    //         ImportUtil.ImportResult result = complaintService.importComplaintsFromExcel(data);
+
+    //         if (result.getImportedCount() > 0 && !result.hasErrors()) {
+    //             ra.addFlashAttribute("success",
+    //                     "Successfully imported " + result.getImportedCount() + " complaint record(s).");
+    //         } else if (result.getImportedCount() > 0) {
+    //             StringBuilder msg = new StringBuilder("Imported ").append(result.getImportedCount())
+    //                     .append(" record(s), but ").append(result.getErrorMessages().size()).append(" error(s):");
+    //             for (String err : result.getErrorMessages()) {
+    //                 msg.append("|").append(err);
+    //             }
+    //             ra.addFlashAttribute("error", msg.toString());
+    //         } else {
+    //             StringBuilder msg = new StringBuilder("Failed to import any complaint:");
+    //             for (String err : result.getErrorMessages()) {
+    //                 msg.append("|").append(err);
+    //             }
+    //             ra.addFlashAttribute("error", msg.toString());
+    //         }
+
+    //         return "redirect:/complaints";
+
+    //     } catch (Exception e) {
+    //         ra.addFlashAttribute("error", "Bulk import failed: " + e.getMessage());
+    //         return "redirect:/complaints";
+    //     }
+    // }
 
     // === HELPERS ===
 

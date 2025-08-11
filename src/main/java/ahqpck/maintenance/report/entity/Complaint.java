@@ -37,6 +37,9 @@ public class Complaint {
     @Column(length = 22, updatable = false, nullable = false)
     private String id;
 
+    // @Column(length = 22, updatable = false)
+    // private String code;
+
     @Column(name = "report_date", nullable = false)
     private LocalDateTime reportDate;
 
@@ -96,7 +99,7 @@ public class Complaint {
     @Column(nullable = false)
     private Status status;
 
-    @Column(name = "close_time" , nullable = true)
+    @Column(name = "close_time", nullable = true)
     private LocalDateTime closeTime;
 
     @Column(name = "total_resolution_time_minutes", nullable = true)
@@ -137,6 +140,9 @@ public class Complaint {
             // this.id = ZeroPaddedIdGenerator.generate("CMP");
             this.id = Base62.encode(UUID.randomUUID());
         }
+        // if (this.code == null) {
+        //     this.id = ZeroPaddedIdGenerator.generate("CMP"); 
+        // }
         LocalDateTime now = LocalDateTime.now();
         this.reportDate = now;
         this.updatedAt = now;
@@ -155,6 +161,3 @@ public class Complaint {
         }
     }
 }
-
-
-

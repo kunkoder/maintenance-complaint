@@ -21,7 +21,7 @@ public class ZeroPaddedIdGenerator {
         String key = prefix.trim();
         long nextId = counters.getOrDefault(key, 0L) + 1;
         counters.put(key, nextId);
-        return key + "-" + String.format("%0" + LENGTH + "d", nextId);
+        return key + String.format("%0" + LENGTH + "d", nextId);
     }
 
     /**

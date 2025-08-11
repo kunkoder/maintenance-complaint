@@ -39,12 +39,12 @@
                             <div class="card-body">
                                 <!-- Header: ID & Status -->
                                 <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <h5 class="mb-0 text-muted" th:id="${'complaint-key'}" th:text="${complaint.id}">
+                                    <h5 class="mb-0 text-muted" th:id="${'complaint-key'}" th:text="${complaint?.id}">
                                         fX9aB2kLmN</h5>
                                     <span class="badge" th:id="${'status-field'}"
                                         th:classappend="${(complaint.status == 'OPEN') ? 'badge-danger' : (complaint.status == 'IN_PROGRESS') ? 'badge-warning' : (complaint.status == 'PENDING') ? 'badge-info' : (complaint.status == 'DONE') ? 'badge-primary' : 'badge-success'}"
                                         th:text="${complaint.status}" style="cursor: pointer; font-weight: 600;"
-                                        title="Click to change status" onclick="toggleStatus(this)"></span>
+                                        title="Click to change status"></span>
                                     <input type="hidden" name="id" th:value="${complaint.id}" />
                                     <input type="hidden" name="status" th:value="${complaint.status}"
                                         id="status-input" />
@@ -318,7 +318,8 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr th:each="partDto : ${complaint.partsUsed}">
+                                                <tr th:each="partDto : ${complaint.partsUsed}"
+                                                    th:attr="data-part-id=${partDto.part.id}, data-part-code=${partDto.part.code}">
                                                     <td><code class="bg-light px-2 py-1 rounded"
                                                             th:text="${partDto.part.code}"></code></td>
                                                     <td th:text="${partDto.part.name}"></td>
@@ -352,11 +353,13 @@
                                         </span>
                                     </small>
                                     <div>
-                                        <button type="button" class="btn btn-danger btn-border btn-round mr-2"
+                                        <button type="button"
+                                            class="btn btn-danger btn-border btn-round mr-2 delete-row"
+                                            th:data-id="${complaint.id}" th:data-name="${complaint.subject}"
                                             data-toggle="modal" data-target="#deleteConfirmModal">
                                             <i class="fas fa-trash-alt"></i> Delete
                                         </button>
-                                        <button type="submit" class="btn btn-primary btn-round" id="saveChangesBtn">
+                                        <button class="btn btn-primary btn-round" id="saveChangesBtn">
                                             <i class="fas fa-save"></i> Save Changes
                                         </button>
                                     </div>
@@ -380,36 +383,48 @@
         </script>
 
         <script>
+            // --- Delete Modal Trigger ---
+            $('.delete-row').on('click', function () {
+                const name = $(this).data('name');
+                const id = $(this).data('id');
+
+                $('#deleteDocName').text(name);
+                $('#confirmDeleteButton').attr('href', '/complaints/delete/' + encodeURIComponent(id));
+                $('#deleteRowModal').modal('show');
+            });
+
             document.addEventListener("DOMContentLoaded", function () {
                 function updatePartsUsedInputs() {
-    const container = document.getElementById('partsUsedInputs');
-    container.innerHTML = ''; // Clear existing
+                    const container = document.getElementById('partsUsedInputs');
+                    container.innerHTML = ''; // Clear existing
 
-    const rows = document.querySelectorAll('#partsTable tbody tr');
-    rows.forEach((row, index) => {
-        const code = row.querySelector('code').textContent.trim();
-        const name = row.querySelector('td:nth-child(2)').textContent.trim();
-        const category = row.querySelector('td:nth-child(3)').textContent.trim();
-        const qty = row.querySelector('td:nth-child(4)').getAttribute('data-original') || '1';
+                    const rows = document.querySelectorAll('#partsTable tbody tr');
+                    rows.forEach((row, index) => {
+                        const code = row.querySelector('code').textContent.trim();
+                        const name = row.querySelector('td:nth-child(2)').textContent.trim();
+                        const category = row.querySelector('td:nth-child(3)').textContent.trim();
+                        const qty = row.querySelector('td:nth-child(4)').getAttribute('data-original') || '1';
+                        const id = row.getAttribute('data-part-id'); // Assumes you store ID on the row
 
-        // Helper to create hidden input
-        function addField(name, value) {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = name;
-            input.value = value;
-            container.appendChild(input);
-        }
+                        // Helper to create hidden input
+                        function addField(name, value) {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = name;
+                            input.value = value;
+                            container.appendChild(input);
+                        }
 
-        // Add all fields
-        addField(`partsUsed[${index}].part.code`, code);
-        addField(`partsUsed[${index}].part.name`, name);
-        addField(`partsUsed[${index}].part.category`, category);
-        addField(`partsUsed[${index}].quantity`, qty);
-    });
-}
+                        // Add all fields
+                        addField(`partsUsed[${index}].part.code`, code);
+                        addField(`partsUsed[${index}].part.name`, name);
+                        addField(`partsUsed[${index}].part.category`, category);
+                        addField(`partsUsed[${index}].part.id`, id); // 👈 ADD THIS LINE
+                        addField(`partsUsed[${index}].quantity`, qty);
+                    });
+                }
 
-                // === 1. Simple Sync: Input → Hidden Fields (Assignee, Area, Equipment) ===
+
                 function linkInputToHidden(inputId, ...hiddenIdConfigs) {
                     const input = document.getElementById(inputId);
                     if (!input) return;
@@ -421,10 +436,8 @@
                         hiddenIdConfigs.forEach(config => {
                             let value = '';
                             if (typeof config === 'string') {
-                                // Simple case: just set input value
                                 value = input.value.trim();
                             } else if (config.id && config.extract) {
-                                // Configured case: extract from dataset
                                 value = selectedOption ? selectedOption.dataset[config.extract] : '';
                             }
 
@@ -440,11 +453,9 @@
                     if (input) input.value = value;
                 }
 
-                // === 3. Initialize Autocomplete Sync ===
-                // === 3. Initialize Autocomplete Sync ===
                 linkInputToHidden('assigneeInput',
-                    { id: 'assigneeName', extract: null },           // value = full input
-                    { id: 'assigneeEmployeeId', extract: 'employeeId' } // value = dataset.employeeId
+                    { id: 'assigneeName', extract: null },
+                    { id: 'assigneeEmployeeId', extract: 'employeeId' }
                 );
 
                 linkInputToHidden('areaInput',
@@ -457,8 +468,6 @@
                     { id: 'equipmentCode', extract: 'code' }
                 );
 
-                // === 4. Prefill from Complaint Data ===
-                // === 4. Prefill from Complaint Data ===
                 if (COMPLAINT) {
                     // Assignee
                     if (COMPLAINT.assignee) {
@@ -592,12 +601,7 @@
                 makeEditable('priority-field', ['HIGH PRIORITY', 'MEDIUM PRIORITY', 'LOW PRIORITY']);
                 makeEditable('category-field', ['MECHANICAL', 'ELECTRICAL', 'IT']);
 
-                // But map to actual value on submit:
-                document.getElementById('priority-input').value = {
-                    'HIGH Priority': 'HIGH',
-                    'MEDIUM Priority': 'MEDIUM',
-                    'LOW Priority': 'LOW'
-                }[priorityField.innerText.trim()] || 'MEDIUM';
+
 
                 // === 9. Image Upload Preview ===
                 window.handleImageUpload = function (input, previewId, placeholderId) {
@@ -614,55 +618,83 @@
                     reader.readAsDataURL(file);
                 };
 
-                // === 10. Form Submit: Sync Dynamic Fields ===
-                const complaintForm = document.getElementById('complaintForm')
+
+                const complaintForm = document.getElementById('complaintForm');
+
+                // Define updateHiddenInput
+                function updateHiddenInput(element, hiddenInputId) {
+                    const hiddenInput = document.getElementById(hiddenInputId);
+                    if (hiddenInput) {
+                        hiddenInput.value = element.textContent || element.value;
+                    }
+                }
+
+                console.log(complaintForm);
                 complaintForm.addEventListener('submit', function (e) {
-                    console.log(complaintForm)
-                    e.preventDefault()
-                    console.log(complaintForm)
-                    // Serialize parts table into JSON
-                    // const parts = [];
-                    // document.querySelectorAll('#partsTable tbody tr').forEach(row => {
-                    //     const code = row.querySelector('code').textContent.trim();
-                    //     const name = row.querySelector('td:nth-child(2)').textContent.trim();
-                    //     const category = row.querySelector('td:nth-child(3)').textContent.trim();
-                    //     const qty = parseInt(row.querySelector('td:nth-child(4)').getAttribute('data-original')) || 1;
+                    e.preventDefault();
 
-                    //     parts.push({
-                    //         part: {
-                    //             code: code,
-                    //             name: name,
-                    //             category: category
-                    //             // Add other PartDTO fields if needed: supplier, etc.
-                    //         },
-                    //         quantity: qty
-                    //     });
-                    // });
+                    if (typeof updatePartsUsedInputs === 'function') {
+                        updatePartsUsedInputs();
+                    }
 
-                    // // Set JSON string to hidden input
-                    // document.getElementById('partsUsedData').value = JSON.stringify(parts);
-                    updatePartsUsedInputs();
-                    // Sync subject
+                    // === Sync subject ===
                     const subjectField = document.getElementById('subject-field');
                     if (subjectField) {
                         document.querySelector('input[name="subject"]').value = subjectField.innerText.trim();
                     }
 
-                    // Sync status, priority, category
+                    // === Sync status, priority, category ===
                     const statusField = document.getElementById('status-field');
                     const priorityField = document.getElementById('priority-field');
                     const categoryField = document.getElementById('category-field');
 
-                    if (statusField) document.getElementById('status-input').value = statusField.innerText.trim();
-                    if (priorityField) document.getElementById('priority-input').value = priorityField.innerText.trim();
-                    if (categoryField) document.getElementById('category-input').value = categoryField.innerText.trim();
+                    const priorityMap = {
+                        'HIGH PRIORITY': 'HIGH',
+                        'MEDIUM PRIORITY': 'MEDIUM',
+                        'LOW PRIORITY': 'LOW'
+                    };
 
-                    // Sync description and action taken
+                    // But map to actual value on submit:
+                    document.getElementById('priority-input').value = {
+                        'HIGH Priority': 'HIGH',
+                        'MEDIUM Priority': 'MEDIUM',
+                        'LOW Priority': 'LOW'
+                    }[priorityField.innerText.trim()] || 'MEDIUM';
+
+                    if (statusField) {
+                        const statusValue = statusField.getAttribute('data-original') || statusField.innerText.trim();
+                        document.getElementById('status-input').value = statusValue;
+                    }
+
+                    if (priorityField) {
+                        const priorityDisplay = (priorityField.getAttribute('data-original') || priorityField.innerText.trim()).toUpperCase();
+                        document.getElementById('priority-input').value = priorityMap[priorityDisplay] || 'MEDIUM';
+                    }
+
+                    if (categoryField) {
+                        const categoryValue = categoryField.getAttribute('data-original') || categoryField.innerText.trim();
+                        document.getElementById('category-input').value = categoryValue;
+                    }
+
+                    // === Sync description and action taken ===
                     const description = document.getElementById('description-field');
                     const actionTaken = document.getElementById('action-taken-field');
 
-                    if (description) document.getElementById('description-input').value = description.value.trim();
-                    if (actionTaken) document.getElementById('action-taken-input').value = actionTaken.value.trim();
+                    if (description) {
+                        document.getElementById('description-input').value = description.value;
+                    }
+                    if (actionTaken) {
+                        document.getElementById('action-taken-input').value = actionTaken.value;
+                    }
+
+                    // === Sync parts used ===
+                    if (typeof updatePartsUsedInputs === 'function') {
+                        updatePartsUsedInputs();
+                    }
+
+                    // ✅ Now submit
+                    complaintForm.submit();
+                    // Or use fetch() for debugging
                 });
             });
         </script>

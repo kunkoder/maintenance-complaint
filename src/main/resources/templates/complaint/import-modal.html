@@ -1,0 +1,169 @@
+<div th:fragment="import-modal">
+    <div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="importModalLabel">
+                        <i class="fa fa-file-import mr-2"></i> Import Equipment Data
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="importForm" method="post" th:action="@{/equipments/import}" enctype="multipart/form-data">
+                        <!-- Step 1: Upload File -->
+                        <div class="step mb-4">
+                            <h6><i class="fas fa-upload mr-1"></i> Step 1: Upload File</h6>
+                            <div class="custom-file">
+                                <input type="file" class="custom-file-input" id="importFile"
+                                    accept=".csv,.tsv,.txt,.xlsx,.xls" required>
+                                <label class="custom-file-label" for="importFile">Choose file (CSV, TSV, XLSX)</label>
+                            </div>
+                            <small class="form-text text-muted">
+                                Supported formats: CSV, TSV (; separated), Excel (.xlsx, .xls)
+                            </small>
+                        </div>
+
+                        <!-- Hidden fields to hold parsed data -->
+                        <input type="hidden" id="importData" name="data" />
+                        <input type="hidden" id="importSheet" name="sheet" />
+                        <input type="hidden" id="importHeaderRow" name="headerRow" />
+
+                        <!-- Other steps (unchanged) -->
+                        <!-- Step 2: Select Sheet -->
+                        <div class="step mb-4" id="sheetSelection" style="display:none;">
+                            <h6><i class="fas fa-table mr-1"></i> Step 2: Select Sheet</h6>
+                            <select class="form-control" id="sheetSelect"></select>
+                        </div>
+
+                        <!-- Step 3: Map Columns -->
+                        <div class="step mb-4" id="columnMapping" style="display:none;">
+                            <h6><i class="fas fa-columns mr-1"></i> Step 3: Map Columns</h6>
+                            <p class="text-muted mb-3">
+                                Click to select/deselect columns. Detected header row: <strong id="headerRow">Row
+                                    1</strong>
+                            </p>
+                            <div class="row border rounded p-3 bg-light" id="columnCheckboxes">
+                                <!-- Buttons will be inserted here -->
+                            </div>
+                        </div>
+
+                        <!-- Step 4: Preview -->
+                        <div class="step" id="previewSection" style="display:none;">
+                            <h6><i class="fas fa-eye mr-1"></i> Step 4: Preview Data</h6>
+                            <div class="table-responsive mt-3">
+                                <table id="item-table" class="display table table-striped table-hover">
+                                    <thead class="bg-primary text-white">
+                                        <tr></tr>
+                                    </thead>
+                                    <tbody id="previewTbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-light" id="prevBtn" style="display:none;">Previous</button>
+                    <button type="button" class="btn btn-primary" id="nextBtn">Next</button>
+                    <button type="button" class="btn btn-success" id="importBtn" style="display:none;">
+                        <i class="fa fa-check mr-1"></i> Import
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Styles to Guarantee Visibility -->
+    <style>
+        /* Custom toggle buttons instead of checkboxes */
+        .col-btn {
+            padding: 8px 12px;
+            margin: 4px;
+            border: 2px solid #007bff;
+            background-color: #e3f2fd;
+            color: #0056b3;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-align: center;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .col-btn.selected {
+            background-color: #007bff;
+            color: white;
+            border-color: #005edc;
+        }
+
+        .col-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Ensure container wraps properly */
+        #columnCheckboxes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        /* Fix modal scrolling */
+        .modal-body {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        #item-table th,
+        #item-table td {
+            text-align: left;
+            vertical-align: middle;
+        }
+    </style>
+
+    <!-- SheetJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script src="/assets/js/import-wizard.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            new ImportWizard({
+                // Fields that should be auto-selected if found
+                likelyFields: [
+                    "subject", "area", "equipment", "reporter", "status", "close time", "code",
+                    "assignee", "priority", "category", "report date", "action taken", "description", "total time"
+                ],
+
+                // Map Excel column headers to backend field names
+                fieldMapping: {
+                    "Code": "code",
+                    "Area": "area",           // expects area.code
+                    "Equipment": "equipment", // expects equipment.code
+                    "Reporter": "reporter",   // expects employeeId
+                    "Subject": "subject",
+                    "Description": "description",
+                    "Assignee": "assignee",   // employeeId
+                    "Priority": "priority",   // OPEN, IN_PROGRESS, etc.
+                    "Category": "category",
+                    "Status": "status",
+                    "Action Taken": "actionTaken",
+                    "Report Date": "reportDate",
+                    "Close Time": "closeTime",
+                    "Total Time": "totalResolutionTimeMinutes"
+                },
+
+                // Optional: customize behavior
+                onError: (err) => {
+                    alert("Import Error: " + err.message);
+                }
+
+                // onSuccess, onBeforeImport, etc. can be added
+            });
+        });
+    </script>
+</div>

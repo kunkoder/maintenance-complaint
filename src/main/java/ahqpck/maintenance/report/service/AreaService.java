@@ -115,3 +115,93 @@ public class AreaService {
         return dto;
     }
 }
+
+// /**
+// * Update complaint status
+// * If status is set to CLOSED:
+// * - Sets closeTime
+// * - Calculates total resolution time
+// * - Deducts used parts from inventory
+// */
+// @Transactional
+// public Complaint updateStatus(String complaintId, Complaint.Status newStatus)
+// {
+// log.info("Updating complaint ID: {} status to {}", complaintId, newStatus);
+
+// Complaint complaint = complaintRepository.findById(complaintId)
+// .orElseThrow(() -> new NoSuchElementException("Complaint not found: " +
+// complaintId));
+
+// Complaint.Status oldStatus = complaint.getStatus();
+// complaint.setStatus(newStatus);
+
+// if (newStatus == Complaint.Status.CLOSED && oldStatus !=
+// Complaint.Status.CLOSED) {
+// LocalDateTime now = LocalDateTime.now();
+// complaint.setCloseTime(now);
+// // totalResolutionTimeMinutes is calculated in @PreUpdate
+// }
+
+// complaintRepository.save(complaint);
+
+// // Deduct inventory only when transitioning to CLOSED
+// if (newStatus == Complaint.Status.CLOSED && oldStatus !=
+// Complaint.Status.CLOSED) {
+// deductPartsFromInventory(complaint);
+// }
+
+// if (newStatus == Complaint.Status.CLOSED && oldStatus !=
+// Complaint.Status.CLOSED) {
+// log.info("Complaint {} CLOSED: Deducting {} parts from inventory",
+// complaintId, complaint.getPartsUsed().size());
+// }
+
+// return complaint;
+// }
+
+// /**
+// * Deduct all parts used in this complaint from stock
+// */
+// private void deductPartsFromInventory(Complaint complaint) {
+// for (ComplaintPart cp : complaint.getPartsUsed()) {
+// log.info("Deducting {} x '{}' (Part ID: {}) from stock",
+// cp.getQuantity(), cp.getPart().getName(), cp.getPart().getId());
+// cp.getPart().useParts(cp.getQuantity());
+// partRepository.save(cp.getPart());
+// }
+// }
+
+// /**
+// * Reopen a CLOSED complaint → restock parts
+// */
+// @Transactional
+// public Complaint reopenComplaint(String complaintId) {
+// log.warn("Reopening CLOSED complaint: {}", complaintId);
+// Complaint complaint = complaintRepository.findById(complaintId)
+// .orElseThrow(() -> new NoSuchElementException("Complaint not found: " +
+// complaintId));
+
+// if (complaint.getStatus() != Complaint.Status.CLOSED) {
+// throw new IllegalArgumentException("Only CLOSED complaints can be
+// reopened.");
+// }
+
+// // Restock all parts
+// restockParts(complaint);
+
+// complaint.setStatus(Complaint.Status.IN_PROGRESS);
+// complaint.setCloseTime(null);
+// complaint.setTotalResolutionTimeMinutes(null);
+
+// log.info("Complaint {} reopened and {} parts restocked", complaintId,
+// complaint.getPartsUsed().size());
+// return complaintRepository.save(complaint);
+// }
+
+// private void restockParts(Complaint complaint) {
+// for (ComplaintPart cp : complaint.getPartsUsed()) {
+// Part part = cp.getPart();
+// part.addStock(cp.getQuantity());
+// partRepository.save(part);
+// }
+// }

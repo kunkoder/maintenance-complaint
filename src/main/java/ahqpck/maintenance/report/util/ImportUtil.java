@@ -1,7 +1,9 @@
 package ahqpck.maintenance.report.util;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
 import java.util.List;
 import java.util.Objects;
@@ -48,44 +50,109 @@ public class ImportUtil {
                 "dd-MM-yyyy", "MM-dd-yyyy",
 
                 // Month-year formats
-                "MMM yyyy",     // "Apr 2014"
-                "MMMM yyyy",    // "April 2014"
-                "MM/yyyy",      // "04/2014"
-                "M/yyyy",       // "4/2014"
-                "yyyy-MM",      // "2014-04"
-                "yyyy/MM"
-        )
-        .map(pattern -> {
-            try {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
-                return formatter.parse(str);
-            } catch (Exception ignored) {
-                return null;
-            }
-        })
-        .filter(Objects::nonNull)
-        .map(parsed -> {
-            // If only year and month are present, default day to 1
-            if (parsed.isSupported(ChronoField.YEAR) && parsed.isSupported(ChronoField.MONTH_OF_YEAR)) {
-                int year = parsed.get(ChronoField.YEAR);
-                int month = parsed.get(ChronoField.MONTH_OF_YEAR);
-                return LocalDate.of(year, month, 1);
-            }
-            // If day is present, parse as full date
-            if (parsed.isSupported(ChronoField.DAY_OF_MONTH)) {
-                return LocalDate.from(parsed);
-            }
-            return null;
-        })
-        .filter(Objects::nonNull)
-        .findFirst()
-        .orElseThrow(() -> new IllegalArgumentException("Invalid date format: " + str));
+                "MMM yyyy", // "Apr 2014"
+                "MMMM yyyy", // "April 2014"
+                "MM/yyyy", // "04/2014"
+                "M/yyyy", // "4/2014"
+                "yyyy-MM", // "2014-04"
+                "yyyy/MM")
+                .map(pattern -> {
+                    try {
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+                        return formatter.parse(str);
+                    } catch (Exception ignored) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .map(parsed -> {
+                    // If only year and month are present, default day to 1
+                    if (parsed.isSupported(ChronoField.YEAR) && parsed.isSupported(ChronoField.MONTH_OF_YEAR)) {
+                        int year = parsed.get(ChronoField.YEAR);
+                        int month = parsed.get(ChronoField.MONTH_OF_YEAR);
+                        return LocalDate.of(year, month, 1);
+                    }
+                    // If day is present, parse as full date
+                    if (parsed.isSupported(ChronoField.DAY_OF_MONTH)) {
+                        return LocalDate.from(parsed);
+                    }
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Invalid date format: " + str));
     }
 
     private static LocalDate convertExcelDate(double serial) {
         int n = (int) serial;
-        if (n >= 60) n--; // Excel 1900 leap year bug
+        if (n >= 60)
+            n--; // Excel 1900 leap year bug
         return LocalDate.of(1899, 12, 30).plusDays(n);
+    }
+
+    public LocalDateTime toLocalDateTime(Object obj) {
+        if (obj == null || obj.toString().trim().isEmpty()) {
+            return null;
+        }
+
+        String str = obj.toString().trim();
+
+        // Handle Excel serial date/time (e.g., 45356.625 = date + fraction of day)
+        if (str.matches("\\d+(\\.\\d+)?")) {
+            double serial = Double.parseDouble(str);
+            return convertExcelDateTime(serial);
+        }
+
+        // Define common LocalDateTime formats
+        return Stream.of(
+                // ISO formats
+                "yyyy-MM-dd'T'HH:mm:ss",
+                "yyyy-MM-dd'T'HH:mm",
+                "yyyy-MM-dd HH:mm:ss",
+                "yyyy-MM-dd HH:mm",
+
+                // Custom formats with seconds
+                "dd/MM/yyyy HH:mm:ss",
+                "MM/dd/yyyy HH:mm:ss",
+                "dd-MM-yyyy HH:mm:ss",
+                "MM-dd-yyyy HH:mm:ss",
+
+                // Without seconds
+                "dd/MM/yyyy HH:mm",
+                "MM/dd/yyyy HH:mm",
+                "dd-MM-yyyy HH:mm",
+                "MM-dd-yyyy HH:mm",
+
+                // With AM/PM (12-hour)
+                "dd/MM/yyyy h:mm a",
+                "MM/dd/yyyy h:mm a",
+                "dd-MM-yyyy h:mm a",
+                "MM-dd-yyyy h:mm a",
+                "yyyy-MM-dd h:mm a")
+                .map(pattern -> {
+                    try {
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+                        return LocalDateTime.parse(str, formatter);
+                    } catch (DateTimeParseException ignored) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Invalid date-time format: " + str));
+    }
+
+    private static LocalDateTime convertExcelDateTime(double serial) {
+        // Excel's epoch starts from Dec 30, 1899
+        // Handle 1900 leap year bug
+        int days = (int) serial;
+        double fractionalDay = serial - days;
+
+        if (days >= 60)
+            days--; // Excel bug: treats 1900 as leap year
+
+        LocalDateTime base = LocalDateTime.of(1899, 12, 30, 0, 0);
+        return base.plusDays(days).plusNanos((long) (fractionalDay * 24 * 60 * 60 * 1_000_000_000L));
     }
 
     public static class ImportResult {

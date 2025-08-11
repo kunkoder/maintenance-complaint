@@ -30,8 +30,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +46,8 @@ public class ComplaintService {
 
     @Value("${app.upload-complaint-image-before.dir:src/main/resources/static/upload/equipment/image/before}")
     private String uploadDir;
+
+    private static final Logger log = LoggerFactory.getLogger(ComplaintService.class);
 
     private final ComplaintRepository complaintRepository;
     private final UserRepository userRepository;
@@ -89,16 +98,77 @@ public class ComplaintService {
         complaintRepository.save(complaint);
     }
 
-    // ================== UPDATE ==================
-    // @Transactional
     public void updateComplaint(ComplaintDTO dto) {
-        // validateDTO(dto);
-
         Complaint complaint = complaintRepository.findById(dto.getId())
                 .orElseThrow(() -> new NotFoundException("Complaint not found with ID: " + dto.getId()));
 
+        Complaint.Status oldStatus = complaint.getStatus();
+        Complaint.Status newStatus = dto.getStatus();
+
+        // Map all other fields first
         mapToEntity(complaint, dto);
+
+        // Handle status transitions
+        if (newStatus != null && newStatus != oldStatus) {
+            handleStatusTransition(complaint, oldStatus, newStatus);
+        }
+
         complaintRepository.save(complaint);
+    }
+
+    /**
+     * Handle side effects of status transitions:
+     * - Closing: set closeTime, deduct inventory
+     * - Reopening: clear closeTime, restock parts
+     */
+
+    protected void handleStatusTransition(Complaint complaint, Complaint.Status oldStatus, Complaint.Status newStatus) {
+        if (newStatus == Complaint.Status.CLOSED && oldStatus != Complaint.Status.CLOSED) {
+            // Transitioning TO CLOSED
+            LocalDateTime now = LocalDateTime.now();
+            complaint.setCloseTime(now);
+            // totalResolutionTimeMinutes will be calculated in @PreUpdate or @PrePersist
+
+            log.info("Complaint {} CLOSED: Deducting {} parts from inventory",
+                    complaint.getId(), complaint.getPartsUsed().size());
+            deductPartsFromInventory(complaint);
+
+        } else if (oldStatus == Complaint.Status.CLOSED && newStatus != Complaint.Status.CLOSED) {
+            // Reopening a CLOSED complaint
+            log.warn("Reopening CLOSED complaint: {}", complaint.getId());
+            restockParts(complaint);
+
+            complaint.setCloseTime(null);
+            complaint.setTotalResolutionTimeMinutes(null);
+            complaint.setStatus(newStatus); // Allow transition to any non-CLOSED
+        }
+        // For other transitions (e.g. OPEN → IN_PROGRESS), no side effects
+    }
+
+    /**
+     * Deduct all parts used in this complaint from stock
+     */
+    private void deductPartsFromInventory(Complaint complaint) {
+        for (ComplaintPart cp : complaint.getPartsUsed()) {
+            Part part = cp.getPart();
+            log.info("Deducting {} x '{}' (Part ID: {}) from stock",
+                    cp.getQuantity(), part.getName(), part.getId());
+            part.useParts(cp.getQuantity());
+            partRepository.save(part);
+        }
+    }
+
+    /**
+     * Restock all parts used in this complaint
+     */
+    private void restockParts(Complaint complaint) {
+        for (ComplaintPart cp : complaint.getPartsUsed()) {
+            Part part = cp.getPart();
+            log.info("Restocking {} x '{}' (Part ID: {}) to inventory",
+                    cp.getQuantity(), part.getName(), part.getId());
+            part.addStock(cp.getQuantity());
+            partRepository.save(part);
+        }
     }
 
     // ================== DELETE ==================
@@ -116,90 +186,70 @@ public class ComplaintService {
         complaint.setSubject(dto.getSubject().trim());
         complaint.setDescription(dto.getDescription());
         complaint.setPriority(dto.getPriority());
+        complaint.setStatus(dto.getStatus());
         complaint.setCategory(dto.getCategory());
         complaint.setActionTaken(dto.getActionTaken());
-        complaint.setStatus(dto.getStatus());
-        complaint.setCloseTime(dto.getCloseTime());
 
         // Map Area
-        if (dto.getArea() != null && dto.getArea().getCode() != null) {
-            Area area = areaRepository.findByCode(dto.getArea().getCode())
-                    .orElseThrow(
-                            () -> new IllegalArgumentException("Area not found with code: " + dto.getArea().getCode()));
-            complaint.setArea(area);
-        } else {
-            throw new IllegalArgumentException("Area is required");
-        }
+        Area area = areaRepository.findByCode(dto.getArea().getCode())
+                .orElseThrow(
+                        () -> new IllegalArgumentException("Area not found with code: " + dto.getArea().getCode()));
+        complaint.setArea(area);
 
         // Map Equipment
-        if (dto.getEquipment() != null && dto.getEquipment().getCode() != null) {
-            Equipment equipment = equipmentRepository.findByCode(dto.getEquipment().getCode())
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "Equipment not found with code: " + dto.getEquipment().getCode()));
-            complaint.setEquipment(equipment);
-        } else {
-            throw new IllegalArgumentException("Equipment is required");
-        }
+        Equipment equipment = equipmentRepository.findByCode(dto.getEquipment().getCode())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Equipment not found with code: " + dto.getEquipment().getCode()));
+        complaint.setEquipment(equipment);
 
-        // // Map Reporter
-        // if (dto.getReporter() != null && dto.getReporter().getId() != null) {
-        //     User reporter = userRepository.findById(dto.getReporter().getId())
-        //             .orElseThrow(() -> new IllegalArgumentException(
-        //                     "Reporter not found with ID: " + dto.getReporter().getId()));
-        //     complaint.setReporter(reporter);
-        // } else {
-        //     throw new IllegalArgumentException("Reporter is required");
-        // }
+        User reporter = userRepository.findByEmployeeId(dto.getReporter().getEmployeeId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Reporter not found with employeeId: " + dto.getReporter().getEmployeeId()));
+        complaint.setReporter(reporter);
 
-        // // Map Assignee
-        // if (dto.getAssignee() != null && dto.getAssignee().getId() != null) {
-        //     User assignee = userRepository.findById(dto.getAssignee().getId())
-        //             .orElseThrow(() -> new IllegalArgumentException(
-        //                     "Assignee not found with ID: " + dto.getAssignee().getId()));
-        //     complaint.setAssignee(assignee);
-        // } else {
-        //     throw new IllegalArgumentException("Assignee is required");
-        // }
+        User assignee = userRepository.findByEmployeeId(dto.getAssignee().getEmployeeId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Assignee not found with employeeId: " + dto.getAssignee().getEmployeeId()));
+        complaint.setAssignee(assignee);
 
-        // System.out.println("dto complaint" + dto);
-        // Map Reporter
-        if (dto.getReporter() != null) {
-            User reporter = userRepository.findByEmployeeId(dto.getReporter().getEmployeeId())
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "Reporter not found with employeeId: " + dto.getReporter().getEmployeeId()));
-            complaint.setReporter(reporter);
-        } else {
-            throw new IllegalArgumentException("Reporter is required");
-        }
-
-        // Map Assignee
-        if (dto.getAssignee() != null) {
-            User assignee = userRepository.findByEmployeeId(dto.getAssignee().getEmployeeId())
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "Assignee not found with employeeId: " + dto.getAssignee().getEmployeeId()));
-            complaint.setAssignee(assignee);
-        } else {
-            throw new IllegalArgumentException("Assignee is required");
-        }
-
-        // Map Parts Used
-        complaint.getPartsUsed().clear(); // Remove old parts (will be replaced)
+        // ✅ PARTS HANDLING: Use merge/update pattern
         if (dto.getPartsUsed() != null) {
+            // Create a copy of current parts to allow safe iteration
+            List<ComplaintPart> existingParts = new ArrayList<>(complaint.getPartsUsed());
+
+            // Clear the list — thanks to orphanRemoval, old entries will be deleted
+            complaint.getPartsUsed().clear();
+
             for (ComplaintPartDTO partDto : dto.getPartsUsed()) {
                 Part part = partRepository.findById(partDto.getPart().getId())
                         .orElseThrow(() -> new IllegalArgumentException(
                                 "Part not found with ID: " + partDto.getPart().getId()));
 
-                ComplaintPart cp = new ComplaintPart();
-                cp.setComplaint(complaint);
-                cp.setPart(part);
-                cp.setQuantity(partDto.getQuantity());
+                // Try to reuse an existing ComplaintPart if possible
+                ComplaintPart existing = existingParts.stream()
+                        .filter(cp -> cp.getPart().getId().equals(part.getId()))
+                        .findFirst()
+                        .orElse(null);
 
-                // Set embedded ID
-                cp.setId(new ComplaintPartId(complaint.getId(), part.getId()));
+                ComplaintPart cp;
+                if (existing != null) {
+                    // Reuse and update quantity
+                    existing.setQuantity(partDto.getQuantity());
+                    cp = existing;
+                } else {
+                    // Create new
+                    cp = new ComplaintPart();
+                    cp.setComplaint(complaint);
+                    cp.setPart(part);
+                    cp.setQuantity(partDto.getQuantity());
+                    cp.setId(new ComplaintPartId(complaint.getId(), part.getId()));
+                }
 
                 complaint.getPartsUsed().add(cp);
             }
+        } else {
+            // If DTO has no parts, just clear
+            complaint.getPartsUsed().clear();
         }
     }
 
@@ -213,12 +263,28 @@ public class ComplaintService {
         dto.setDescription(complaint.getDescription());
         dto.setPriority(complaint.getPriority());
         dto.setCategory(complaint.getCategory());
+        dto.setStatus(complaint.getStatus());
         dto.setActionTaken(complaint.getActionTaken());
         dto.setImageBefore(complaint.getImageBefore());
         dto.setImageAfter(complaint.getImageAfter());
-        dto.setStatus(complaint.getStatus());
         dto.setCloseTime(complaint.getCloseTime());
         dto.setTotalResolutionTimeMinutes(complaint.getTotalResolutionTimeMinutes());
+        
+        if (complaint.getTotalResolutionTimeMinutes() == null) {
+            dto.setResolutionTimeDisplay("-");
+        } else {
+            int minutes = complaint.getTotalResolutionTimeMinutes();
+            int hours = minutes / 60;
+            int remainingMinutes = minutes % 60;
+
+            if (hours == 0) {
+                dto.setResolutionTimeDisplay(minutes + " min");
+            } else if (remainingMinutes == 0) {
+                dto.setResolutionTimeDisplay(hours + "h");
+            } else {
+                dto.setResolutionTimeDisplay(hours + "h " + remainingMinutes + "m");
+            }
+        }
 
         // Map Area
         if (complaint.getArea() != null) {
@@ -237,7 +303,6 @@ public class ComplaintService {
             equipmentDTO.setCode(complaint.getEquipment().getCode());
             dto.setEquipment(equipmentDTO);
         }
-
 
         // Map Reporter
         dto.setReporter(mapToUserDTO(complaint.getReporter()));
@@ -297,15 +362,6 @@ public class ComplaintService {
     // }
     // }
 }
-
-
-
-
-
-
-
-
-
 
 // package ahqpck.maintenance.report.service;
 
