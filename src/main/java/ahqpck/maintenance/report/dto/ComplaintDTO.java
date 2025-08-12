@@ -21,7 +21,7 @@ public class ComplaintDTO {
 
     private String id;
 
-    // private String code;
+    private String code;
 
     private LocalDateTime reportDate;
 
@@ -42,7 +42,6 @@ public class ComplaintDTO {
     @NotNull(message = "Assignee is mandatory")
     private UserDTO assignee;
 
-    @NotNull(message = "Priority is mandatory")
     private Complaint.Priority priority;
 
     @NotNull(message = "Category is mandatory")

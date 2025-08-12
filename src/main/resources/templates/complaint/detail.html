@@ -39,8 +39,7 @@
                             <div class="card-body">
                                 <!-- Header: ID & Status -->
                                 <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <h5 class="mb-0 text-muted" th:id="${'complaint-key'}" th:text="${complaint?.id}">
-                                        fX9aB2kLmN</h5>
+                                    <h5 class="mb-0 text-muted" th:id="${'complaint-key'}" th:text="${complaint?.code}"></h5>
                                     <span class="badge" th:id="${'status-field'}"
                                         th:classappend="${(complaint.status == 'OPEN') ? 'badge-danger' : (complaint.status == 'IN_PROGRESS') ? 'badge-warning' : (complaint.status == 'PENDING') ? 'badge-info' : (complaint.status == 'DONE') ? 'badge-primary' : 'badge-success'}"
                                         th:text="${complaint.status}" style="cursor: pointer; font-weight: 600;"

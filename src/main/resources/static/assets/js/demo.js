@@ -1,5 +1,8 @@
 "use strict";
 
+// Overall Statistics Daily information about complaint status
+
+// STATUS OPEN
 Circles.create({
 	id: 'circles-1',
 	radius: 60,
@@ -15,6 +18,7 @@ Circles.create({
 	styleText: true
 })
 
+// STATUS IN_PROGRESS
 Circles.create({
 	id: 'circles-2',
 	radius: 60,
@@ -30,6 +34,7 @@ Circles.create({
 	styleText: true
 })
 
+// STATUS PENDING
 Circles.create({
 	id: 'circles-3',
 	radius: 60,
@@ -45,6 +50,7 @@ Circles.create({
 	styleText: true
 })
 
+// STATUS CLOSED
 Circles.create({
 	id: 'circles-4',
 	radius: 60,
@@ -62,6 +68,7 @@ Circles.create({
 
 var totalIncomeChart = document.getElementById('totalIncomeChart').getContext('2d');
 
+// Complaints of The Week
 var mytotalIncomeChart = new Chart(totalIncomeChart, {
 	type: 'bar',
 	data: {
@@ -101,6 +108,7 @@ var mytotalIncomeChart = new Chart(totalIncomeChart, {
 
 var ctx = document.getElementById('statisticsChart').getContext('2d');
 
+// Equipment Statistics
 var statisticsChart = new Chart(ctx, {
 	type: 'line',
 	data: {

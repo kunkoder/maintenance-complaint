@@ -37,8 +37,8 @@ public class Complaint {
     @Column(length = 22, updatable = false, nullable = false)
     private String id;
 
-    // @Column(length = 22, updatable = false)
-    // private String code;
+    @Column(nullable = false, unique = true)
+    private String code;
 
     @Column(name = "report_date", nullable = false)
     private LocalDateTime reportDate;
@@ -50,7 +50,7 @@ public class Complaint {
     // private String area;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "area_code", referencedColumnName = "code", nullable = false)
+    @JoinColumn(name = "area_code", referencedColumnName = "code", nullable = true)
     private Area area;
 
     // @Column(nullable = false)
@@ -67,7 +67,7 @@ public class Complaint {
     @JoinColumn(name = "reporter", referencedColumnName = "employee_id", nullable = false)
     private User reporter;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String subject;
 
     @Column(columnDefinition = "TEXT", nullable = true)
@@ -140,15 +140,16 @@ public class Complaint {
             // this.id = ZeroPaddedIdGenerator.generate("CMP");
             this.id = Base62.encode(UUID.randomUUID());
         }
-        // if (this.code == null) {
-        //     this.id = ZeroPaddedIdGenerator.generate("CMP"); 
-        // }
+        if (this.code == null) {
+            this.code = ZeroPaddedIdGenerator.generate("CP"); 
+        }
+
         LocalDateTime now = LocalDateTime.now();
         this.reportDate = now;
         this.updatedAt = now;
-        if (this.status == null) {
-            this.status = Status.OPEN;
-        }
+        this.status = this.status != null ? this.status : Status.OPEN;
+
+        this.priority = this.priority != null ? this.priority : Priority.MEDIUM;
     }
 
     @PreUpdate

@@ -56,26 +56,45 @@
                         <div class="card-header">
                             <div class="d-flex align-items-center">
                                 <h4 class="card-title" th:text="${title}"></h4>
-                                <form class="form-inline ml-auto" th:action="@{/users}" method="get">
-                                    <div class="input-icon mr-2"> <!-- Added margin for spacing -->
+                                <form class="form-inline ml-auto" th:action="@{/complaints}" method="get"
+                                    id="complaintsForm">
+                                    <div class="input-icon">
                                         <input type="text" name="keyword" th:value="${keyword}" id="userSearchInput"
                                             class="form-control" placeholder="Search...">
                                         <span class="input-icon-addon"><i class="fa fa-search"></i></span>
                                     </div>
+
                                     <!-- Size Dropdown -->
-                                    <div class="form-group mr-2"> <!-- Added margin for spacing -->
+                                    <div class="form-group">
                                         <label for="pageSizeSelect" class="sr-only">Items per page:</label>
-                                        <!-- Accessible label -->
                                         <select name="size" id="pageSizeSelect" class="form-control"
                                             onchange="this.form.submit()">
-                                            <option value="10" th:selected="${currentSize == 10}">10</option>
-                                            <option value="30" th:selected="${currentSize == 30}">30</option>
-                                            <option value="50" th:selected="${currentSize == 50}">50</option>
-                                            <option value="100" th:selected="${currentSize == 100}">100</option>
+                                            <option value="10" th:selected="${pageSize == 10}">10</option>
+                                            <option value="30" th:selected="${pageSize == 30}">30</option>
+                                            <option value="50" th:selected="${pageSize == 50}">50</option>
+                                            <option value="100" th:selected="${pageSize == 100}">100</option>
                                         </select>
                                     </div>
-                                    <!-- Filter Dropdown Button (Filter Icon Only) -->
-                                    <div class="dropdown ml-2">
+
+                                    <!-- Column Visibility Dropdown -->
+                                    <div class="dropdown mr-2">
+                                        <button class="btn btn-primary dropdown-toggle" type="button"
+                                            id="columnToggleDropdown" data-toggle="dropdown" aria-haspopup="true"
+                                            aria-expanded="false" style="padding: 0.375rem 0.5rem;">
+                                            <i class="fas fa-th-list"></i>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-right"
+                                            aria-labelledby="columnToggleDropdown"
+                                            style="min-width: 250px; max-height: 300px; overflow-y: auto; padding: 0.5rem 0;">
+                                            <h6 class="dropdown-header px-3 py-2">
+                                                <i class="fas fa-columns"></i> Show / Hide Columns
+                                            </h6>
+                                            <div id="column-toggle-list"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Filter Dropdown -->
+                                    <div class="dropdown">
                                         <button class="btn btn-primary dropdown-toggle" type="button"
                                             id="filterDropdown" data-toggle="dropdown" aria-haspopup="true"
                                             aria-expanded="false" style="padding: 0.375rem 0.5rem;">
@@ -83,27 +102,29 @@
                                         </button>
                                         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="filterDropdown"
                                             style="min-width: 200px;">
-                                            <!-- Section 1: Column Selection -->
+                                            <!-- Hidden inputs for sort state -->
+                                            <input type="hidden" name="sortBy" id="sortByInput" th:value="${sortBy}" />
+                                            <input type="hidden" name="asc" id="ascInput" th:value="${asc}" />
+
+                                            <!-- Sort Column -->
                                             <h6 class="dropdown-header">Sort Column</h6>
-                                            <a class="dropdown-item" href="#" data-column="complaintNo">Complaint
-                                                No.</a>
-                                            <a class="dropdown-item" href="#" data-column="date">Date</a>
-                                            <a class="dropdown-item" href="#" data-column="area">Area</a>
-                                            <a class="dropdown-item" href="#" data-column="machine">Machine</a>
-                                            <a class="dropdown-item" href="#" data-column="subject">Subject</a>
-                                            <a class="dropdown-item" href="#" data-column="assignee">Assignee</a>
-                                            <a class="dropdown-item" href="#" data-column="status">Status</a>
-                                            <a class="dropdown-item" href="#" data-column="totalTime">Total Time</a>
+                                            <th:block th:each="field : ${sortFields}">
+                                                <a class="dropdown-item sort-column" href="#" th:text="${field}"
+                                                    th:data-column="${field}"
+                                                    th:classappend="${sortBy == field} ? 'active' : ''">
+                                                </a>
+                                            </th:block>
 
                                             <div class="dropdown-divider"></div>
-                                            <!-- Section 2: Sort Order -->
+
+                                            <!-- Sort Order -->
                                             <h6 class="dropdown-header">Sort Order</h6>
-                                            <a class="dropdown-item" href="#" data-order="asc">Ascending</a>
-                                            <a class="dropdown-item" href="#" data-order="desc">Descending</a>
+                                            <a class="dropdown-item" href="#" data-asc="true"
+                                                th:classappend="${asc == true} ? 'active' : ''">Ascending</a>
+                                            <a class="dropdown-item" href="#" data-asc="false"
+                                                th:classappend="${asc == false} ? 'active' : ''">Descending</a>
                                         </div>
                                     </div>
-                                    <!-- Optional: Hidden input for page to reset to 0 on new search/size change -->
-                                    <!-- <input type="hidden" name="page" value="0" /> -->
                                 </form>
                             </div>
                         </div>
@@ -117,46 +138,87 @@
                                 <table id="document-table" class="display table table-striped table-hover">
                                     <thead class="bg-primary text-white">
                                         <tr>
-                                            <th width="12%">Code</th>
-                                            <th width="12%">Date</th>
-                                            <th width="14%">Area</th>
-                                            <th width="12%">Machine</th>
-                                            <th width="20%">Subject</th>
-                                            <th width="14%">Assignee</th>
-                                            <th width="10%">Status</th>
-                                            <th width="10%">Time</th>
+                                            <th width="8%">Code</th>
+                                            <th width="15%">Report Date</th>
+                                            <th width="15%">Last Update</th>
+                                            <th width="12%">Reporter</th>
+                                            <th width="10%">Area</th>
+                                            <th width="12%">Equipment</th>
+                                            <th width="15%">Subject</th>
+                                            <th width="35%">Description</th>
+                                            <th width="12%">Action Taken</th>
+                                            <th width="12%">Assignee</th>
+                                            <th width="8%">Priority</th>
+                                            <th width="10%">Category</th>
+                                            <th width="9%">Status</th>
+                                            <th width="10%">Close Time</th>
+                                            <th width="8%">Total Time</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr th:each="complaint : ${complaints.content}" class="table-row-hover"
                                             th:data-id="${complaint.id}">
-
                                             <!-- Code -->
-                                            <td data-field="id">
+                                            <td data-field="code">
                                                 <a th:href="@{/complaints/{id}(id=${complaint.id})}"
-                                                    class="font-weight-bold" th:text="${complaint.id}"></a>
+                                                    class="font-weight-bold" th:text="${complaint.code}"></a>
                                             </td>
 
-                                            <!-- Date -->
+                                            <!-- Report Date -->
                                             <td data-field="reportDate"
-                                                th:text="${#temporals.format(complaint.reportDate, 'MMM d, yyyy')}">
-                                                5, 2025</td>
+                                                th:text="${#temporals.format(complaint.reportDate, 'MMM d, yyyy')}">-
+                                            </td>
+
+                                            <!-- Last Update -->
+                                            <td data-field="updatedAt"
+                                                th:text="${#temporals.format(complaint.updatedAt, 'MMM d, yyyy HH:mm')}">
+                                                -</td>
+
+                                            <!-- Reporter -->
+                                            <td data-field="reporter" th:text="${complaint.reporter?.name ?: '-'}">-
+                                            </td>
 
                                             <!-- Area -->
-                                            <td data-field="area" th:text="${complaint.area?.name ?: '-'}">
-                                                Floor A</td>
+                                            <td data-field="area" th:text="${complaint.area?.name ?: '-'}">-</td>
 
-                                            <!-- Machine / Equipment -->
-                                            <td data-field="equipment" th:text="${complaint.equipment?.name ?: '-'}">
-                                                Conveyor-5</td>
+                                            <!-- Equipment -->
+                                            <td data-field="equipment" th:text="${complaint.equipment?.name ?: '-'}">-
+                                            </td>
 
                                             <!-- Subject -->
-                                            <td data-field="subject" th:text="${complaint.subject}">
-                                                and Noise</td>
+                                            <td data-field="subject" th:text="${complaint.subject ?: '-'}">-</td>
+
+                                            <!-- Description -->
+                                            <td data-field="description" th:text="${complaint.description ?: '-'}">-
+                                            </td>
+
+                                            <!-- Action Taken -->
+                                            <td data-field="actionTaken" th:text="${complaint.actionTaken ?: '-'}">-
+                                            </td>
 
                                             <!-- Assignee -->
-                                            <td data-field="assignee" th:data-user-id="${complaint.assignee?.id}"
-                                                th:text="${complaint.assignee?.name ?: '-'}"></td>
+                                            <td data-field="assignee" th:text="${complaint.assignee?.name ?: '-'}">-
+                                            </td>
+
+                                            <!-- Priority -->
+                                            <td data-field="priority">
+                                                <span class="badge badge-pill px-3 py-2" th:classappend="${
+                      complaint.priority == 'HIGH' ? 'badge-danger' :
+                      complaint.priority == 'MEDIUM' ? 'badge-warning' :
+                      complaint.priority == 'LOW' ? 'badge-success' :
+                      'badge-secondary'
+                  }" th:text="${complaint.priority ?: '-'}"></span>
+                                            </td>
+
+                                            <!-- Category -->
+                                            <td data-field="category">
+                                                <span class="badge badge-pill px-3 py-2" th:classappend="${
+                      complaint.category == 'MECHANICAL' ? 'badge-danger' :
+                      complaint.category == 'ELECTRICAL' ? 'badge-warning' :
+                      complaint.category == 'IT' ? 'badge-info' :
+                      'badge-secondary'
+                  }" th:text="${complaint.category ?: '-'}"></span>
+                                            </td>
 
                                             <!-- Status -->
                                             <td data-field="status">
@@ -164,16 +226,19 @@
                       complaint.status == 'OPEN' ? 'badge-danger' :
                       complaint.status == 'IN_PROGRESS' ? 'badge-warning' :
                       complaint.status == 'PENDING' ? 'badge-info' :
-                      'badge-success'
-                  }" th:text="${complaint.status}"></span>
+                      complaint.status == 'CLOSED' ? 'badge-success' :
+                      'badge-secondary'
+                  }" th:text="${complaint.status ?: '-'}"></span>
                                             </td>
 
-                                            <!-- Resolution Time -->
-                                            <td data-field="totalResolutionTimeMinutes">
-                                                <span th:if="${complaint.resolutionTimeDisplay != null}"
-                                                    th:text="${complaint.resolutionTimeDisplay}"></span>
-                                                <span th:if="${complaint.resolutionTimeDisplay == null}">-</span>
-                                            </td>
+                                            <!-- Close Time -->
+                                            <td data-field="closeTime"
+                                                th:text="${complaint.closeTime != null ? #temporals.format(complaint.closeTime, 'MMM d, yyyy HH:mm') : '-'}">
+                                                -</td>
+
+                                            <!-- Total Resolution Time -->
+                                            <td data-field="totalResolutionTimeMinutes"
+                                                th:text="${complaint.resolutionTimeDisplay ?: '-'}">-</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -181,49 +246,40 @@
 
                             <!-- Pagination & Info -->
                             <div class="row mt-3 align-items-center">
-                                <!-- Page Info (Left) -->
                                 <div class="col-md-6 col-sm-12">
                                     <p class="text-muted mb-0">
-                                        Showing <span id="startRecord">1</span> - <span id="endRecord">10</span>
-                                        of <span id="totalRecords">100</span> entries
+                                        Showing
+                                        <span th:text="${complaints.number * complaints.size + 1} ?: 0"></span>
+                                        -
+                                        <span
+                                            th:text="${complaints.number * complaints.size + complaints.numberOfElements} ?: 0"></span>
+                                        of <span th:text="${complaints.totalElements} ?: 0"></span> entries
                                     </p>
                                 </div>
-
-                                <!-- Pagination (Right) -->
                                 <div class="col-md-6 col-sm-12">
-                                    <nav aria-label="User list pagination" class="d-flex justify-content-end">
+                                    <nav class="d-flex justify-content-end">
                                         <ul class="pagination mb-0">
+
                                             <!-- Previous Button -->
-                                            <li class="page-item">
-                                                <a class="page-link" href="#" aria-label="Previous">
-                                                    <span aria-hidden="true">Prev</span>
-                                                </a>
+                                            <li class="page-item"
+                                                th:classappend="${!complaints.hasPrevious} ? 'disabled'">
+                                                <a class="page-link"
+                                                    th:href="@{/complaints(keyword=${keyword}, page=${complaints.number}, size=${pageSize}, sortBy=${sortBy}, asc=${asc})}"
+                                                    th:if="${complaints.hasPrevious}">Prev</a>
+                                                <span class="page-link" th:if="${!complaints.hasPrevious}">Prev</span>
                                             </li>
 
-                                            <!-- Page Numbers (Example: Current page 1) -->
+                                            <!-- Current Page (1-based display) -->
                                             <li class="page-item active">
-                                                <a class="page-link" href="#">
-                                                    1 <span class="sr-only">(current)</span>
-                                                </a>
-                                            </li>
-                                            <li class="page-item">
-                                                <a class="page-link" href="#">2</a>
-                                            </li>
-                                            <li class="page-item">
-                                                <a class="page-link" href="#">3</a>
-                                            </li>
-                                            <li class="page-item disabled">
-                                                <span class="page-link">...</span>
-                                            </li>
-                                            <li class="page-item">
-                                                <a class="page-link" href="#">10</a>
+                                                <span class="page-link" th:text="${complaints.number + 1}">1</span>
                                             </li>
 
                                             <!-- Next Button -->
-                                            <li class="page-item">
-                                                <a class="page-link" href="#" aria-label="Next">
-                                                    <span aria-hidden="true">Next</span>
-                                                </a>
+                                            <li class="page-item" th:classappend="${!complaints.hasNext} ? 'disabled'">
+                                                <a class="page-link"
+                                                    th:href="@{/complaints(keyword=${keyword}, page=${(complaints.number + 1) + 1}, size=${pageSize}, sortBy=${sortBy}, asc=${asc})}"
+                                                    th:if="${complaints.hasNext}">Next</a>
+                                                <span class="page-link" th:if="${!complaints.hasNext}">Next</span>
                                             </li>
                                         </ul>
                                     </nav>
@@ -236,10 +292,226 @@
         </div>
     </div>
 
+    <style>
+        /* Container for the dropdown */
+        .column-toggle-container {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .custom-checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 0.4rem 1rem;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.15s ease;
+            user-select: none;
+        }
+
+        .custom-checkbox-item:hover {
+            background-color: #f1f3f5;
+        }
+
+        .custom-checkbox {
+            position: relative;
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            margin-right: 10px;
+        }
+
+        .custom-checkbox input {
+            opacity: 0;
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .custom-checkbox .checkmark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 18px;
+            height: 18px;
+            background-color: #fff;
+            border: 2px solid #ced4da;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .custom-checkbox input:checked+.checkmark {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .custom-checkbox input:checked+.checkmark:after {
+            content: "";
+            position: absolute;
+            left: 5px;
+            top: 2px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .custom-checkbox-label {
+            font-size: 0.95rem;
+            color: #212529;
+            font-weight: 500;
+            flex-grow: 1;
+        }
+    </style>
+
     <!-- Scripts Fragment -->
     <th:block layout:fragment="scripts">
         <!-- <script th:src="@{/js/example.js}"></script> -->
         <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const table = document.getElementById("document-table");
+                const headerRow = table.querySelector("thead tr");
+                const dataRows = table.querySelectorAll("tbody tr");
+                const container = document.getElementById("column-toggle-list");
+
+                const columnSettings = [
+                    { key: "code", label: "Code", visible: true },
+                    { key: "reportDate", label: "Report Date", visible: true },
+                    { key: "updatedAt", label: "Last Update", visible: false },
+                    { key: "reporter", label: "Reporter", visible: false },
+                    { key: "area", label: "Area", visible: false },
+                    { key: "equipment", label: "Equipment", visible: true },
+                    { key: "subject", label: "Subject", visible: false },
+                    { key: "description", label: "Description", visible: true },
+                    { key: "actionTaken", label: "Action Taken", visible: true },
+                    { key: "assignee", label: "Assignee", visible: true },
+                    { key: "priority", label: "Priority", visible: false },
+                    { key: "category", label: "Category", visible: true },
+                    { key: "status", label: "Status", visible: true },
+                    { key: "closeTime", label: "Close Time", visible: true },
+                    { key: "totalResolutionTimeMinutes", label: "Total Time", visible: true }
+                ];
+
+                columnSettings.forEach((col, index) => {
+                    // Create wrapper div (like Bootstrap's custom-control)
+                    const div = document.createElement("div");
+                    div.className = "px-3 py-1";
+                    div.style.cursor = "pointer";
+                    div.style.userSelect = "none";
+
+                    // Use innerHTML with Font Awesome for checkbox
+                    div.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <span class="column-checkbox" data-index="${index}" 
+                            style="display: inline-block; width: 18px; height: 18px; border: 2px solid #adb5bd; border-radius: 4px; margin-right: 8px; text-align: center; line-height: 16px; font-size: 12px; transition: 0.2s background; 
+                            ${col.visible ? 'background-color: #007bff; border-color: #007bff;' : ''}">
+                            ${col.visible ? '<i class="fas fa-check" style="color: white;"></i>' : ''}
+                        </span>
+                        <span style="font-size: 0.95rem; color: #212529;">${col.label}</span>
+                    </div>
+                    `;
+
+                    // Save references
+                    const checkboxSpan = div.querySelector(".column-checkbox");
+                    const th = headerRow.children[index];
+                    const tds = Array.from(dataRows).map(row => row.children[index]);
+
+                    // Initially hide if not visible
+                    if (!col.visible) {
+                        th.style.display = "none";
+                        tds.forEach(td => td.style.display = "none");
+                    }
+
+                    // Toggle on click
+                    div.addEventListener("click", function () {
+                        const isChecked = checkboxSpan.innerHTML.trim() !== "";
+                        if (isChecked) {
+                            // Uncheck
+                            checkboxSpan.style.backgroundColor = "";
+                            checkboxSpan.innerHTML = "";
+                            th.style.display = "none";
+                            tds.forEach(td => td.style.display = "none");
+                        } else {
+                            // Check
+                            checkboxSpan.style.backgroundColor = "#007bff";
+                            checkboxSpan.style.borderColor = "#007bff";
+                            checkboxSpan.innerHTML = '<i class="fas fa-check" style="color: white;"></i>';
+                            th.style.display = "";
+                            tds.forEach(td => td.style.display = "");
+                        }
+                    });
+
+                    container.appendChild(div);
+                });
+            });
+
+            const sortFieldLabels = {
+                'code': 'Code',
+                'name': 'Name',
+                'model': 'Model',
+                'unit': 'Unit',
+                'qty': 'Qty',
+                'manufacturer': 'Manufacturer',
+                'serialNo': 'Serial No.',
+                'manufacturedDate': 'Manufactured Date',
+                'commissionedDate': 'Commissioned Date',
+                'capacity': 'Capacity',
+                'remarks': 'Remarks'
+                // Add more if needed
+            };
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const form = document.getElementById('complaintsForm');
+                const sortByInput = document.getElementById('sortByInput');
+                const ascInput = document.getElementById('ascInput');
+
+                // Update dropdown items with friendly names
+                document.querySelectorAll('.sort-column').forEach(item => {
+                    const field = item.getAttribute('data-column');
+                    const displayText = sortFieldLabels[field] || field; // Fallback to raw field
+                    item.textContent = displayText;
+
+                    // Highlight active sort column
+                    if (sortByInput.value === field) {
+                        item.classList.add('active');
+                    }
+                });
+
+                // Handle column click
+                document.querySelectorAll('.sort-column').forEach(item => {
+                    item.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const column = this.getAttribute('data-column');
+                        sortByInput.value = column;
+
+                        // Update active class
+                        document.querySelectorAll('.sort-column').forEach(el => {
+                            el.classList.remove('active');
+                        });
+                        this.classList.add('active');
+
+                        // Submit form
+                        form.submit();
+                    });
+                });
+
+                // Handle sort order (asc=true/false)
+                document.querySelectorAll('[data-asc]').forEach(item => {
+                    item.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const ascValue = this.getAttribute('data-asc') === 'true'; // convert to boolean
+                        ascInput.value = ascValue;
+
+                        // Update active class
+                        document.querySelectorAll('[data-asc]').forEach(el => {
+                            el.classList.remove('active');
+                        });
+                        this.classList.add('active');
+
+                        // Submit form
+                        form.submit();
+                    });
+                });
+            });
             // Auto-show Flash Modal
             $(document).ready(function () {
                 if ($('#flashMessageModalContainer').length) {

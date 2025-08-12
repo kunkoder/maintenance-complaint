@@ -153,7 +153,7 @@ public class ComplaintController {
             BindingResult bindingResult,
             RedirectAttributes ra) {
 
-                System.out.println(complaintDTO);
+                // System.out.println(complaintDTO);
         if (bindingResult.hasErrors()) {
             handleBindingErrors(bindingResult, ra, complaintDTO);
             return "redirect:/complaints";
@@ -193,46 +193,48 @@ public class ComplaintController {
         return "redirect:/complaints";
     }
 
-    // @PostMapping("/import")
-    // public String importComplaints(
-    //         @RequestParam("data") String dataJson,
-    //         @RequestParam(value = "sheet", required = false) String sheet,
-    //         @RequestParam(value = "headerRow", required = false) Integer headerRow,
-    //         RedirectAttributes ra) {
+    @PostMapping("/import")
+    public String importComplaints(
+            @RequestParam("data") String dataJson,
+            @RequestParam(value = "sheet", required = false) String sheet,
+            @RequestParam(value = "headerRow", required = false) Integer headerRow,
+            RedirectAttributes ra) {
 
-    //     try {
-    //         ObjectMapper mapper = new ObjectMapper();
-    //         List<Map<String, Object>> data = mapper.readValue(dataJson,
-    //                 new TypeReference<List<Map<String, Object>>>() {
-    //                 });
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            List<Map<String, Object>> data = mapper.readValue(dataJson,
+                    new TypeReference<List<Map<String, Object>>>() {
+                    });
 
-    //         ImportUtil.ImportResult result = complaintService.importComplaintsFromExcel(data);
+            // ra.addFlashAttribute("error", data);
 
-    //         if (result.getImportedCount() > 0 && !result.hasErrors()) {
-    //             ra.addFlashAttribute("success",
-    //                     "Successfully imported " + result.getImportedCount() + " complaint record(s).");
-    //         } else if (result.getImportedCount() > 0) {
-    //             StringBuilder msg = new StringBuilder("Imported ").append(result.getImportedCount())
-    //                     .append(" record(s), but ").append(result.getErrorMessages().size()).append(" error(s):");
-    //             for (String err : result.getErrorMessages()) {
-    //                 msg.append("|").append(err);
-    //             }
-    //             ra.addFlashAttribute("error", msg.toString());
-    //         } else {
-    //             StringBuilder msg = new StringBuilder("Failed to import any complaint:");
-    //             for (String err : result.getErrorMessages()) {
-    //                 msg.append("|").append(err);
-    //             }
-    //             ra.addFlashAttribute("error", msg.toString());
-    //         }
+            ImportUtil.ImportResult result = complaintService.importComplaintsFromExcel(data);
 
-    //         return "redirect:/complaints";
+            if (result.getImportedCount() > 0 && !result.hasErrors()) {
+                ra.addFlashAttribute("success",
+                        "Successfully imported " + result.getImportedCount() + " complaint record(s).");
+            } else if (result.getImportedCount() > 0) {
+                StringBuilder msg = new StringBuilder("Imported ").append(result.getImportedCount())
+                        .append(" record(s), but ").append(result.getErrorMessages().size()).append(" error(s):");
+                for (String err : result.getErrorMessages()) {
+                    msg.append("|").append(err);
+                }
+                ra.addFlashAttribute("error", msg.toString());
+            } else {
+                StringBuilder msg = new StringBuilder("Failed to import any complaint:");
+                for (String err : result.getErrorMessages()) {
+                    msg.append("|").append(err);
+                }
+                ra.addFlashAttribute("error", msg.toString());
+            }
 
-    //     } catch (Exception e) {
-    //         ra.addFlashAttribute("error", "Bulk import failed: " + e.getMessage());
-    //         return "redirect:/complaints";
-    //     }
-    // }
+            return "redirect:/complaints";
+
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Bulk import failed: " + e.getMessage());
+            return "redirect:/complaints";
+        }
+    }
 
     // === HELPERS ===
 

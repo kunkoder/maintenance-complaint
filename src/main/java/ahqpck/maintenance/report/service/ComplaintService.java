@@ -15,6 +15,7 @@ import ahqpck.maintenance.report.repository.PartRepository;
 import ahqpck.maintenance.report.repository.UserRepository;
 import ahqpck.maintenance.report.specification.ComplaintSpecification;
 import ahqpck.maintenance.report.util.FileUploadUtil;
+import ahqpck.maintenance.report.util.ImportUtil;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -57,6 +59,7 @@ public class ComplaintService {
     private final Validator validator;
 
     private final FileUploadUtil fileUploadUtil;
+    private final ImportUtil importUtil;
 
     // ================== GET ALL WITH PAGINATION & SEARCH ==================
     // @Transactional(readOnly = true)
@@ -96,6 +99,131 @@ public class ComplaintService {
         }
 
         complaintRepository.save(complaint);
+    }
+
+    // Add this method to EquipmentService
+    public ImportUtil.ImportResult importComplaintsFromExcel(List<Map<String, Object>> data) {
+        List<String> errorMessages = new ArrayList<>();
+        int importedCount = 0;
+
+        if (data == null || data.isEmpty()) {
+            throw new IllegalArgumentException("No data to import.");
+        }
+
+        for (int i = 0; i < data.size(); i++) {
+            Map<String, Object> row = data.get(i);
+            try {
+                ComplaintDTO dto = new ComplaintDTO();
+
+                // 🟡 Area (OPTIONAL)
+                String areaCode = importUtil.toString(row.get("area"));
+                if (areaCode != null && !areaCode.trim().isEmpty()) {
+                    AreaDTO areaDTO = new AreaDTO();
+                    areaDTO.setCode(areaCode.trim());
+                    dto.setArea(areaDTO);
+                }
+                // If area is missing or blank, leave it null
+
+                // ✅ Equipment (REQUIRED)
+                String equipmentCode = importUtil.toString(row.get("equipment"));
+                if (equipmentCode == null || equipmentCode.trim().isEmpty()) {
+                    throw new IllegalArgumentException("Equipment is required");
+                }
+                EquipmentDTO equipmentDTO = new EquipmentDTO();
+                equipmentDTO.setCode(equipmentCode.trim());
+                dto.setEquipment(equipmentDTO);
+
+                // ✅ Reporter (REQUIRED)
+                String reporterEmpId = importUtil.toString(row.get("reporter"));
+                if (reporterEmpId == null || reporterEmpId.trim().isEmpty()) {
+                    throw new IllegalArgumentException("Reporter is required");
+                }
+                UserDTO reporterDTO = new UserDTO();
+                reporterDTO.setEmployeeId(reporterEmpId.trim());
+                dto.setReporter(reporterDTO);
+
+                // ✅ Assignee (REQUIRED)
+                String assigneeEmpId = importUtil.toString(row.get("assignee"));
+                if (assigneeEmpId == null || assigneeEmpId.trim().isEmpty()) {
+                    throw new IllegalArgumentException("Assignee is required");
+                }
+                UserDTO assigneeDTO = new UserDTO();
+                assigneeDTO.setEmployeeId(assigneeEmpId.trim());
+                dto.setAssignee(assigneeDTO);
+
+                // 🟡 Priority (OPTIONAL)
+                String priorityStr = importUtil.toString(row.get("priority"));
+                if (priorityStr != null && !priorityStr.trim().isEmpty()) {
+                    try {
+                        dto.setPriority(Complaint.Priority.valueOf(priorityStr.trim().toUpperCase()));
+                    } catch (IllegalArgumentException e) {
+                        throw new IllegalArgumentException(
+                                "Invalid Priority value: '" + priorityStr
+                                        + "'. Must be one of: LOW, MEDIUM, HIGH, or leave blank");
+                    }
+                }
+                // If priority is missing or invalid → remains null
+
+                // ✅ Category (REQUIRED)
+                String categoryStr = importUtil.toString(row.get("category"));
+                if (categoryStr == null || categoryStr.trim().isEmpty()) {
+                    throw new IllegalArgumentException("Category is required");
+                }
+                try {
+                    dto.setCategory(Complaint.Category.valueOf(categoryStr.trim().toUpperCase()));
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalArgumentException(
+                            "Invalid Category value: '" + categoryStr
+                                    + "'. Must be one of: MECHANICAL, ELECTRICAL, IT");
+                }
+
+                // Optional fields
+                dto.setSubject(importUtil.toString(row.get("subject")));
+                dto.setDescription(importUtil.toString(row.get("description")));
+
+                // Status (optional)
+                String statusStr = importUtil.toString(row.get("status"));
+                if (statusStr != null && !statusStr.trim().isEmpty()) {
+                    try {
+                        dto.setStatus(Complaint.Status.valueOf(statusStr.trim().toUpperCase()));
+                    } catch (IllegalArgumentException e) {
+                        throw new IllegalArgumentException("Invalid Status value: '" + statusStr + "'");
+                    }
+                }
+                // Else keep null (default behavior)
+
+                dto.setActionTaken(importUtil.toString(row.get("actionTaken")));
+                dto.setReportDate(importUtil.toLocalDateTime(row.get("reportDate")));
+                dto.setCloseTime(importUtil.toLocalDateTime(row.get("closeTime")));
+                dto.setTotalResolutionTimeMinutes(importUtil.toInteger(row.get("totalResolutionTimeMinutes")));
+
+                // Final validation — BUT exclude fields that are now optional
+                Set<ConstraintViolation<ComplaintDTO>> violations = validator.validate(dto);
+                if (!violations.isEmpty()) {
+                    // Filter out violations for fields we now allow to be null (e.g., priority,
+                    // area)
+                    List<String> filteredMessages = violations.stream()
+                            .filter(v -> !(v.getPropertyPath().toString().equals("priority") ||
+                                    v.getPropertyPath().toString().equals("area")))
+                            .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                            .collect(Collectors.toList());
+
+                    if (!filteredMessages.isEmpty()) {
+                        throw new IllegalArgumentException("Validation failed: " + String.join(", ", filteredMessages));
+                    }
+                    // Otherwise, proceed if only ignored fields had issues
+                }
+
+                createComplaint(dto, null);
+                importedCount++;
+
+            } catch (Exception e) {
+                String message = e.getMessage() != null ? e.getMessage() : "Unknown error";
+                errorMessages.add("Row " + (i + 1) + ": " + message);
+            }
+        }
+
+        return new ImportUtil.ImportResult(importedCount, errorMessages);
     }
 
     public void updateComplaint(ComplaintDTO dto) {
@@ -183,7 +311,7 @@ public class ComplaintService {
     // ================== MAPPING METHODS ==================
 
     private void mapToEntity(Complaint complaint, ComplaintDTO dto) {
-        complaint.setSubject(dto.getSubject().trim());
+        complaint.setSubject(dto.getSubject());
         complaint.setDescription(dto.getDescription());
         complaint.setPriority(dto.getPriority());
         complaint.setStatus(dto.getStatus());
@@ -191,10 +319,15 @@ public class ComplaintService {
         complaint.setActionTaken(dto.getActionTaken());
 
         // Map Area
-        Area area = areaRepository.findByCode(dto.getArea().getCode())
-                .orElseThrow(
-                        () -> new IllegalArgumentException("Area not found with code: " + dto.getArea().getCode()));
-        complaint.setArea(area);
+        if (dto.getArea() != null && dto.getArea().getCode() != null && !dto.getArea().getCode().trim().isEmpty()) {
+            String areaCode = dto.getArea().getCode().trim();
+            Area area = areaRepository.findByCode(areaCode)
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Area not found with code: " + areaCode));
+            complaint.setArea(area);
+        } else {
+            complaint.setArea(null);
+        }
 
         // Map Equipment
         Equipment equipment = equipmentRepository.findByCode(dto.getEquipment().getCode())
@@ -257,6 +390,7 @@ public class ComplaintService {
     private ComplaintDTO toDTO(Complaint complaint) {
         ComplaintDTO dto = new ComplaintDTO();
         dto.setId(complaint.getId());
+        dto.setCode(complaint.getCode());
         dto.setReportDate(complaint.getReportDate());
         dto.setUpdatedAt(complaint.getUpdatedAt());
         dto.setSubject(complaint.getSubject());
@@ -269,21 +403,30 @@ public class ComplaintService {
         dto.setImageAfter(complaint.getImageAfter());
         dto.setCloseTime(complaint.getCloseTime());
         dto.setTotalResolutionTimeMinutes(complaint.getTotalResolutionTimeMinutes());
-        
+
         if (complaint.getTotalResolutionTimeMinutes() == null) {
             dto.setResolutionTimeDisplay("-");
         } else {
-            int minutes = complaint.getTotalResolutionTimeMinutes();
-            int hours = minutes / 60;
-            int remainingMinutes = minutes % 60;
+            int totalMinutes = complaint.getTotalResolutionTimeMinutes();
 
-            if (hours == 0) {
-                dto.setResolutionTimeDisplay(minutes + " min");
-            } else if (remainingMinutes == 0) {
-                dto.setResolutionTimeDisplay(hours + "h");
-            } else {
-                dto.setResolutionTimeDisplay(hours + "h " + remainingMinutes + "m");
+            int days = totalMinutes / (24 * 60);
+            int remainingAfterDays = totalMinutes % (24 * 60);
+            int hours = remainingAfterDays / 60;
+            int minutes = remainingAfterDays % 60;
+
+            StringBuilder display = new StringBuilder();
+
+            if (days > 0) {
+                display.append(days).append("d ");
             }
+            if (hours > 0) {
+                display.append(hours).append("h ");
+            }
+            if (minutes > 0 || display.length() == 0) {
+                display.append(minutes).append("m");
+            }
+
+            dto.setResolutionTimeDisplay(display.toString().trim());
         }
 
         // Map Area

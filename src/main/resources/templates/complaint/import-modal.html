@@ -5,14 +5,14 @@
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title" id="importModalLabel">
-                        <i class="fa fa-file-import mr-2"></i> Import Equipment Data
+                        <i class="fa fa-file-import mr-2"></i> Import Complaint Data
                     </h5>
                     <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body p-4">
-                    <form id="importForm" method="post" th:action="@{/equipments/import}" enctype="multipart/form-data">
+                    <form id="importForm" method="post" th:action="@{/complaints/import}" enctype="multipart/form-data">
                         <!-- Step 1: Upload File -->
                         <div class="step mb-4">
                             <h6><i class="fas fa-upload mr-1"></i> Step 1: Upload File</h6>
@@ -142,13 +142,13 @@
                 // Map Excel column headers to backend field names
                 fieldMapping: {
                     "Code": "code",
-                    "Area": "area",           // expects area.code
-                    "Equipment": "equipment", // expects equipment.code
-                    "Reporter": "reporter",   // expects employeeId
+                    "Area": "area",
+                    "Equipment": "equipment",
+                    "Reporter": "reporter",
                     "Subject": "subject",
                     "Description": "description",
-                    "Assignee": "assignee",   // employeeId
-                    "Priority": "priority",   // OPEN, IN_PROGRESS, etc.
+                    "Assignee": "assignee",
+                    "Priority": "priority", 
                     "Category": "category",
                     "Status": "status",
                     "Action Taken": "actionTaken",
