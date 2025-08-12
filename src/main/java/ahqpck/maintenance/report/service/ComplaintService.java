@@ -194,6 +194,7 @@ public class ComplaintService {
 
                 dto.setActionTaken(importUtil.toString(row.get("actionTaken")));
                 dto.setReportDate(importUtil.toLocalDateTime(row.get("reportDate")));
+                System.out.println("date report " + row.get("reportDate"));
                 dto.setCloseTime(importUtil.toLocalDateTime(row.get("closeTime")));
                 dto.setTotalResolutionTimeMinutes(importUtil.toInteger(row.get("totalResolutionTimeMinutes")));
 

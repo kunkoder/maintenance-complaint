@@ -327,6 +327,153 @@
 				</div>
 			</div>
 		</div>
+		<div class="page-inner">
+
+			<div class="row mt--2">
+				<!-- Overall Statistics -->
+				<div class="col-md-6">
+					<div class="card full-height">
+						<div class="card-body">
+							<div class="card-title">Overall Statistics</div>
+							<div class="card-category">Daily information about complaint status</div>
+							<div class="d-flex flex-wrap justify-content-around pb-2 pt-5">
+								<div class="px-2 pb-2 pb-md-0 text-center">
+									<div id="circles-1"></div>
+									<h6 class="fw-bold mt-1 mb-3">Closed</h6>
+								</div>
+								<div class="px-2 pb-2 pb-md-0 text-center">
+									<div id="circles-2"></div>
+									<h6 class="fw-bold mt-1 mb-3">Open</h6>
+								</div>
+								<div class="px-2 pb-2 pb-md-0 text-center">
+									<div id="circles-3"></div>
+									<h6 class="fw-bold mt-1 mb-0">In Progress</h6>
+								</div>
+								<div class="px-2 pb-2 pb-md-0 text-center">
+									<div id="circles-4"></div>
+									<h6 class="fw-bold mt-1 mb-0">Pending</h6>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Complaints of The Week -->
+				<div class="col-md-6">
+					<div class="card full-height">
+						<div class="card-body">
+							<div class="card-title">Complaints of The Week</div>
+							<div class="row py-3">
+								<div class="col-md-12">
+									<div id="chart-container">
+										<canvas id="totalIncomeChart" style="height: 300px;"></canvas>
+									</div>
+								</div>
+								<div class="col-md-12 d-flex flex-row justify-content-around mt-3">
+									<div class="text-center">
+										<h6 class="fw-bold text-uppercase text-success op-8">Closed</h6>
+										<h3 class="fw-bold"
+											th:text="${dashboard.complaintStatusCount.get('CLOSED') ?: 0}">0</h3>
+									</div>
+									<div class="text-center">
+										<h6 class="fw-bold text-uppercase text-danger op-8">Open</h6>
+										<h3 class="fw-bold"
+											th:text="${dashboard.complaintStatusCount.get('OPEN') ?: 0}">0</h3>
+									</div>
+									<div class="text-center">
+										<h6 class="fw-bold text-uppercase text-warning op-8">In Progress</h6>
+										<h3 class="fw-bold"
+											th:text="${dashboard.complaintStatusCount.get('IN_PROGRESS') ?: 0}">0</h3>
+									</div>
+									<div class="text-center">
+										<h6 class="fw-bold text-uppercase text-info op-8">Pending</h6>
+										<h3 class="fw-bold"
+											th:text="${dashboard.complaintStatusCount.get('PENDING') ?: 0}">0</h3>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="row">
+				<!-- Engineers Responsibility -->
+				<div class="col-md-8">
+					<div class="card">
+						<div class="card-header">
+							<h4 class="card-title">Engineers Responsibility</h4>
+							<p class="card-category">Map of the distribution of engineers responsibility</p>
+						</div>
+						<div class="card-body">
+							<div class="table-responsive">
+								<table class="table table-hover">
+									<thead>
+										<tr>
+											<th>Country</th>
+											<th>Engineer</th>
+											<th>In Progress</th>
+											<th>Pending</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr th:each="eng : ${dashboard.engineerStats}">
+											<td th:text="${eng.name}">John</td>
+											<td th:text="${eng.inProgress}">23</td>
+											<td th:text="${eng.pending}">12</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Top Area -->
+				<!-- <div class="col-md-4">
+					<div class="card">
+						<div class="card-header">
+							<div class="card-title">Top Area</div>
+						</div>
+						<div class="card-body pb-0">
+							<div th:each="area : ${dashboard.topAreas}" class="d-flex">
+								<div class="avatar">
+									<img src="assets/img/logoproduct.svg" class="avatar-img rounded-circle" />
+								</div>
+								<div class="flex-1 pt-1 ml-2">
+									<h6 class="fw-bold mb-1" th:text="${area.areaName}">AUT 1</h6>
+									<small class="text-muted" th:text="${area.issue}">Sensor not working</small>
+								</div>
+								<div class="d-flex ml-auto align-items-center">
+									<h3 class="text-info fw-bold" th:text="${area.count}">14</h3>
+								</div>
+							</div>
+							<div class="separator-dashed" th:each="area : ${dashboard.topAreas}"></div>
+						</div>
+					</div>
+				</div> -->
+			</div>
+
+			<!-- Equipment Statistics -->
+			<div class="row">
+				<div class="col-md-12">
+					<div class="card">
+						<div class="card-header">
+							<div class="card-head-row">
+								<div class="card-title">Equipment Statistics</div>
+							</div>
+						</div>
+						<div class="card-body">
+							<div class="chart-container" style="min-height: 375px">
+								<canvas id="statisticsChart"></canvas>
+							</div>
+							<div id="myChartLegend"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
 
 		<footer class="footer">
 			<div class="container-fluid">
@@ -360,6 +507,104 @@
 	<!-- Scripts Fragment -->
 	<th:block layout:fragment="scripts">
 		<!-- <script th:src="@{/js/document-modal.js}"></script> -->
+		<script>
+			// Circles
+			Circles.create({
+				id: 'circles-1',
+				radius: 60,
+				value: 100,
+				maxValue: 100,
+				width: 9,
+				text: /*[[${dashboard.complaintStatusCount.get('CLOSED') ?: 0}]]*/,
+				colors: ['#f1f1f1', '#2BB930'],
+				duration: 400
+			});
+			Circles.create({
+				id: 'circles-2',
+				radius: 60,
+				value: 100,
+				maxValue: 100,
+				width: 9,
+				text: /*[[${dashboard.complaintStatusCount.get('OPEN') ?: 0}]]*/,
+				colors: ['#f1f1f1', '#F25961'],
+				duration: 400
+			});
+			Circles.create({
+				id: 'circles-3',
+				radius: 60,
+				value: 100,
+				maxValue: 100,
+				width: 9,
+				text: /*[[${dashboard.complaintStatusCount.get('IN_PROGRESS') ?: 0}]]*/,
+				colors: ['#f1f1f1', '#FDAB4B'],
+				duration: 400
+			});
+			Circles.create({
+				id: 'circles-4',
+				radius: 60,
+				value: 100,
+				maxValue: 100,
+				width: 9,
+				text: /*[[${dashboard.complaintStatusCount.get('PENDING') ?: 0}]]*/,
+				colors: ['#f1f1f1', '#3498DB'],
+				duration: 400
+			});
+
+			// Weekly Bar Chart
+			var totalIncomeChart = document.getElementById('totalIncomeChart').getContext('2d');
+    new Chart(totalIncomeChart, {
+        type: 'bar',
+        data: {
+            labels: /*[[${dashboard.weeklyDays}]]*/,  // ['S', 'M', 'T', ...]
+            datasets: [{
+                label: "Complaints",
+                backgroundColor: '#ff9e27',
+                data: /*[[${dashboard.weeklyTotals}]]*/  // [10, 15, 8, ...]
+            }]
+        },
+        options: {
+            responsive: true,
+            legend: { display: false },
+            scales: {
+                yAxes: [{ ticks: { display: false } }],
+                xAxes: [{ gridLines: { drawBorder: false, display: false } }]
+            }
+        }
+    });
+
+			// Equipment Line Chart
+			var ctx = document.getElementById('statisticsChart').getContext('2d');
+			var statisticsChart = new Chart(ctx, {
+				type: 'line',
+				data: {
+					labels: ["AQPCK-1001", "AQPCK-1002", "AQPCK-1003", "AQPCK-1005", "AQPCK-1006", "AQPCK-1007", "AQPCK-1008", "AQPCK-1009/1"],
+					datasets: [
+						{ label: "Closed", borderColor: '#2bb930', backgroundColor: 'rgba(43, 185, 48, 0.4)', fill: true, data: /*[[${dashboard.equipmentChartData.get('Closed')}]]*/ },
+						{ label: "Open", borderColor: '#177dff', backgroundColor: 'rgba(23, 125, 255, 0.4)', fill: true, data: /*[[${dashboard.equipmentChartData.get('Open')}]]*/ },
+						{ label: "In Progress", borderColor: '#fdaf4b', backgroundColor: 'rgba(253, 175, 75, 0.4)', fill: true, data: /*[[${dashboard.equipmentChartData.get('In Progress')}]]*/ },
+						{ label: "Pending", borderColor: '#f3545d', backgroundColor: 'rgba(243, 84, 93, 0.4)', fill: true, data: /*[[${dashboard.equipmentChartData.get('Pending')}]]*/ }
+					]
+				},
+				options: {
+					responsive: true,
+					maintainAspectRatio: false,
+					tooltips: { mode: 'index', intersect: false },
+					scales: {
+						yAxes: [{ ticks: { callback: function (v) { return v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v; } } }]
+					},
+					legendCallback: function (chart) {
+						var text = ['<ul class="html-legend">'];
+						chart.data.datasets.forEach(function (ds) {
+							text.push('<li><span style="background-color:' + ds.borderColor + '"></span>' + ds.label + '</li>');
+						});
+						text.push('</ul>');
+						return text.join('');
+					}
+				}
+			});
+
+			document.getElementById("myChartLegend").innerHTML = statisticsChart.generateLegend();
+		</script>
 	</th:block>
 </body>
 

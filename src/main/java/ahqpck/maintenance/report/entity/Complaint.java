@@ -145,7 +145,9 @@ public class Complaint {
         }
 
         LocalDateTime now = LocalDateTime.now();
-        this.reportDate = now;
+        if (this.reportDate == null) {
+            this.reportDate = now; 
+        }
         this.updatedAt = now;
         this.status = this.status != null ? this.status : Status.OPEN;
 
