@@ -5,7 +5,7 @@
 // STATUS OPEN
 Circles.create({
 	id: 'circles-1',
-	radius: 60,
+	radius: 70,
 	value: 100,
 	maxValue: 100,
 	width: 9,
@@ -21,7 +21,7 @@ Circles.create({
 // STATUS IN_PROGRESS
 Circles.create({
 	id: 'circles-2',
-	radius: 60,
+	radius: 70,
 	value: 100,
 	maxValue: 100,
 	width: 9,
@@ -37,7 +37,7 @@ Circles.create({
 // STATUS PENDING
 Circles.create({
 	id: 'circles-3',
-	radius: 60,
+	radius: 70,
 	value: 100,
 	maxValue: 100,
 	width: 9,
@@ -53,7 +53,7 @@ Circles.create({
 // STATUS CLOSED
 Circles.create({
 	id: 'circles-4',
-	radius: 60,
+	radius: 70,
 	value: 100,
 	maxValue: 100,
 	width: 9,

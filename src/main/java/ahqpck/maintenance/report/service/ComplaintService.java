@@ -16,6 +16,7 @@ import ahqpck.maintenance.report.repository.UserRepository;
 import ahqpck.maintenance.report.specification.ComplaintSpecification;
 import ahqpck.maintenance.report.util.FileUploadUtil;
 import ahqpck.maintenance.report.util.ImportUtil;
+import ahqpck.maintenance.report.util.ZeroPaddedCodeGenerator;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
@@ -60,6 +61,7 @@ public class ComplaintService {
 
     private final FileUploadUtil fileUploadUtil;
     private final ImportUtil importUtil;
+    private final ZeroPaddedCodeGenerator codeGenerator;
 
     // ================== GET ALL WITH PAGINATION & SEARCH ==================
     // @Transactional(readOnly = true)
@@ -87,6 +89,13 @@ public class ComplaintService {
         // validateDTO(dto);
 
         Complaint complaint = new Complaint();
+
+        // Generate code before mapping
+        if (dto.getCode() == null || dto.getCode().trim().isEmpty()) {
+            String generatedCode = codeGenerator.generate("CP");
+            complaint.setCode(generatedCode);
+        }
+
         mapToEntity(complaint, dto);
 
         if (imageBefore != null && !imageBefore.isEmpty()) {
@@ -192,11 +201,12 @@ public class ComplaintService {
                 }
                 // Else keep null (default behavior)
 
-                dto.setActionTaken(importUtil.toString(row.get("actionTaken")));
-                dto.setReportDate(importUtil.toLocalDateTime(row.get("reportDate")));
-                System.out.println("date report " + row.get("reportDate"));
-                dto.setCloseTime(importUtil.toLocalDateTime(row.get("closeTime")));
-                dto.setTotalResolutionTimeMinutes(importUtil.toInteger(row.get("totalResolutionTimeMinutes")));
+                dto.setActionTaken(importUtil.toString(row.get("action taken")));
+                System.out.println("action taken " + row.get("action taken"));
+                dto.setReportDate(importUtil.toLocalDateTime(row.get("report date")));
+                System.out.println("date report " + importUtil.toLocalDateTime(row.get("report date")));
+                dto.setCloseTime(importUtil.toLocalDateTime(row.get("close time")));
+                dto.setTotalResolutionTimeMinutes(importUtil.toDurationInMinutes(row.get("total time")));
 
                 // Final validation — BUT exclude fields that are now optional
                 Set<ConstraintViolation<ComplaintDTO>> violations = validator.validate(dto);
@@ -318,6 +328,9 @@ public class ComplaintService {
         complaint.setStatus(dto.getStatus());
         complaint.setCategory(dto.getCategory());
         complaint.setActionTaken(dto.getActionTaken());
+        complaint.setReportDate(dto.getReportDate());
+        complaint.setCloseTime(dto.getCloseTime());
+        complaint.setTotalResolutionTimeMinutes(dto.getTotalResolutionTimeMinutes());
 
         // Map Area
         if (dto.getArea() != null && dto.getArea().getCode() != null && !dto.getArea().getCode().trim().isEmpty()) {

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import ahqpck.maintenance.report.util.Base62;
-import ahqpck.maintenance.report.util.ZeroPaddedIdGenerator;
+import ahqpck.maintenance.report.util.ZeroPaddedCodeGenerator;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -140,9 +140,9 @@ public class Complaint {
             // this.id = ZeroPaddedIdGenerator.generate("CMP");
             this.id = Base62.encode(UUID.randomUUID());
         }
-        if (this.code == null) {
-            this.code = ZeroPaddedIdGenerator.generate("CP"); 
-        }
+        // if (this.code == null) {
+        //     this.code = ZeroPaddedIdGenerator.generate("CP"); 
+        // }
 
         LocalDateTime now = LocalDateTime.now();
         if (this.reportDate == null) {

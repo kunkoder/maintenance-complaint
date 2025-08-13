@@ -18,9 +18,9 @@ public class DashboardController {
 
     @GetMapping
     public String dashboard(Model model) {
-        DashboardDTO data = dashboardService.getDashboardData();
-    // Even if service returns null, make sure we pass a non-null object
-    model.addAttribute("dashboard", data != null ? data : new DashboardDTO());
+    //     DashboardDTO data = dashboardService.getDashboardData();
+    // // Even if service returns null, make sure we pass a non-null object
+    // model.addAttribute("dashboard", data != null ? data : new DashboardDTO());
         model.addAttribute("title", "Overview");
         return "dashboard/overview";
     }

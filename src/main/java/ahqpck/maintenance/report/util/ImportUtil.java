@@ -29,6 +29,63 @@ public class ImportUtil {
         }
     }
 
+    /**
+     * Converts an Object to duration in minutes.
+     * Handles:
+     * - Integer/Double values (assumed to be minutes)
+     * - Excel serial time (fraction of a day)
+     * - String "HH:mm", "H:mm", "HH:mm:ss"
+     */
+    public Integer toDurationInMinutes(Object obj) {
+        if (obj == null || obj.toString().trim().isEmpty()) {
+            return null;
+        }
+
+        // Case 1: It's a number (Double, Integer, etc.)
+        if (obj instanceof Number) {
+            double value = ((Number) obj).doubleValue();
+
+            // If value < 1 → likely fraction of a day (Excel time)
+            if (value < 1.0) {
+                return (int) Math.round(value * 24 * 60); // days → minutes
+            } else {
+                // Assume it's already in minutes
+                return ((Number) obj).intValue();
+            }
+        }
+
+        String str = obj.toString().trim();
+
+        // Case 2: Excel serial date as string
+        if (str.matches("^\\d+(\\.\\d+)?$")) {
+            try {
+                double serial = Double.parseDouble(str);
+                if (serial < 1.0) {
+                    return (int) Math.round(serial * 24 * 60); // fraction of day → minutes
+                } else {
+                    return (int) serial; // assume it's minutes
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        }
+
+        // Case 3: Time string like "1:30", "2:45:00"
+        if (str.matches("^\\d{1,2}:\\d{2}(:\\d{2})?$")) {
+            try {
+                String[] parts = str.split(":");
+                int hours = Integer.parseInt(parts[0]);
+                int minutes = Integer.parseInt(parts[1]);
+                int seconds = parts.length > 2 ? Integer.parseInt(parts[2]) : 0;
+
+                return (int) Math.round(hours * 60 + minutes + seconds / 60.0);
+            } catch (Exception ignored) {
+                throw new IllegalArgumentException("Invalid time format (HH:mm or HH:mm:ss): " + str);
+            }
+        }
+
+        throw new IllegalArgumentException("Cannot parse duration: " + str);
+    }
+
     public LocalDate toLocalDate(Object obj) {
         if (obj == null || obj.toString().trim().isEmpty()) {
             return null;
