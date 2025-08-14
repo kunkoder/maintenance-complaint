@@ -16,7 +16,9 @@
 						<h5 class="text-white op-7 mb-2">Maintenance Overview</h5>
 					</div>
 					<div class="ml-md-auto py-2 py-md-0">
-						<a href="#" class="btn btn-info btn-round">Generate Report</a>
+						<a href="#" class="btn btn-info btn-round" id="generateReportBtn">
+							<i class="fas fa-file-pdf"></i> Generate Report
+						</a>
 					</div>
 				</div>
 			</div>
@@ -32,13 +34,11 @@
 								<!-- Date Range Filter in Header -->
 								<form id="dateRangeForm1" class="form-inline">
 									<div class="input-group input-daterange">
-										<input type="datetime-local" class="form-control form-control-sm" id="from1"
-											name="from" required>
+										<input type="datetime-local" class="form-control form-control-sm" id="from1" name="from" required>
 										<div class="input-group-prepend input-group-append">
 											<span class="input-group-text">to</span>
 										</div>
-										<input type="datetime-local" class="form-control form-control-sm" id="to1"
-											name="to" required>
+										<input type="datetime-local" class="form-control form-control-sm" id="to1" name="to" required>
 										<div class="input-group-append">
 											<button type="submit" class="btn btn-sm btn-primary ml-2">Apply</button>
 										</div>
@@ -148,13 +148,11 @@
 								<!-- Date Range Filter -->
 								<form id="dateRangeForm2" class="form-inline">
 									<div class="input-group input-daterange">
-										<input type="datetime-local" class="form-control form-control-sm" id="from2"
-											name="from" required>
+										<input type="datetime-local" class="form-control form-control-sm" id="from2" name="from" required>
 										<div class="input-group-prepend input-group-append">
 											<span class="input-group-text">to</span>
 										</div>
-										<input type="datetime-local" class="form-control form-control-sm" id="to2"
-											name="to" required>
+										<input type="datetime-local" class="form-control form-control-sm" id="to2" name="to" required>
 										<div class="input-group-append">
 											<button type="submit" class="btn btn-sm btn-primary ml-2">Apply</button>
 										</div>
@@ -179,20 +177,17 @@
 								<h4 class="card-title">Engineers Responsibility</h4>
 								<div class="card-tools">
 									<!-- Previous Button -->
-									<button class="btn btn-icon btn-link btn-primary btn-xs" id="prevEngineerBtn"
-										title="Previous">
+									<button class="btn btn-icon btn-link btn-primary btn-xs" id="prevEngineerBtn" title="Previous">
 										<i class="fas fa-chevron-left"></i>
 									</button>
 
 									<!-- Next Button -->
-									<button class="btn btn-icon btn-link btn-primary btn-xs" id="nextEngineerBtn"
-										title="Next">
+									<button class="btn btn-icon btn-link btn-primary btn-xs" id="nextEngineerBtn" title="Next">
 										<i class="fas fa-chevron-right"></i>
 									</button>
 
 									<!-- Refresh Button -->
-									<button class="btn btn-icon btn-link btn-primary btn-xs" id="refreshEngineerBtn"
-										title="Refresh">
+									<button class="btn btn-icon btn-link btn-primary btn-xs" id="refreshEngineerBtn" title="Refresh">
 										<i class="fa fa-sync-alt"></i>
 									</button>
 								</div>
@@ -205,12 +200,12 @@
 									<thead class="bg-primary text-white">
 										<tr>
 											<th rowspan="2" class="align-middle">Engineer</th>
-											<th colspan="3" class="open-col">Open</th>
-											<th colspan="3" class="pending-col">Pending</th>
-											<th colspan="3" class="closed-col">Closed</th>
+											<th id="openHeader" colspan="3">Open</th>
+											<th id="pendingHeader" colspan="3">Pending</th>
+											<th id="closedHeader" colspan="3">Closed</th>
 										</tr>
 										<tr id="dayHeaders">
-											<!-- Will be filled dynamically -->
+											<!-- Day headers will be injected here -->
 										</tr>
 									</thead>
 									<tbody id="engineerTableBody">
@@ -225,123 +220,35 @@
 					<!-- Top Area -->
 					<div class="card">
 						<div class="card-header">
-							<div class="card-title">Top Equipment</div>
+							<div class="card-head-row card-tools-still-right">
+								<h4 class="card-title">Equipment</h4>
+								<div class="card-tools">
+									<!-- Previous Button -->
+									<button class="btn btn-icon btn-link btn-primary btn-xs" id="prevEquipmentBtn" title="Previous">
+										<i class="fas fa-chevron-up"></i>
+									</button>
+
+									<!-- Next Button -->
+									<button class="btn btn-icon btn-link btn-primary btn-xs" id="nextEquipmentBtn" title="Next">
+										<i class="fas fa-chevron-down"></i>
+									</button>
+
+									<!-- Refresh Button -->
+									<button class="btn btn-icon btn-link btn-primary btn-xs" id="refreshEquipmentBtn" title="Refresh">
+										<i class="fa fa-sync-alt"></i>
+									</button>
+								</div>
+							</div>
+							<p class="card-category">Most equipment breakdowns</p>
 						</div>
-						<div class="card-body pb-0">
-							<div class="d-flex">
-								<div class="avatar">
-									<img src="assets/img/logoproduct.svg" alt="..." class="avatar-img rounded-circle">
-								</div>
-								<div class="flex-1 pt-1 ml-2">
-									<h6 class="fw-bold mb-1">AUT 1</h6>
-									<small class="text-muted">Sensor was not working</small>
-								</div>
-								<div class="d-flex ml-auto align-items-center">
-									<h3 class="text-info fw-bold">14</h3>
-								</div>
-							</div>
-							<div class="separator-dashed"></div>
-							<div class="d-flex">
-								<div class="avatar">
-									<img src="assets/img/logoproduct.svg" alt="..." class="avatar-img rounded-circle">
-								</div>
-								<div class="flex-1 pt-1 ml-2">
-									<h6 class="fw-bold mb-1">Tack Welding</h6>
-									<small class="text-muted">The wire was damaged</small>
-								</div>
-								<div class="d-flex ml-auto align-items-center">
-									<h3 class="text-info fw-bold">11</h3>
-								</div>
-							</div>
-							<div class="separator-dashed"></div>
-							<div class="d-flex">
-								<div class="avatar">
-									<img src="assets/img/logoproduct3.svg" alt="..." class="avatar-img rounded-circle">
-								</div>
-								<div class="flex-1 pt-1 ml-2">
-									<h6 class="fw-bold mb-1">Edge Miling</h6>
-									<small class="text-muted">Hydrolic issue</small>
-								</div>
-								<div class="d-flex ml-auto align-items-center">
-									<h3 class="text-info fw-bold">9</h3>
-								</div>
-							</div>
-							<div class="separator-dashed"></div>
-							<div class="d-flex">
-								<div class="avatar">
-									<img src="assets/img/logoproduct3.svg" alt="..." class="avatar-img rounded-circle">
-								</div>
-								<div class="flex-1 pt-1 ml-2">
-									<h6 class="fw-bold mb-1">Edge Miling</h6>
-									<small class="text-muted">Hydrolic issue</small>
-								</div>
-								<div class="d-flex ml-auto align-items-center">
-									<h3 class="text-info fw-bold">9</h3>
-								</div>
-							</div>
-							<div class="separator-dashed"></div>
-							<div class="d-flex">
-								<div class="avatar">
-									<img src="assets/img/logoproduct3.svg" alt="..." class="avatar-img rounded-circle">
-								</div>
-								<div class="flex-1 pt-1 ml-2">
-									<h6 class="fw-bold mb-1">Edge Miling</h6>
-									<small class="text-muted">Hydrolic issue</small>
-								</div>
-								<div class="d-flex ml-auto align-items-center">
-									<h3 class="text-info fw-bold">9</h3>
-								</div>
-							</div>
-							<div class="separator-dashed"></div>
-							<div class="d-flex">
-								<div class="avatar">
-									<img src="assets/img/logoproduct3.svg" alt="..." class="avatar-img rounded-circle">
-								</div>
-								<div class="flex-1 pt-1 ml-2">
-									<h6 class="fw-bold mb-1">Edge Miling</h6>
-									<small class="text-muted">Hydrolic issue</small>
-								</div>
-								<div class="d-flex ml-auto align-items-center">
-									<h3 class="text-info fw-bold">9</h3>
-								</div>
-							</div>
-							<div class="separator-dashed"></div>
+						<div class="card-body pb-0" id="equipmentListContainer">
+							<!-- Dynamic list will be injected here -->
 						</div>
 					</div>
 				</div>
 
 			</div>
-			<div class="row">
-				<div class="col-md-12">
-					<div class="card">
-						<div class="card-header">
-							<div class="card-head-row">
-								<div class="card-title">Equipment Statistics</div>
-								<div class="card-tools">
-									<a href="#" class="btn btn-info btn-border btn-round btn-sm mr-2">
-										<span class="btn-label">
-											<i class="fa fa-pencil"></i>
-										</span>
-										Export
-									</a>
-									<a href="#" class="btn btn-info btn-border btn-round btn-sm">
-										<span class="btn-label">
-											<i class="fa fa-print"></i>
-										</span>
-										Print
-									</a>
-								</div>
-							</div>
-						</div>
-						<div class="card-body">
-							<div class="chart-container" style="min-height: 375px">
-								<canvas id="statisticsChart"></canvas>
-							</div>
-							<div id="myChartLegend"></div>
-						</div>
-					</div>
-				</div>
-			</div>
+
 		</div>
 
 		<footer class="footer">
@@ -375,6 +282,8 @@
 
 	<!-- Scripts Fragment -->
 	<th:block layout:fragment="scripts">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 		<!-- <script th:src="@{/js/document-modal.js}"></script> -->
 
 		<script>
@@ -651,15 +560,44 @@
 
 						// Update headers
 						const dayHeaderRow = document.getElementById('dayHeaders');
-						dayHeaderRow.innerHTML = ''; // Clear
+						dayHeaderRow.innerHTML = '';
+
+						// // Update colspan
+						// document.getElementById('openHeader').colSpan = numDays;
+						// document.getElementById('pendingHeader').colSpan = numDays;
+						// document.getElementById('closedHeader').colSpan = numDays;
+
+						// // Generate and append day headers for each section
+						// [...Array(3)].forEach(() => {
+						// 	createDayThs(data.dates).forEach(th => dayHeaderRow.appendChild(th));
+						// });
 
 						const numDays = data.dates.length;
-						for (let i = 0; i < numDays; i++) {
-							const th = document.createElement('th');
-							th.textContent = `Day ${i + 1}\n(${formatShort(data.dates[i])})`;
-							th.style.whiteSpace = 'pre-line';
-							dayHeaderRow.appendChild(th);
+
+						// Helper: create day headers (Day 1, Day 2, ...)
+						function createDayThs(dateArray, offset = 0) {
+							const ths = [];
+							for (let i = 0; i < dateArray.length; i++) {
+								const th = document.createElement('th');
+								th.textContent = `${formatShort(dateArray[i])}`;
+								// th.textContent = `Day ${i + 1}\n(${formatShort(dateArray[i])})`;
+								th.style.whiteSpace = 'pre-line';
+								ths.push(th);
+							}
+							return ths;
 						}
+
+						// Append: Open (3 days)
+						const openThs = createDayThs(data.dates);
+						openThs.forEach(th => dayHeaderRow.appendChild(th));
+
+						// Append: Pending (3 days)
+						const pendingThs = createDayThs(data.dates);
+						pendingThs.forEach(th => dayHeaderRow.appendChild(th));
+
+						// Append: Closed (3 days)
+						const closedThs = createDayThs(data.dates);
+						closedThs.forEach(th => dayHeaderRow.appendChild(th));
 
 						// Update body
 						const tbody = document.getElementById('engineerTableBody');
@@ -722,68 +660,321 @@
 				fetchEngineerData(); // initial load
 			});
 		</script>
+		<script>
+			const API_URL = 'http://localhost:8000/api/dashboards/equipment-complaint-count';
+
+			let currentPage = 1; // 1 = first page (1-7), 2 = second page (8-14)
+			const pageSize = 7;
+			let allData = [];
+
+			// Fetch data
+			async function fetchEquipmentData() {
+				try {
+					const response = await fetch(API_URL);
+					if (!response.ok) throw new Error('Failed to fetch data');
+					allData = await response.json();
+					renderPage(currentPage);
+				} catch (err) {
+					console.error('Error loading equipment data:', err);
+					document.getElementById('equipmentListContainer').innerHTML = `
+						<div class="text-center text-muted">Failed to load data</div>
+					`;
+				}
+			}
+
+			// Render current page
+			function renderPage(page) {
+				const container = document.getElementById('equipmentListContainer');
+				container.innerHTML = '';
+
+				const start = (page - 1) * pageSize;
+				const end = start + pageSize;
+				const pageData = allData.slice(start, end);
+
+				if (pageData.length === 0) {
+					container.innerHTML = `<div class="text-center text-muted">No data</div>`;
+					return;
+				}
+
+				pageData.forEach((item, index) => {
+					const rank = start + index + 1;
+					const div = document.createElement('div');
+					div.className = 'd-flex';
+					div.innerHTML = `
+  <div class="mr-3 d-flex align-items-center" style="min-width: 28px;">
+    <span class="fw-bold" style="font-size: 0.95rem; color: #555; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+      ${rank}
+    </span>
+  </div>
+  <div class="flex-1 pt-1 ml-2">
+    <h6 class="fw-bold mb-1">${item.equipmentCode}</h6>
+    <small class="text-muted">${item.equipmentName}</small>
+  </div>
+  <div class="d-flex ml-auto align-items-center">
+    <h3 class="text-info fw-bold">${item.totalComplaints}</h3>
+  </div>
+`;
+					container.appendChild(div);
+
+					// Add separator after each item (including before last)
+					const sep = document.createElement('div');
+					sep.className = 'separator-dashed';
+					container.appendChild(sep);
+				});
+			}
+
+			// Button Listeners
+			document.getElementById('nextEquipmentBtn').addEventListener('click', () => {
+				if (allData.length > currentPage * pageSize) {
+					currentPage++;
+					renderPage(currentPage);
+				}
+			});
+
+			document.getElementById('prevEquipmentBtn').addEventListener('click', () => {
+				if (currentPage > 1) {
+					currentPage--;
+					renderPage(currentPage);
+				}
+			});
+
+			document.getElementById('refreshEquipmentBtn').addEventListener('click', () => {
+				currentPage = 1;
+				renderPage(currentPage);
+			});
+
+			// On Load
+			window.addEventListener('DOMContentLoaded', () => {
+				fetchEquipmentData();
+			});
+		</script>
+		<script>
+			document.getElementById('generateReportBtn').addEventListener('click', async function (e) {
+				e.preventDefault();
+			
+				const { jsPDF } = window.jspdf;
+				const btn = document.getElementById('generateReportBtn');
+				const originalText = btn.innerHTML;
+				btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+				btn.disabled = true;
+			
+				try {
+					const pdf = new jsPDF('p', 'mm', 'a4');
+					const pageWidth = pdf.internal.pageSize.getWidth();
+					let y = 15;
+			
+					// Add Title
+					pdf.setFontSize(20);
+					pdf.setTextColor(40);
+					pdf.text('Maintenance Dashboard Report', 14, y);
+					y += 10;
+			
+					// Add Subtitle
+					pdf.setFontSize(12);
+					pdf.setTextColor(100);
+					const now = new Date().toLocaleString();
+					pdf.text(`Generated on: ${now}`, 14, y);
+					y += 15;
+			
+					// List of elements to capture (excluding equipment)
+					const sections = [
+						{ element: document.querySelector('.card.full-height .card-body'), title: 'Overall Ticket Statistics', scale: 2 },
+						{ element: document.querySelector('#multipleBarChart'), title: 'Daily Ticket Summary', scale: 2 },
+						{ element: document.querySelector('.card .table-responsive'), title: 'Engineers Responsibility', scale: 1.5 }
+					];
+			
+					// Capture all sections except equipment
+					for (const section of sections) {
+						if (!section.element) continue;
+			
+						if (y + 30 > 280) {
+							pdf.addPage();
+							y = 20;
+						}
+						pdf.setFontSize(14);
+						pdf.setTextColor(60);
+						pdf.text(section.title, 14, y);
+						y += 8;
+			
+						const canvas = await html2canvas(section.element, {
+							scale: section.scale,
+							useCORS: true,
+							backgroundColor: '#fff',
+							logging: false,
+							width: section.element.scrollWidth,
+							height: section.element.scrollHeight
+						});
+			
+						const imgData = canvas.toDataURL('image/png');
+						const imgWidth = pageWidth - 28;
+						const imgHeight = (canvas.height * imgWidth) / canvas.width;
+			
+						if (y + imgHeight > 280) {
+							pdf.addPage();
+							y = 20;
+						}
+			
+						pdf.addImage(imgData, 'PNG', 14, y, imgWidth, imgHeight);
+						y += imgHeight + 10;
+					}
+			
+					// --- ✅ FIXED & BALANCED: Top Equipment Breakdowns ---
+{
+  const tempContainer = document.createElement('div');
+  tempContainer.style.fontFamily = 'Arial, sans-serif';
+  tempContainer.style.fontSize = '11px';
+tempContainer.style.width = '400px';
+tempContainer.style.padding = '10px';
+  tempContainer.style.backgroundColor = '#ffffff';
+  tempContainer.style.boxSizing = 'border-box';
+
+  const table = document.createElement('table');
+  table.style.width = '100%';
+  table.style.borderCollapse = 'collapse';
+
+  // Header
+  const thead = `
+    <tr>
+      <th style="text-align: left; padding: 6px; background-color: #007BFF; color: white; font-size: 7px; font-weight: bold;">#</th>
+      <th style="text-align: left; padding: 6px; background-color: #007BFF; color: white; font-size: 7px; font-weight: bold;">Code</th>
+      <th style="text-align: left; padding: 6px; background-color: #007BFF; color: white; font-size: 7px; font-weight: bold;">Name</th>
+      <th style="text-align: right; padding: 6px; background-color: #007BFF; color: white; font-size: 7px; font-weight: bold;">Count</th>
+    </tr>
+  `;
+  table.innerHTML = `<thead>${thead}</thead><tbody></tbody>`;
+
+  const tbody = table.querySelector('tbody');
+
+  // ✅ Only get divs that contain real equipment data
+  const allDivs = Array.from(document.querySelectorAll('#equipmentListContainer > div'));
+  const validItems = [];
+
+  allDivs.forEach(div => {
+    const code = div.querySelector('h6');
+    const name = div.querySelector('small');
+    if (code && name && code.textContent.trim() && name.textContent.trim()) {
+      validItems.push({
+        code: code.textContent.trim(),
+        name: name.textContent.trim(),
+        count: (div.querySelector('.text-info')?.textContent || '0').trim()
+      });
+    }
+  });
+
+  // ✅ Now map with correct ranking
+  validItems.forEach((item, index) => {
+    const rank = index + 1;
+    const row = document.createElement('tr');
+    row.style.backgroundColor = index % 2 === 0 ? '#f9f9f9' : '#ffffff';
+
+    row.innerHTML = `
+      <td style="padding: 4px 5px; font-weight: bold; color: #333; font-size: 7px;">${rank}</td>
+      <td style="padding: 4px 5px; font-weight: bold; color: #000; font-size: 7px;">${item.code}</td>
+      <td style="padding: 4px 5px; color: #555; font-size: 7px;">${item.name}</td>
+      <td style="padding: 4px 5px; text-align: right; font-weight: bold; color: #007bff; font-size: 7px;">${item.count}</td>
+    `;
+
+    tbody.appendChild(row);
+  });
+
+  if (validItems.length === 0) {
+    const row = document.createElement('tr');
+    row.innerHTML = `<td colspan="4" style="padding: 10px; text-align: center; color: #999; font-size: 10px;">No data</td>`;
+    tbody.appendChild(row);
+  }
+
+  tempContainer.appendChild(table);
+
+  // Hide from view
+  tempContainer.style.position = 'absolute';
+  tempContainer.style.left = '-9999px';
+  tempContainer.style.top = '-9999px';
+  document.body.appendChild(tempContainer);
+
+  try {
+    const canvas = await html2canvas(tempContainer, {
+      scale: 2,
+      backgroundColor: '#fff'
+    });
+    document.body.removeChild(tempContainer);
+
+    const imgData = canvas.toDataURL('image/png');
+    const imgWidth = pageWidth - 28;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    if (y + imgHeight > 280) {
+      pdf.addPage();
+      y = 20;
+    }
+
+    pdf.addImage(imgData, 'PNG', 14, y, imgWidth, imgHeight);
+    y += imgHeight + 10;
+  } catch (err) {
+    console.error('Failed to capture equipment list', err);
+    document.body.removeChild(tempContainer);
+    y += 30;
+  }
+}
+// --- End of Equipment Section ---
+			
+					// Footer
+					pdf.setFontSize(10);
+					pdf.setTextColor(150);
+					// pdf.text('Kaiadmin Dashboard - Clean, awesome, simple and modern', 14, y || 290);
+					pdf.text(`Page 1`, pageWidth - 14, 290, { align: 'right' });
+			
+					// Save
+					pdf.save(`Dashboard_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+			
+				} catch (err) {
+					console.error('PDF generation error:', err);
+					alert('Failed to generate report. Some content may not support capture.');
+				} finally {
+					btn.innerHTML = originalText;
+					btn.disabled = false;
+				}
+			});
+			</script>
 	</th:block>
 </body>
 
 </html>
 
-// Update headers
-const dayHeaderRow = document.getElementById('dayHeaders');
-dayHeaderRow.innerHTML = ''; // Clear
-
-const numDays = data.dates.length;
-
-// Helper: create day headers (Day 1, Day 2, ...)
-function createDayThs(dateArray, offset = 0) {
-  const ths = [];
-  for (let i = 0; i < dateArray.length; i++) {
-    const th = document.createElement('th');
-    th.textContent = `Day ${i + 1}\n(${formatShort(dateArray[i])})`;
-    th.style.whiteSpace = 'pre-line';
-    ths.push(th);
-  }
-  return ths;
-}
-
-// Append: Open (3 days)
-const openThs = createDayThs(data.dates);
-openThs.forEach(th => dayHeaderRow.appendChild(th));
-
-// Append: Pending (3 days)
-const pendingThs = createDayThs(data.dates);
-pendingThs.forEach(th => dayHeaderRow.appendChild(th));
-
-// Append: Closed (3 days)
-const closedThs = createDayThs(data.dates);
-closedThs.forEach(th => dayHeaderRow.appendChild(th));
-
-<thead class="bg-primary text-white">
-  <tr>
-    <th rowspan="2" class="align-middle">Engineer</th>
-    <th id="openHeader" colspan="3">Open</th>
-    <th id="pendingHeader" colspan="3">Pending</th>
-    <th id="closedHeader" colspan="3">Closed</th>
-  </tr>
-  <tr id="dayHeaders">
-    <!-- Day headers will be injected here -->
-  </tr>
-</thead>
-
-// Update headers
-const dayHeaderRow = document.getElementById('dayHeaders');
-dayHeaderRow.innerHTML = '';
-
-// Update colspan
-document.getElementById('openHeader').colSpan = numDays;
-document.getElementById('pendingHeader').colSpan = numDays;
-document.getElementById('closedHeader').colSpan = numDays;
-
-// Generate and append day headers for each section
-[...Array(3)].forEach(() => {
-  createDayThs(data.dates).forEach(th => dayHeaderRow.appendChild(th));
-});
 
 
+
+
+<!-- <div class="row">
+				<div class="col-md-12">
+					<div class="card">
+						<div class="card-header">
+							<div class="card-head-row">
+								<div class="card-title">Equipment Statistics</div>
+								<div class="card-tools">
+									<a href="#" class="btn btn-info btn-border btn-round btn-sm mr-2">
+										<span class="btn-label">
+											<i class="fa fa-pencil"></i>
+										</span>
+										Export
+									</a>
+									<a href="#" class="btn btn-info btn-border btn-round btn-sm">
+										<span class="btn-label">
+											<i class="fa fa-print"></i>
+										</span>
+										Print
+									</a>
+								</div>
+							</div>
+						</div>
+						<div class="card-body">
+							<div class="chart-container" style="min-height: 375px">
+								<canvas id="statisticsChart"></canvas>
+							</div>
+							<div id="myChartLegend"></div>
+						</div>
+					</div>
+				</div>
+			</div> -->
 
 
 <!-- <div class="row mt--2">
