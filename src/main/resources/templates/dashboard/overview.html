@@ -22,61 +22,115 @@
 			</div>
 		</div>
 		<div class="page-inner mt--5">
-			<div class="row mt--2">
-				<div class="col-md-4">
+			<div class="row">
+				<div class="col-md-12">
 					<div class="card full-height">
+						<!-- Card Header with Title and Filter -->
 						<div class="card-header">
-							<div class="card-head-row card-tools-still-right">
-								<h4 class="card-title">Overall Statistics</h4>
-								<div class="card-tools">
-									<button class="btn btn-icon btn-link btn-primary btn-xs btn-refresh-card"><span
-											class="fa fa-sync-alt"></span></button>
-								</div>
-							</div>
-							<p class="card-category">
-								Daily information about complaint status</p>
-						</div>
-						<div class="card-body">
-							<div class="d-flex flex-wrap justify-content-around pb-2 pt-5">
-								<div class="px-2 pb-2 pb-md-0 text-center">
-									<div id="circles-1"></div>
-									<h6 class="fw-bold mt-1 mb-3">Closed</h6>
-								</div>
-								<div class="px-2 pb-2 pb-md-0 text-center">
-									<div id="circles-2"></div>
-									<h6 class="fw-bold mt-1 mb-3">Open</h6>
-								</div>
+							<div class="d-flex justify-content-between align-items-center">
+								<h4 class="card-title">Overall Ticket Statistics</h4>
+								<!-- Date Range Filter in Header -->
+								<form id="dateRangeForm1" class="form-inline">
+									<div class="input-group input-daterange">
+										<input type="datetime-local" class="form-control form-control-sm" id="from1"
+											name="from" required>
+										<div class="input-group-prepend input-group-append">
+											<span class="input-group-text">to</span>
+										</div>
+										<input type="datetime-local" class="form-control form-control-sm" id="to1"
+											name="to" required>
+										<div class="input-group-append">
+											<button type="submit" class="btn btn-sm btn-primary ml-2">Apply</button>
+										</div>
+									</div>
+								</form>
 							</div>
 						</div>
-					</div>
-				</div>
-				<div class="col-md-8">
-					<div class="card full-height">
-						<div class="card-body">
-							<div class="card-title">Complaints of The Week</div>
-							<div class="row py-3">
 
-								<div class="col-md-12">
-									<div id="chart-container">
-										<canvas id="totalIncomeChart" style="height: 300px;"></canvas>
+						<!-- Card Body with 4 Stat Cards in Grid -->
+						<div class="card-body">
+							<div class="row row-card-no-pd mb-0" style="box-shadow: none;">
+								<!-- 1. Total Tickets -->
+								<div class="col-sm-6 col-md-3">
+									<div class="card card-stats card-primary card-round mt-1">
+										<div class="card-body">
+											<div class="row">
+												<div class="col-5">
+													<div class="icon-big text-center">
+														<i class="fas fa-ticket-alt text-white"></i>
+													</div>
+												</div>
+												<div class="col-7 col-stats">
+													<div class="numbers">
+														<p class="card-category">Total Tickets</p>
+														<h4 class="card-title" id="totalAllComplaints">--</h4>
+													</div>
+												</div>
+											</div>
+										</div>
 									</div>
 								</div>
-								<div class="col-md-12 d-flex flex-row justify-content-around mt-3">
-									<div class="text-center">
-										<h6 class="fw-bold text-uppercase text-success op-8">Closed</h6>
-										<h3 class="fw-bold">15</h3>
+
+								<!-- 2. Total Pending -->
+								<div class="col-sm-6 col-md-3">
+									<div class="card card-stats card-danger card-round mt-1">
+										<div class="card-body">
+											<div class="row">
+												<div class="col-5">
+													<div class="icon-big text-center">
+														<i class="fas fa-clock text-white"></i>
+													</div>
+												</div>
+												<div class="col-7 col-stats">
+													<div class="numbers">
+														<p class="card-category">Total Pending</p>
+														<h4 class="card-title" id="totalPending">--</h4>
+													</div>
+												</div>
+											</div>
+										</div>
 									</div>
-									<div class="text-center">
-										<h6 class="fw-bold text-uppercase text-danger op-8">Open</h6>
-										<h3 class="fw-bold">48</h3>
+								</div>
+
+								<!-- 3. Open Today -->
+								<div class="col-sm-6 col-md-3">
+									<div class="card card-stats card-warning card-round mt-1">
+										<div class="card-body">
+											<div class="row">
+												<div class="col-5">
+													<div class="icon-big text-center">
+														<i class="fas fa-folder-open text-white"></i>
+													</div>
+												</div>
+												<div class="col-7 col-stats">
+													<div class="numbers">
+														<p class="card-category">Open Today</p>
+														<h4 class="card-title" id="totalOpen">--</h4>
+													</div>
+												</div>
+											</div>
+										</div>
 									</div>
-									<div class="text-center">
-										<h6 class="fw-bold text-uppercase text-success op-8">In Progress</h6>
-										<h3 class="fw-bold">15</h3>
-									</div>
-									<div class="text-center">
-										<h6 class="fw-bold text-uppercase text-danger op-8">Pending</h6>
-										<h3 class="fw-bold">48</h3>
+								</div>
+
+								<!-- 4. Closed Today -->
+								<div class="col-sm-6 col-md-3">
+									<div class="card card-stats card-success card-round mt-1">
+										<div class="card-body">
+											<div class="row">
+												<div class="col-5">
+													<div class="icon-big text-center">
+														<i class="fas fa-check-circle text-white"></i>
+													</div>
+												</div>
+												<div class="col-7 col-stats">
+													<div class="numbers">
+														<p class="card-category">Closed Today</p>
+														<h4 class="card-title" id="totalClosed">--</h4>
+													</div>
+												</div>
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>
@@ -84,6 +138,39 @@
 					</div>
 				</div>
 			</div>
+			<!-- Chart Card -->
+			<div class="row">
+				<div class="col-md-12">
+					<div class="card full-height">
+						<div class="card-header">
+							<div class="d-flex justify-content-between align-items-center">
+								<h4 class="card-title">Daily Ticket Summary</h4>
+								<!-- Date Range Filter -->
+								<form id="dateRangeForm2" class="form-inline">
+									<div class="input-group input-daterange">
+										<input type="datetime-local" class="form-control form-control-sm" id="from2"
+											name="from" required>
+										<div class="input-group-prepend input-group-append">
+											<span class="input-group-text">to</span>
+										</div>
+										<input type="datetime-local" class="form-control form-control-sm" id="to2"
+											name="to" required>
+										<div class="input-group-append">
+											<button type="submit" class="btn btn-sm btn-primary ml-2">Apply</button>
+										</div>
+									</div>
+								</form>
+							</div>
+						</div>
+						<div class="card-body d-flex flex-column">
+							<div class="chart-container flex-grow-1">
+								<canvas id="multipleBarChart"></canvas>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
 			<div class="row">
 				<div class="col-md-8">
 					<div class="card">
@@ -91,137 +178,43 @@
 							<div class="card-head-row card-tools-still-right">
 								<h4 class="card-title">Engineers Responsibility</h4>
 								<div class="card-tools">
-									<button class="btn btn-icon btn-link btn-primary btn-xs btn-refresh-card"><span
-											class="fa fa-sync-alt"></span></button>
+									<!-- Previous Button -->
+									<button class="btn btn-icon btn-link btn-primary btn-xs" id="prevEngineerBtn"
+										title="Previous">
+										<i class="fas fa-chevron-left"></i>
+									</button>
+
+									<!-- Next Button -->
+									<button class="btn btn-icon btn-link btn-primary btn-xs" id="nextEngineerBtn"
+										title="Next">
+										<i class="fas fa-chevron-right"></i>
+									</button>
+
+									<!-- Refresh Button -->
+									<button class="btn btn-icon btn-link btn-primary btn-xs" id="refreshEngineerBtn"
+										title="Refresh">
+										<i class="fa fa-sync-alt"></i>
+									</button>
 								</div>
 							</div>
-							<p class="card-category">
-								Map of the distribution of engineers responsibility</p>
+							<p class="card-category">Map of the distribution of engineers responsibility</p>
 						</div>
 						<div class="card-body">
-
-							<!-- Engineers Responsibility: Map of the distribution of engineers responsibility -->
 							<div class="table-responsive table-hover table-sales">
-								<table class="table">
-									<thead>
+								<table class="table table-bordered text-center">
+									<thead class="bg-primary text-white">
 										<tr>
-											<th>Engineer</th>
-											<th>Open</th>
-											<th>In Progress</th>
-											<th>Pending</th>
-											<th>Done</th>
-											<th>Closed</th>
+											<th rowspan="2" class="align-middle">Engineer</th>
+											<th colspan="3" class="open-col">Open</th>
+											<th colspan="3" class="pending-col">Pending</th>
+											<th colspan="3" class="closed-col">Closed</th>
+										</tr>
+										<tr id="dayHeaders">
+											<!-- Will be filled dynamically -->
 										</tr>
 									</thead>
-									<tbody>
-										<tr>
-											<td>Fahad</td>
-											<td>
-												23
-											</td>
-											<td>
-												12
-											</td>
-											<td>
-												23
-											</td>
-											<td>
-												12
-											</td>
-											<td>
-												32
-											</td>
-										</tr>
-										<tr>
-											<td>Aqeel</td>
-											<td>
-												23
-											</td>
-											<td>
-												12
-											</td>
-											<td>
-												23
-											</td>
-											<td>
-												12
-											</td>
-											<td>
-												32
-											</td>
-										</tr>
-										<tr>
-											<td>Rahool</td>
-											<td>
-												23
-											</td>
-											<td>
-												12
-											</td>
-											<td>
-												23
-											</td>
-											<td>
-												12
-											</td>
-											<td>
-												32
-											</td>
-										</tr>
-										<tr>
-											<td>Waleed</td>
-											<td>
-												23
-											</td>
-											<td>
-												12
-											</td>
-											<td>
-												23
-											</td>
-											<td>
-												12
-											</td>
-											<td>
-												32
-											</td>
-										</tr>
-										<tr>
-											<td>Viney</td>
-											<td>
-												23
-											</td>
-											<td>
-												12
-											</td>
-											<td>
-												23
-											</td>
-											<td>
-												12
-											</td>
-											<td>
-												32
-											</td>
-										</tr>
-										<tr>
-											<td>Khaled</td>
-											<td>
-												23
-											</td>
-											<td>
-												12
-											</td>
-											<td>
-												23
-											</td>
-											<td>
-												12
-											</td>
-											<td>
-												32
-											</td>
-										</tr>
+									<tbody id="engineerTableBody">
+										<!-- Rows will be injected here -->
 									</tbody>
 								</table>
 							</div>
@@ -232,7 +225,7 @@
 					<!-- Top Area -->
 					<div class="card">
 						<div class="card-header">
-							<div class="card-title">Top Area</div>
+							<div class="card-title">Top Equipment</div>
 						</div>
 						<div class="card-body pb-0">
 							<div class="d-flex">
@@ -320,20 +313,6 @@
 			</div>
 			<div class="row">
 				<div class="col-md-12">
-							<div class="card">
-								<div class="card-header">
-									<div class="card-title">Multiple Bar Chart</div>
-								</div>
-								<div class="card-body">
-									<div class="chart-container">
-										<canvas id="multipleBarChart"></canvas>
-									</div>
-								</div>
-							</div>
-						</div>
-			</div>
-			<div class="row">
-				<div class="col-md-12">
 					<div class="card">
 						<div class="card-header">
 							<div class="card-head-row">
@@ -397,8 +376,553 @@
 	<!-- Scripts Fragment -->
 	<th:block layout:fragment="scripts">
 		<!-- <script th:src="@{/js/document-modal.js}"></script> -->
-		
+
+		<script>
+			// Set default dates: today
+			function setDefaultDates() {
+				const now = new Date();
+				const startOfDay = new Date(now);
+				startOfDay.setHours(0, 0, 0, 0);
+
+				const endOfDay = new Date(now);
+				endOfDay.setHours(23, 59, 59, 999);
+
+				document.getElementById('from').value = toDateTimeLocal(startOfDay);
+				document.getElementById('to').value = toDateTimeLocal(endOfDay);
+			}
+
+			// Helper: format date for datetime-local input
+			function toDateTimeLocal(date) {
+				const pad = (n) => n.toString().padStart(2, '0');
+				const year = date.getFullYear();
+				const month = pad(date.getMonth() + 1);
+				const day = pad(date.getDate());
+				const hours = pad(date.getHours());
+				const minutes = pad(date.getMinutes());
+				return `${year}-${month}-${day}T${hours}:${minutes}`;
+			}
+
+			// Fetch dashboard data
+			function fetchDashboardData(from, to) {
+				let url = `http://localhost:8000/api/dashboards/status-count`;
+				const params = new URLSearchParams();
+
+				if (from) params.append('from', from);
+				if (to) params.append('to', to);
+
+				if (params.toString()) {
+					url += '?' + params.toString();
+				}
+
+				fetch(url)
+					.then(response => {
+						if (!response.ok) throw new Error('Network error');
+						return response.json();
+					})
+					.then(data => {
+						// Update card values
+						document.getElementById('totalAllComplaints').textContent = data.totalAllComplaints || 0;
+						document.getElementById('totalOpen').textContent = data.totalOpen || 0;
+						document.getElementById('totalClosed').textContent = data.totalClosed || 0;
+						document.getElementById('totalPending').textContent = data.totalPending || 0;
+					})
+					.catch(err => {
+						console.error('Fetch error:', err);
+						alert('Failed to load dashboard data.');
+					});
+			}
+
+			// Form submit
+			document.getElementById('dateRangeForm1').addEventListener('submit', function (e) {
+				e.preventDefault();
+				const from = document.getElementById('from1').value;
+				const to = document.getElementById('to1').value;
+				fetchDashboardData(from, to);
+			});
+
+			// On page load: set defaults and load data
+			window.addEventListener('DOMContentLoaded', function () {
+				setDefaultDates();
+				const from = document.getElementById('from1').value;
+				const to = document.getElementById('to1').value;
+				fetchDashboardData(from, to);
+			});
+		</script>
+		<script>
+			let myMultipleBarChart = null; // Hold chart instance
+
+			// Set default dates: last 7 days
+			function setDefaultDates() {
+				const now = new Date();
+				const to = new Date(now);
+				const from = new Date(now);
+
+				from.setDate(from.getDate() - 6); // 7 days ago
+
+				document.getElementById('from2').value = toDateTimeLocal(from);
+				document.getElementById('to2').value = toDateTimeLocal(to);
+			}
+
+			// Format date for datetime-local input
+			function toDateTimeLocal(date) {
+				const pad = (n) => n.toString().padStart(2, '0');
+				const year = date.getFullYear();
+				const month = pad(date.getMonth() + 1);
+				const day = pad(date.getDate());
+				const hours = pad(date.getHours());
+				const minutes = pad(date.getMinutes());
+				return `${year}-${month}-${day}T${hours}:${minutes}`;
+			}
+
+			// Format short date for chart labels (e.g., "Jul 1")
+			function formatLabel(dateStr) {
+				const date = new Date(dateStr);
+				return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+			}
+
+			// Fetch and update chart
+			function updateChart(from, to) {
+				let url = `http://localhost:8000/api/dashboards/daily-status-count`;
+				const params = new URLSearchParams();
+				if (from) params.append('from', from);
+				if (to) params.append('to', to);
+				if (params.toString()) url += '?' + params.toString();
+
+				fetch(url)
+					.then(response => {
+						if (!response.ok) throw new Error('Failed to fetch data');
+						return response.json();
+					})
+					.then(data => {
+						console.log(data);
+						if (!data || data.length === 0) {
+							console.warn("No data returned");
+							return;
+						}
+
+						// Extract labels and values
+						const labels = data.map(row => formatLabel(row.date));
+						const openData = data.map(row => row.open);
+						const closedData = data.map(row => row.closed);
+						const pendingData = data.map(row => row.pending);
+
+						const stackedMax = Math.max(
+							...data.map(row => row.open + row.closed + row.pending)
+						);
+						const yAxisMax = Math.ceil(stackedMax * 1.1); // 10% padding
+
+						// Destroy old chart if exists
+						if (myMultipleBarChart) {
+							myMultipleBarChart.destroy();
+						}
+
+						// Render new chart
+						const ctx = document.getElementById('multipleBarChart').getContext('2d');
+						myMultipleBarChart = new Chart(ctx, {
+							type: 'bar',
+							data: {
+								labels: labels,
+								datasets: [
+									{
+										label: "Open",
+										backgroundColor: '#fdaf4b',
+										borderColor: '#fdaf4b',
+										borderWidth: 1,
+										data: openData
+									},
+									{
+										label: "Closed",
+										backgroundColor: '#59d05d',
+										borderColor: '#59d05d',
+										borderWidth: 1,
+										data: closedData
+									},
+									{
+										label: "Pending",
+										backgroundColor: '#d9534f',
+										borderColor: '#d9534f',
+										borderWidth: 1,
+										data: pendingData
+									}
+								]
+							},
+							options: {
+								responsive: true,
+								maintainAspectRatio: false,
+								legend: {
+									position: 'bottom',
+									labels: { fontColor: '#333', fontSize: 12 }
+								},
+								title: {
+									display: true,
+									text: 'Daily Ticket Summary',
+									fontColor: '#333',
+									fontSize: 16
+								},
+								tooltips: {
+									mode: 'index',
+									intersect: false,
+									backgroundColor: 'rgba(0,0,0,0.8)',
+									titleFontColor: '#fff'
+								},
+								scales: {
+									xAxes: [{
+										stacked: true,
+										gridLines: { display: false },
+										ticks: { fontColor: '#333' }
+									}],
+									yAxes: [{
+										stacked: true,
+										gridLines: { color: 'rgba(0,0,0,0.05)' },
+										ticks: {
+											beginAtZero: true,
+											stepSize: 5,
+											max: Math.max(10, yAxisMax)
+										},
+										scaleLabel: {
+											display: true,
+											labelString: 'Number of Tickets',
+											fontColor: '#333'
+										}
+									}]
+								},
+								animation: { duration: 1000 }
+							}
+						});
+					})
+					.catch(err => {
+						console.error('Error loading chart data:', err);
+						alert('Failed to load ticket data.');
+					});
+			}
+
+
+			// Form submission
+			document.getElementById('dateRangeForm2').addEventListener('submit', function (e) {
+				e.preventDefault();
+				const from = document.getElementById('from2').value;
+				const to = document.getElementById('to2').value;
+				updateChart(from, to);
+			});
+
+			// On load: set defaults and load data
+			window.addEventListener('DOMContentLoaded', function () {
+				setDefaultDates();
+				const from = document.getElementById('from2').value;
+				const to = document.getElementById('to2').value;
+				updateChart(from, to);
+			});
+		</script>
+		<script>
+			// Hold current date range
+			let currentFrom = null;
+			let currentTo = null;
+
+			// Format date for input & API
+			function toDateTimeLocal(date) {
+				const pad = (n) => n.toString().padStart(2, '0');
+				const year = date.getFullYear();
+				const month = pad(date.getMonth() + 1);
+				const day = pad(date.getDate());
+				const hours = pad(date.getHours());
+				const minutes = pad(date.getMinutes());
+				return `${year}-${month}-${day}T${hours}:${minutes}`;
+			}
+
+			// Format date for display: "Aug 10"
+			function formatShort(dateStr) {
+				const d = new Date(dateStr);
+				return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+			}
+
+			// Fetch and render data
+			function fetchEngineerData(from = null, to = null) {
+				let url = `http://localhost:8000/api/dashboards/assignee-daily-status`;
+				if (from && to) {
+					url += `?from=${from}&to=${to}`;
+				}
+
+				fetch(url)
+					.then(res => res.json())
+					.then(data => {
+						// Update current range
+						currentFrom = data.dates[0];
+						currentTo = data.dates[data.dates.length - 1];
+
+						// Update headers
+						const dayHeaderRow = document.getElementById('dayHeaders');
+						dayHeaderRow.innerHTML = ''; // Clear
+
+						const numDays = data.dates.length;
+						for (let i = 0; i < numDays; i++) {
+							const th = document.createElement('th');
+							th.textContent = `Day ${i + 1}\n(${formatShort(data.dates[i])})`;
+							th.style.whiteSpace = 'pre-line';
+							dayHeaderRow.appendChild(th);
+						}
+
+						// Update body
+						const tbody = document.getElementById('engineerTableBody');
+						tbody.innerHTML = '';
+
+						data.data.forEach(row => {
+							const tr = document.createElement('tr');
+							tr.innerHTML = `
+          <td class="text-left fw-bold">${row.assignee}</td>
+          ${row.open.map(v => `<td>${v}</td>`).join('')}
+          ${row.pending.map(v => `<td>${v}</td>`).join('')}
+          ${row.closed.map(v => `<td>${v}</td>`).join('')}
+        `;
+							tbody.appendChild(tr);
+						});
+					})
+					.catch(err => {
+						console.error('Failed to load engineer data:', err);
+						alert('Could not load data.');
+					});
+			}
+
+			// Helper: shift range by offset (in days)
+			function shiftRange(offsetDays) {
+				if (!currentFrom || !currentTo) return;
+
+				const from = new Date(currentFrom);
+				const to = new Date(currentTo);
+
+				const daysDiff = Math.ceil((to - from) / (1000 * 60 * 60 * 24)); // number of days
+
+				const newFrom = new Date(from);
+				newFrom.setDate(newFrom.getDate() + offsetDays);
+				const newTo = new Date(to);
+				newTo.setDate(newTo.getDate() + offsetDays);
+
+				const fromStr = toDateTimeLocal(newFrom).slice(0, 16); // '2025-08-10T00:00'
+				const toStr = toDateTimeLocal(newTo).slice(0, 16);
+
+				fetchEngineerData(fromStr, toStr);
+			}
+
+			// Buttons
+			document.getElementById('prevEngineerBtn').addEventListener('click', () => {
+				shiftRange(-1); // shift backward by 1 day window size
+			});
+
+			document.getElementById('nextEngineerBtn').addEventListener('click', () => {
+				shiftRange(1); // shift forward
+			});
+
+			document.getElementById('refreshEngineerBtn').addEventListener('click', () => {
+				currentFrom = null;
+				currentTo = null;
+				fetchEngineerData(); // default range
+			});
+
+			// On load: fetch default
+			window.addEventListener('DOMContentLoaded', () => {
+				fetchEngineerData(); // initial load
+			});
+		</script>
 	</th:block>
 </body>
 
 </html>
+
+// Update headers
+const dayHeaderRow = document.getElementById('dayHeaders');
+dayHeaderRow.innerHTML = ''; // Clear
+
+const numDays = data.dates.length;
+
+// Helper: create day headers (Day 1, Day 2, ...)
+function createDayThs(dateArray, offset = 0) {
+  const ths = [];
+  for (let i = 0; i < dateArray.length; i++) {
+    const th = document.createElement('th');
+    th.textContent = `Day ${i + 1}\n(${formatShort(dateArray[i])})`;
+    th.style.whiteSpace = 'pre-line';
+    ths.push(th);
+  }
+  return ths;
+}
+
+// Append: Open (3 days)
+const openThs = createDayThs(data.dates);
+openThs.forEach(th => dayHeaderRow.appendChild(th));
+
+// Append: Pending (3 days)
+const pendingThs = createDayThs(data.dates);
+pendingThs.forEach(th => dayHeaderRow.appendChild(th));
+
+// Append: Closed (3 days)
+const closedThs = createDayThs(data.dates);
+closedThs.forEach(th => dayHeaderRow.appendChild(th));
+
+<thead class="bg-primary text-white">
+  <tr>
+    <th rowspan="2" class="align-middle">Engineer</th>
+    <th id="openHeader" colspan="3">Open</th>
+    <th id="pendingHeader" colspan="3">Pending</th>
+    <th id="closedHeader" colspan="3">Closed</th>
+  </tr>
+  <tr id="dayHeaders">
+    <!-- Day headers will be injected here -->
+  </tr>
+</thead>
+
+// Update headers
+const dayHeaderRow = document.getElementById('dayHeaders');
+dayHeaderRow.innerHTML = '';
+
+// Update colspan
+document.getElementById('openHeader').colSpan = numDays;
+document.getElementById('pendingHeader').colSpan = numDays;
+document.getElementById('closedHeader').colSpan = numDays;
+
+// Generate and append day headers for each section
+[...Array(3)].forEach(() => {
+  createDayThs(data.dates).forEach(th => dayHeaderRow.appendChild(th));
+});
+
+
+
+
+<!-- <div class="row mt--2">
+				<div class="col-md-4">
+					<div class="row">
+						<div class="col-sm-6 col-md-12 mb-3">
+							<div class="card card-stats card-round">
+								<div class="card-body">
+									<div class="row align-items-center h-100 pt-3">
+										<div class="col-icon">
+											<div class="icon-big text-center icon-info bubble-shadow-small">
+												<i class="fas fa-folder-open text-white"></i>
+											</div>
+										</div>
+										<div class="col col-stats ml-3 ml-sm-0">
+											<div class="numbers">
+												<p class="card-category">Open Tickets</p>
+												<h4 class="card-title">124</h4>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="col-sm-6 col-md-12 mb-3">
+							<div class="card card-stats card-round">
+								<div class="card-body">
+									<div class="row align-items-center h-100 pt-3">
+										<div class="col-icon">
+											<div class="icon-big text-center icon-success bubble-shadow-small">
+												<i class="fas fa-check-circle text-white"></i>
+											</div>
+										</div>
+										<div class="col col-stats ml-3 ml-sm-0">
+											<div class="numbers">
+												<p class="card-category">Closed Tickets</p>
+												<h4 class="card-title">843</h4>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="col-sm-6 col-md-12 mb-3">
+							<div class="card card-stats card-round">
+								<div class="card-body">
+									<div class="row align-items-center h-100 pt-3">
+										<div class="col-icon">
+											<div class="icon-big text-center icon-warning bubble-shadow-small">
+												<i class="fas fa-clock text-white"></i>
+											</div>
+										</div>
+										<div class="col col-stats ml-3 ml-sm-0">
+											<div class="numbers">
+												<p class="card-category">Pending Tickets</p>
+												<h4 class="card-title">124</h4>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-md-8">
+					<div class="card full-height">
+						<div class="card-header">
+							<div class="card-title">Multiple Bar Chart</div>
+						</div>
+						<div class="card-body d-flex flex-column">
+							<div class="chart-container flex-grow-1">
+								<canvas id="multipleBarChart"></canvas>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div> -->
+<!-- <div class="row">
+				<div class="col-md-4">
+					<div class="card full-height">
+						<div class="card-header">
+							<div class="card-head-row card-tools-still-right">
+								<h4 class="card-title">Overall Statistics</h4>
+								<div class="card-tools">
+									<button class="btn btn-icon btn-link btn-primary btn-xs btn-refresh-card"><span
+											class="fa fa-sync-alt"></span></button>
+								</div>
+							</div>
+							<p class="card-category">
+								Daily information about complaint status</p>
+						</div>
+						<div class="card-body">
+							<div class="d-flex flex-wrap justify-content-around pb-2 pt-5">
+								<div class="px-2 pb-2 pb-md-0 text-center">
+									<div id="circles-1"></div>
+									<h6 class="fw-bold mt-1 mb-3">Closed</h6>
+								</div>
+								<div class="px-2 pb-2 pb-md-0 text-center">
+									<div id="circles-2"></div>
+									<h6 class="fw-bold mt-1 mb-3">Open</h6>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-8">
+					<div class="card full-height">
+						<div class="card-body">
+							<div class="card-title">Complaints of The Week</div>
+							<div class="row py-3">
+
+								<div class="col-md-12">
+									<div id="chart-container">
+										<canvas id="totalIncomeChart" style="height: 300px;"></canvas>
+									</div>
+								</div>
+								<div class="col-md-12 d-flex flex-row justify-content-around mt-3">
+									<div class="text-center">
+										<h6 class="fw-bold text-uppercase text-success op-8">Closed</h6>
+										<h3 class="fw-bold">15</h3>
+									</div>
+									<div class="text-center">
+										<h6 class="fw-bold text-uppercase text-danger op-8">Open</h6>
+										<h3 class="fw-bold">48</h3>
+									</div>
+									<div class="text-center">
+										<h6 class="fw-bold text-uppercase text-success op-8">In Progress</h6>
+										<h3 class="fw-bold">15</h3>
+									</div>
+									<div class="text-center">
+										<h6 class="fw-bold text-uppercase text-danger op-8">Pending</h6>
+										<h3 class="fw-bold">48</h3>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div> -->

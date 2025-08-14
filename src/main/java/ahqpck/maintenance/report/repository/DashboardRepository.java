@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import ahqpck.maintenance.report.dto.ComplaintStatusWeeklyDTO;
+import ahqpck.maintenance.report.dto.DailyStatusCountDTO;
 import ahqpck.maintenance.report.dto.EquipmentComplaintCountDTO;
 import ahqpck.maintenance.report.dto.StatusCountDTO;
 import ahqpck.maintenance.report.dto.UserComplaintSummaryDTO;
@@ -23,22 +24,107 @@ import lombok.RequiredArgsConstructor;
 @Repository
 public interface DashboardRepository extends JpaRepository<Complaint, String> {
 
-    // All-time count grouped by status
-    @Query("SELECT NEW ahqpck.maintenance.report.dto.StatusCountDTO(c.status, COUNT(c)) " +
-            "FROM Complaint c " +
-            "GROUP BY c.status " +
-            "ORDER BY COUNT(c) DESC")
-    List<StatusCountDTO> countByStatusAllTime();
+    @Query(value = """
+            SELECT
+                CAST(COALESCE((SELECT COUNT(*) FROM complaints), 0) AS SIGNED) AS totalComplaints,
 
-    // Count by status in date range
-    @Query("SELECT NEW ahqpck.maintenance.report.dto.StatusCountDTO(c.status, COUNT(c)) " +
-            "FROM Complaint c " +
-            "WHERE c.reportDate BETWEEN :start AND :end " +
-            "GROUP BY c.status " +
-            "ORDER BY COUNT(c) DESC")
-    List<StatusCountDTO> countByStatusInRange(
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end);
+                CAST(COALESCE(SUM(
+                    CASE WHEN c.status IN ('OPEN', 'IN_PROGRESS')
+                          AND DATE(c.report_date) >= DATE(:from)
+                          AND DATE(c.report_date) < DATE(:to) THEN 1 ELSE 0 END
+                ), 0) AS SIGNED) AS totalOpen,
+
+                CAST(COALESCE(SUM(
+                    CASE WHEN c.status IN ('DONE', 'CLOSED')
+                          AND DATE(c.close_time) >= DATE(:from)
+                          AND DATE(c.close_time) < DATE(:to) THEN 1 ELSE 0 END
+                ), 0) AS SIGNED) AS totalClosed,
+
+                CAST(COALESCE((SELECT COUNT(*) FROM complaints WHERE status = 'PENDING'), 0) AS SIGNED) AS totalPending
+
+            FROM
+                (SELECT 1) AS dummy
+            LEFT JOIN complaints c
+                ON (DATE(c.report_date) >= DATE(:from) AND DATE(c.report_date) < DATE(:to)
+                    AND c.status IN ('OPEN', 'IN_PROGRESS'))
+                OR (DATE(c.close_time) >= DATE(:from) AND DATE(c.close_time) < DATE(:to)
+                    AND c.status IN ('DONE', 'CLOSED'))
+            """, nativeQuery = true)
+    StatusCountDTO getStatusCount(
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to);
+
+    @Query(value = """
+            SELECT
+                DATE_FORMAT(d.day, '%Y-%m-%d') AS date,
+
+                -- Open: status = 'OPEN' AND reported on this day
+                CAST(COALESCE((
+                    SELECT COUNT(*)
+                    FROM complaints c
+                    WHERE c.status = 'OPEN'
+                      AND DATE(c.report_date) = DATE(d.day)
+                ), 0) AS SIGNED) AS open,
+
+                -- Closed: status = 'CLOSED' AND closed on this day
+                CAST(COALESCE((
+                    SELECT COUNT(*)
+                    FROM complaints c
+                    WHERE c.status = 'CLOSED'
+                      AND DATE(c.close_time) = DATE(d.day)
+                ), 0) AS SIGNED) AS closed,
+
+                -- Pending: status = 'PENDING' AND reported on this day
+                CAST(COALESCE((
+                    SELECT COUNT(*)
+                    FROM complaints c
+                    WHERE c.status = 'PENDING'
+                      AND DATE(c.report_date) = DATE(d.day)
+                ), 0) AS SIGNED) AS pending
+
+            FROM (
+                -- Generate continuous date range
+                SELECT DATE_SUB(
+                    COALESCE(:to, CURDATE()),
+                    INTERVAL (units.a + tens.a * 10) DAY
+                ) AS day
+                FROM
+                    (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+                     UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+                     UNION ALL SELECT 8 UNION ALL SELECT 9) units
+                    CROSS JOIN
+                    (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+                     UNION ALL SELECT 4 UNION ALL SELECT 5) tens
+            ) d
+
+            WHERE
+                d.day >= COALESCE(:from, DATE_SUB(COALESCE(:to, CURDATE()), INTERVAL 6 DAY))
+                AND d.day <= COALESCE(:to, CURDATE())
+                AND d.day <= CURDATE()
+
+            ORDER BY d.day ASC
+            """, nativeQuery = true)
+    List<DailyStatusCountDTO> getDailyStatusCount(
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to);
+
+    @Query(value = """
+            SELECT
+                u.name AS assignee,
+                c.status,
+                DATE(c.report_date) AS report_date,
+                COUNT(*) AS count
+            FROM complaints c
+            JOIN users u ON c.assignee = u.employee_id
+            WHERE DATE(c.report_date) >= :from
+              AND DATE(c.report_date) < DATE_ADD(:to, INTERVAL 1 DAY)
+              AND c.status IN ('OPEN', 'PENDING', 'CLOSED')
+            GROUP BY u.name, c.status, DATE(c.report_date)
+            ORDER BY u.name, report_date
+            """, nativeQuery = true)
+    List<Object[]> getAssigneeDailyStatus(
+            @Param("from") LocalDate from,
+            @Param("to") LocalDate to);
 
     @Query("""
             SELECT NEW ahqpck.maintenance.report.dto.UserComplaintSummaryDTO(
@@ -128,41 +214,40 @@ public interface DashboardRepository extends JpaRepository<Complaint, String> {
             @Param("to") LocalDateTime to);
 
     @Query(value = """
-    SELECT
-        u.name AS user_name,
-        DATE(d.day) AS date,  -- Extract date part
-        CAST(SUM(CASE WHEN DATE(c.report_date) = DATE(d.day) THEN 1 ELSE 0 END) AS SIGNED) AS openCount,
-        CAST(SUM(CASE WHEN DATE(c.close_time) = DATE(d.day) THEN 1 ELSE 0 END) AS SIGNED) AS closedCount
-    FROM (
-        -- Generate all dates between :from and :to (truncated to day)
-        SELECT DATE_ADD(
-            COALESCE(DATE(:from), DATE_SUB(CURDATE(), INTERVAL 7 DAY)),
-            INTERVAL (units.a + tens.a * 10) DAY
-        ) AS day
-        FROM
-            (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
-             UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
-             UNION ALL SELECT 8 UNION ALL SELECT 9) units
-        CROSS JOIN
-            (SELECT 0 AS a UNION ALL SELECT 1) tens
-    ) d
-    CROSS JOIN users u
-    LEFT JOIN complaints c ON u.employee_id = c.assignee
-        AND (
-            DATE(c.report_date) = DATE(d.day) OR
-            DATE(c.close_time) = DATE(d.day)
-        )
-    WHERE
-        DATE(d.day) >= COALESCE(DATE(:from), DATE_SUB(CURDATE(), INTERVAL 7 DAY))
-        AND DATE(d.day) < COALESCE(DATE(:to), CURDATE())
-        AND DATE(d.day) <= CURDATE()
-    GROUP BY u.id, u.name, DATE(d.day)
-    ORDER BY u.name, DATE(d.day) DESC
-    """, nativeQuery = true)
-List<UserDailySummaryDTO> getUserDailySummary(
-    @Param("from") LocalDateTime from,
-    @Param("to") LocalDateTime to
-);
+            SELECT
+                u.name AS user_name,
+                DATE(d.day) AS date,  -- Extract date part
+                CAST(SUM(CASE WHEN DATE(c.report_date) = DATE(d.day) THEN 1 ELSE 0 END) AS SIGNED) AS openCount,
+                CAST(SUM(CASE WHEN DATE(c.close_time) = DATE(d.day) THEN 1 ELSE 0 END) AS SIGNED) AS closedCount
+            FROM (
+                -- Generate all dates between :from and :to (truncated to day)
+                SELECT DATE_ADD(
+                    COALESCE(DATE(:from), DATE_SUB(CURDATE(), INTERVAL 7 DAY)),
+                    INTERVAL (units.a + tens.a * 10) DAY
+                ) AS day
+                FROM
+                    (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+                     UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+                     UNION ALL SELECT 8 UNION ALL SELECT 9) units
+                CROSS JOIN
+                    (SELECT 0 AS a UNION ALL SELECT 1) tens
+            ) d
+            CROSS JOIN users u
+            LEFT JOIN complaints c ON u.employee_id = c.assignee
+                AND (
+                    DATE(c.report_date) = DATE(d.day) OR
+                    DATE(c.close_time) = DATE(d.day)
+                )
+            WHERE
+                DATE(d.day) >= COALESCE(DATE(:from), DATE_SUB(CURDATE(), INTERVAL 7 DAY))
+                AND DATE(d.day) < COALESCE(DATE(:to), CURDATE())
+                AND DATE(d.day) <= CURDATE()
+            GROUP BY u.id, u.name, DATE(d.day)
+            ORDER BY u.name, DATE(d.day) DESC
+            """, nativeQuery = true)
+    List<UserDailySummaryDTO> getUserDailySummary(
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to);
 
     @Query(value = """
             SELECT
