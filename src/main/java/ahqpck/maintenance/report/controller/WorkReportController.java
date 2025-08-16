@@ -5,11 +5,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
-public class InspectionController {
+public class WorkReportController {
 
-    @GetMapping("/inspections")
+    @GetMapping("/work-reports")
     public String index(Model model) {
-        model.addAttribute("title", "Daily Inspection");
-        return "inspection/index";
+        model.addAttribute("title", "Work Report");
+        return "work-report/index";
     }
 }

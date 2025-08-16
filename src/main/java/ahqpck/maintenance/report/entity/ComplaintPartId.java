@@ -1,5 +1,7 @@
 package ahqpck.maintenance.report.entity;
 
+import java.io.Serializable;
+
 import java.util.Objects;
 
 import jakarta.persistence.Embeddable;
@@ -11,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ComplaintPartId implements java.io.Serializable {
+public class ComplaintPartId implements Serializable {
     private String complaintId;
     private String partId;
 
