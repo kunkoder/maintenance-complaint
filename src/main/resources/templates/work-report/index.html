@@ -99,85 +99,111 @@
                             <!-- Include Modals -->
                             <div th:replace="~{work-report/modal :: modal}"></div>
 
-                            <!-- Table -->
                             <div class="table-responsive">
-                                <table id="inspection-table" class="display table table-striped table-hover">
+                                <table id="work-report-table" class="display table table-striped table-hover">
                                     <thead class="bg-primary text-white">
                                         <tr>
-                                            <th>Date</th>
+                                            <th>Report Date</th>
                                             <th>Shift</th>
-                                            <th>Machine Name</th>
+                                            <th>Area</th>
+                                            <th>Equipment</th>
                                             <th>Category</th>
-                                            <th>Problem Description</th>
-                                            <th>Solution & Parts</th>
+                                            <th>Problem</th>
+                                            <th>Solution</th>
                                             <th>Start Time</th>
                                             <th>Stop Time</th>
-                                            <th>Total Time</th>
-                                            <th>Technician Name</th>
+                                            <th>Total Time (min)</th>
+                                            <th>Technician</th>
                                             <th>Supervisor</th>
                                             <th>Status</th>
-                                            <!-- <th>Complaint Code</th> -->
+                                            <th>Work Type</th>
+                                            <th>Remark</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr class="table-row-hover" data-id="INS-001">
-                                            <td data-field="date">Apr 5, 2025</td>
-                                            <td data-field="shift">Day</td>
-                                            <td data-field="machineName">Conveyor-5</td>
-                                            <td data-field="category">Mechanical</td>
-                                            <td data-field="problemDescription">Motor Overheating, High temp detected
-                                                during operation</td>
-                                            <td data-field="solutionParts">Cleaned fan, replaced bearing</td>
-                                            <td data-field="startTime">08:15</td>
-                                            <td data-field="stopTime">08:45</td>
-                                            <td data-field="totalTime">30 min</td>
-                                            <td data-field="technicianName">Alice (Maintenance)</td>
-                                            <td data-field="supervisor">John Smith</td>
-                                            <td>
-                                                <span data-field="status" class="badge badge-success">DONE</span>
+                                        <tr th:each="report : ${workReports.content}" th:data-id="${report.id}">
+                                            <!-- Report Date -->
+                                            <td data-field="reportDate"
+                                                th:text="${#temporals.format(report.reportDate, 'MMM dd, yyyy')}"></td>
+
+                                            <!-- Shift -->
+                                            <td data-field="shift" th:text="${report.shift}"></td>
+
+                                            <!-- Area -->
+                                            <td data-field="area" th:data-area-code="${report.area?.code}"
+                                                th:text="${report.area?.name ?: '-'}">-</td>
+
+                                            <!-- Equipment -->
+                                            <td data-field="equipment"
+                                                th:data-equipment-code="${report.equipment?.code}"
+                                                th:text="${report.equipment?.name ?: '-'}">-</td>
+
+                                            <!-- Category -->
+                                            <td data-field="category"
+                                                th:text="${#strings.replace(report.category.name, '_', ' ')}"></td>
+
+                                            <!-- Problem -->
+                                            <td data-field="problem" th:text="${report.problem ?: '-'}"></td>
+
+                                            <!-- Solution -->
+                                            <td data-field="solution" th:text="${report.solution ?: '-'}"></td>
+
+                                            <!-- Start Time -->
+                                            <td data-field="startTime"
+                                                th:text="${#temporals.format(report.startTime, 'HH:mm')}"></td>
+
+                                            <!-- Stop Time -->
+                                            <td data-field="stopTime"
+                                                th:text="${#temporals.format(report.stopTime, 'HH:mm')}"></td>
+
+                                            <!-- Total Resolution Time -->
+                                            <td data-field="totalResolutionTimeMinutes"
+                                                th:text="${report.totalResolutionTimeMinutes} + ' min'"></td>
+
+                                            <!-- Technician -->
+                                            <td data-field="technician"
+                                                th:data-employee-id="${report.technician.employeeId}"
+                                                th:text="${report.technician.name ?: '-'}">-</td>
                                             </td>
-                                            <!-- <td><span data-field="complaintCode">COMP-001</span></td> -->
+                                            <!-- th:text="${report.technician.name + ' (' + report.technician.employeeId + ')'}"> -->
+
+                                            <!-- Supervisor -->
+                                            <td data-field="supervisor"
+                                                th:data-employee-id="${report.supervisor?.employeeId}"
+                                                th:text="${report.supervisor.name ?: '-'}">-</td>
+                                            </td>
+                                            <!-- th:text="${report.supervisor?.name != null ? report.supervisor.name + ' (' + report.supervisor.employeeId + ')' : '-'}"> -->
+
+                                            <!-- Status -->
+                                            <td data-field="status">
+                                                <span class="badge badge-pill px-3 py-2" th:classappend="${
+                      report.status == 'OPEN' ? 'badge-danger' :
+                      report.status == 'IN_PROGRESS' ? 'badge-warning' :
+                      report.status == 'PENDING' ? 'badge-info' :
+                      report.status == 'CLOSED' ? 'badge-success' :
+                      'badge-secondary'
+                  }" th:text="${report.status ?: '-'}"></span>
+                                            </td>
+
+                                            <!-- Work Type -->
+                                            <td data-field="workType" th:text="${report.workType ?: '-'}"></td>
+
+                                            <!-- Remark -->
+                                            <td data-field="remark" th:text="${report.remark ?: '-'}"></td>
+
+                                            <!-- Action Buttons -->
                                             <td>
                                                 <div class="form-button-action">
                                                     <button type="button"
                                                         class="btn btn-link btn-primary btn-lg edit-row"
-                                                        data-id="INS-001" data-name="Conveyor-5">
+                                                        th:data-id="${report.id}"
+                                                        th:data-name="${report.equipment?.name}">
                                                         <i class="fa fa-edit"></i>
                                                     </button>
                                                     <button type="button" class="btn btn-link btn-danger delete-row"
-                                                        data-id="INS-001" data-name="Conveyor-5">
-                                                        <i class="fa fa-times"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr class="table-row-hover" data-id="INS-002">
-                                            <td data-field="date">Apr 4, 2025</td>
-                                            <td data-field="shift">Night</td>
-                                            <td data-field="machineName">Press-Machine-2</td>
-                                            <td data-field="category">Mechanical</td>
-                                            <td data-field="problemDescription">Hydraulic Leak, Oil leakage from seal
-                                            </td>
-                                            <td data-field="solutionParts">Replaced seal, refilled oil</td>
-                                            <td data-field="startTime">22:10</td>
-                                            <td data-field="stopTime">23:05</td>
-                                            <td data-field="totalTime">55 min</td>
-                                            <td data-field="technicianName">Bob (Mechanic)</td>
-                                            <td data-field="supervisor">John Smith</td>
-                                            <td>
-                                                <span data-field="status" class="badge badge-warning">PENDING</span>
-                                            </td>
-                                            <!-- <td><span data-field="complaintCode">COMP-002</span></td> -->
-                                            <td>
-                                                <div class="form-button-action">
-                                                    <button type="button"
-                                                        class="btn btn-link btn-primary btn-lg edit-row"
-                                                        data-id="INS-002" data-name="Press-Machine-2">
-                                                        <i class="fa fa-edit"></i>
-                                                    </button>
-                                                    <button type="button" class="btn btn-link btn-danger delete-row"
-                                                        data-id="INS-002" data-name="Press-Machine-2">
+                                                        th:data-id="${report.id}"
+                                                        th:data-name="${report.equipment?.name}">
                                                         <i class="fa fa-times"></i>
                                                     </button>
                                                 </div>
@@ -192,19 +218,25 @@
                                 <div class="col-md-6 col-sm-12">
                                     <p class="text-muted mb-0">
                                         Showing <span id="startRecord">1</span> - <span id="endRecord">10</span>
-                                        of <span id="totalRecords">100</span> entries
+                                        of <span id="totalRecords" th:text="${workReports.totalElements}"></span>
+                                        entries
                                     </p>
                                 </div>
                                 <div class="col-md-6 col-sm-12">
                                     <nav class="d-flex justify-content-end">
                                         <ul class="pagination mb-0">
-                                            <li class="page-item"><a class="page-link" href="#">Prev</a></li>
+                                            <li class="page-item"
+                                                th:classappend="${!workReports.first} ? '' : 'disabled'">
+                                                <a class="page-link" th:href="${previousPageUrl}">Prev</a>
+                                            </li>
                                             <li class="page-item active"><a class="page-link" href="#">1</a></li>
                                             <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                            <li class="page-item"><a class="page-link" href="#">3</a></li>
                                             <li class="page-item disabled"><span class="page-link">...</span></li>
                                             <li class="page-item"><a class="page-link" href="#">10</a></li>
-                                            <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                                            <li class="page-item"
+                                                th:classappend="${!workReports.last} ? '' : 'disabled'">
+                                                <a class="page-link" th:href="${nextPageUrl}">Next</a>
+                                            </li>
                                         </ul>
                                     </nav>
                                 </div>
@@ -220,37 +252,108 @@
     <th:block layout:fragment="scripts">
         <script>
             $(document).ready(function () {
-                // Edit Modal Trigger
-                $('.edit-row').on('click', function () {
+                // --- Edit Modal Trigger ---
+                $(document).on('click', '.edit-row', function () {
                     const row = $(this).closest('tr');
                     const currentId = $(this).data('id');
 
-                    // Populate fields
+                    // Populate simple fields
                     $('#editId').val(currentId);
-                    $('#editDate').val(row.find('[data-field="date"]').text().trim());
+                    $('#editReportDate').val(row.find('[data-field="reportDate"]').text().trim().split(', ').join('-')); // convert "Apr 5, 2025" → "2025-04-05"
                     $('#editShift').val(row.find('[data-field="shift"]').text().trim());
-                    $('#editMachineName').val(row.find('[data-field="machineName"]').text().trim());
-                    $('#editCategory').val(row.find('[data-field="category"]').text().trim());
-                    $('#editProblemDescription').val(row.find('[data-field="problemDescription"]').text().trim());
-                    $('#editSolutionParts').val(row.find('[data-field="solutionParts"]').text().trim());
+
+                    // Category
+                    const categoryText = row.find('[data-field="category"]').text().trim();
+                    $('#editCategory').val(
+                        categoryText.toUpperCase().replace(/\s+/g, '_') // "Corrective Maintenance" → "CORRECTIVE_MAINTENANCE"
+                    );
+
+                    // Status
+                    const statusText = row.find('[data-field="status"] span').text().trim().toUpperCase();
+                    $('#editStatus').val(statusText);
+
+                    // Problem & Solution
+                    $('#editProblem').val(row.find('[data-field="problem"]').text().trim());
+                    $('#editSolution').val(row.find('[data-field="solution"]').text().trim());
+
+                    // Start & Stop Time
                     $('#editStartTime').val(row.find('[data-field="startTime"]').text().trim());
                     $('#editStopTime').val(row.find('[data-field="stopTime"]').text().trim());
-                    $('#editTotalTime').val(row.find('[data-field="totalTime"]').text().trim());
-                    $('#editTechnicianName').val(row.find('[data-field="technicianName"]').text().trim());
-                    $('#editSupervisor').val(row.find('[data-field="supervisor"]').text().trim());
-                    $('#editStatus').val(row.find('[data-field="status"]').text().trim());
-                    // $('#editComplaintCode').val(row.find('[data-field="complaintCode"]').text().trim());
 
+                    // Total Resolution Time (extract number)
+                    const totalTimeText = row.find('[data-field="totalResolutionTimeMinutes"]').text().trim();
+                    const minutes = totalTimeText.match(/\d+/);
+                    $('#editTotalTime').val(minutes ? minutes[0] : '');
+
+                    // Work Type & Remark
+                    $('#editWorkType').val(row.find('[data-field="workType"]').text().trim());
+                    $('#editRemark').val(row.find('[data-field="remark"]').text().trim());
+
+                    // --- Area: Populate with name and bind code ---
+                    const areaName = row.find('[data-field="area"]').text().trim();
+                    const areaCode = row.find('[data-field="area"]').data('areaCode');
+                    if (areaCode) {
+                        $('#editAreaInput').val(`${areaName} (${areaCode})`);
+                        $('#editAreaSelect').val($(document.querySelector(`#areaOptions option[data-code="${areaCode}"]`)).data('id') || '');
+                    } else {
+                        $('#editAreaInput').val('');
+                        $('#editAreaSelect').val('');
+                    }
+
+                    // --- Equipment ---
+                    const equipName = row.find('[data-field="equipment"]').text().trim();
+                    const equipCode = row.find('[data-field="equipment"]').data('equipmentCode');
+                    if (equipCode) {
+                        $('#editEquipmentInput').val(`${equipName} (${equipCode})`);
+                        $('#editEquipmentSelect').val($(document.querySelector(`#equipmentOptions option[data-code="${equipCode}"]`)).data('id') || '');
+                    } else {
+                        $('#editEquipmentInput').val('');
+                        $('#editEquipmentSelect').val('');
+                    }
+
+                    // --- Technician ---
+                    const techName = row.find('[data-field="technician"]').text().trim();
+                    const techId = row.find('[data-field="technician"]').data('employeeId');
+                    if (techId) {
+                        $('#editTechnicianInput').val(`${techName} (${techId})`);
+                        $('#editTechnicianSelect').val(techId);
+                    } else {
+                        $('#editTechnicianInput').val('');
+                        $('#editTechnicianSelect').val('');
+                    }
+
+                    // --- Supervisor ---
+                    const supName = row.find('[data-field="supervisor"]').text().trim();
+                    const supId = row.find('[data-field="supervisor"]').data('employeeId');
+                    if (supId) {
+                        $('#editSupervisorInput').val(`${supName} (${supId})`);
+                        $('#editSupervisorSelect').val(supId);
+                    } else {
+                        $('#editSupervisorInput').val('');
+                        $('#editSupervisorSelect').val('');
+                    }
+
+                    // Show modal
                     $('#editRowModal').modal('show');
                 });
 
-                // Delete Modal Trigger
-                $('.delete-row').on('click', function () {
+                // --- Delete Modal Trigger ---
+                $(document).on('click', '.delete-row', function () {
                     const name = $(this).data('name');
+                    const id = $(this).data('id');
+
                     $('#deleteDocName').text(name);
-                    window.currentId = $(this).data('id');
+                    $('#confirmDeleteButton').attr('href', '/reports/delete/' + encodeURIComponent(id));
                     $('#deleteRowModal').modal('show');
                 });
+            });
+
+            // Auto-show Flash Modal
+            $(document).ready(function () {
+                if ($('#flashMessageModalContainer').length) {
+                    console.log("modal");
+                    $('#flashMessageModal').modal('show');
+                }
             });
         </script>
     </th:block>

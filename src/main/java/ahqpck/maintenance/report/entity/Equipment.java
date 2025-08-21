@@ -60,6 +60,9 @@ public class Equipment {
     @OneToMany(mappedBy = "equipment", fetch = FetchType.LAZY)
     private final Set<Complaint> complaints = new HashSet<>();
 
+    @OneToMany(mappedBy = "equipment", fetch = FetchType.LAZY)
+    private final Set<WorkReport> workReports = new HashSet<>();
+
     @PrePersist
     public void prePersist() {
         if (this.id == null) {

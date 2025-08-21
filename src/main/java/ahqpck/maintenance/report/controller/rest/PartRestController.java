@@ -18,7 +18,6 @@ public class PartRestController {
 
   private final PartService partService;
 
-  // === GET ALL PARTS WITH PAGINATION ===
   @GetMapping
   public ResponseEntity<PageResponse<PartDTO>> getAllParts(
       @RequestParam(required = false) String keyword,
@@ -40,14 +39,12 @@ public class PartRestController {
     return ResponseEntity.ok(pageResponse);
   }
 
-  // === GET PART BY ID ===
   @GetMapping("/{id}")
   public ResponseEntity<PartDTO> getPartById(@PathVariable String id) {
     PartDTO dto = partService.getPartById(id);
     return ResponseEntity.ok(dto);
   }
 
-  // === CREATE PART ===
   @PostMapping
   public ResponseEntity<ApiResponse<PartDTO>> createPart(
       @Valid @RequestPart PartDTO partDTO,
@@ -58,7 +55,6 @@ public class PartRestController {
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
-  // === UPDATE PART ===
   @PutMapping("/{id}")
   public ResponseEntity<ApiResponse<PartDTO>> updatePart(
       @PathVariable String id,
@@ -66,13 +62,12 @@ public class PartRestController {
       @RequestPart(value = "imageFile", required = false) MultipartFile imageFile,
       @RequestParam(value = "deleteImage", required = false, defaultValue = "false") boolean deleteImage) {
 
-    partDTO.setId(id); // Ensure ID is set
+    partDTO.setId(id);
     partService.updatePart(partDTO, imageFile, deleteImage);
     var response = new ApiResponse<>(true, "Part updated successfully.", partDTO);
     return ResponseEntity.ok(response);
   }
 
-  // === DELETE PART ===
   @DeleteMapping("/{id}")
   public ResponseEntity<ApiResponse<Void>> deletePart(@PathVariable String id) {
     partService.deletePart(id);
@@ -80,11 +75,6 @@ public class PartRestController {
     return ResponseEntity.ok(response);
   }
 
-  // === HELPER CLASSES ===
-
-  /**
-   * Generic response wrapper for paginated results
-   */
   public static class PageResponse<T> {
     private List<T> content;
     private int number;
@@ -109,7 +99,6 @@ public class PartRestController {
       this.hasNext = hasNext;
     }
 
-    // Getters
     public List<T> getContent() {
       return content;
     }
@@ -147,9 +136,6 @@ public class PartRestController {
     }
   }
 
-  /**
-   * Generic API response wrapper
-   */
   public static class ApiResponse<T> {
     private boolean success;
     private String message;
@@ -161,7 +147,6 @@ public class PartRestController {
       this.data = data;
     }
 
-    // Getters and Setters
     public boolean isSuccess() {
       return success;
     }

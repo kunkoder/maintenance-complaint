@@ -1,14 +1,97 @@
-Date
-Shift
-Equipment_id
-Category
-Problem
-Solution
-Start Time
-Stop Time
-Technician
-Supervisor
-Status
-work type
-parts used
-remark
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // === Helper: Parse datetime-local string to Date object
+        function parseDateTime(dateTimeStr) {
+            if (!dateTimeStr) return null;
+            const date = new Date(dateTimeStr);
+            return isNaN(date.getTime()) ? null : date;
+        }
+
+        // === Helper: Calculate duration in minutes
+        function calculateDurationInMinutes(startStr, endStr) {
+            const start = parseDateTime(startStr);
+            const end = parseDateTime(endStr);
+
+            if (!start || !end || end < start) return 0;
+
+            return Math.floor((end - start) / (1000 * 60)); // minutes
+        }
+
+        // === Helper: Format minutes to "Xd Xh Xm"
+        function formatResolutionTime(totalMinutes) {
+            const minutes = parseInt(totalMinutes, 10);
+            if (isNaN(minutes) || minutes <= 0) return '0m';
+
+            const days = Math.floor(minutes / (24 * 60));
+            const remainingAfterDays = minutes % (24 * 60);
+            const hours = Math.floor(remainingAfterDays / 60);
+            const mins = remainingAfterDays % 60;
+
+            let display = '';
+            if (days > 0) display += days + 'd ';
+            if (hours > 0) display += hours + 'h ';
+            if (mins > 0 || display === '') display += mins + 'm';
+
+            return display.trim();
+        }
+
+        // === Generic function to update total time and display
+        function updateTotalTime(startId, endId, totalMinutesId, displayId) {
+            const start = document.getElementById(startId)?.value;
+            const end = document.getElementById(endId)?.value;
+            const totalMinutes = calculateDurationInMinutes(start, end);
+
+            // Update numeric input (for backend)
+            const totalInput = document.getElementById(totalMinutesId);
+            if (totalInput) {
+                totalInput.value = totalMinutes > 0 ? totalMinutes : '';
+            }
+
+            // Update formatted display
+            const displayEl = document.getElementById(displayId);
+            if (displayEl) {
+                displayEl.textContent = formatResolutionTime(totalMinutes);
+            }
+        }
+
+        // === Modal-Specific Calculators
+        function calculateAddTotalTime() {
+            updateTotalTime('addStartTime', 'addStopTime', 'addTotalTime', 'addResolutionTimeDisplay');
+        }
+
+        function calculateEditTotalTime() {
+            updateTotalTime('editStartTime', 'editStopTime', 'editTotalTime', 'editResolutionTimeDisplay');
+        }
+
+        // === Attach Event Listeners
+        const addStart = document.getElementById('addStartTime');
+        const addStop = document.getElementById('addStopTime');
+        const editStart = document.getElementById('editStartTime');
+        const editStop = document.getElementById('editStopTime');
+
+        if (addStart && addStop) {
+            addStart.addEventListener('change', calculateAddTotalTime);
+            addStop.addEventListener('change', calculateAddTotalTime);
+        }
+
+        if (editStart && editStop) {
+            editStart.addEventListener('change', calculateEditTotalTime);
+            editStop.addEventListener('change', calculateEditTotalTime);
+        }
+
+        // === Recalculate when modals are shown (in case values are pre-filled)
+        const addModal = document.getElementById('addRowModal');
+        if (addModal) {
+            addModal.addEventListener('shown.bs.modal', calculateAddTotalTime);
+        }
+
+        const editModal = document.getElementById('editRowModal');
+        if (editModal) {
+            editModal.addEventListener('shown.bs.modal', calculateEditTotalTime);
+        }
+
+        // === Initial call (optional, if modals are already rendered)
+        calculateAddTotalTime();
+        calculateEditTotalTime();
+    });
+</script>
