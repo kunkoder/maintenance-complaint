@@ -57,8 +57,8 @@ public class User {
     @Column(name = "activated_at")
     private LocalDateTime activatedAt;
 
-    @Column(name = "activation_token")
-    private String activationToken;
+    @Column(name = "account_activation_token")
+    private String accountActivationToken;
 
     @Column(name = "password_reset_token")
     private String passwordResetToken;

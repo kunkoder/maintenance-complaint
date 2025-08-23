@@ -9,31 +9,75 @@
     <div layout:fragment="content">
         <h3 class="text-center mb-4"><strong>REGISTER</strong></h3>
 
-        <!-- Alerts -->
-        <!-- <div th:replace="~{fragments/alert :: alert}"></div> -->
+        <!-- Flash Messages -->
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${success}"></span>
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
 
-        <form th:action="@{/register}" method="post">
+        <!-- Registration Form -->
+        <form th:action="@{/register}" method="post" th:object="${registerDTO}">
             <div class="form-group">
-                <label>Username</label>
-                <input type="text" name="name" class="form-control" placeholder="Enter username" required autofocus />
+                <label>Full Name</label>
+                <input type="text"
+                       th:field="*{name}"
+                       class="form-control"
+                       placeholder="Enter full name"
+                       required autofocus />
+                <div th:if="${#fields.hasErrors('name')}" class="text-danger mt-1">
+                    <small th:errors="*{name}"></small>
+                </div>
             </div>
+
             <div class="form-group">
                 <label>Employee ID</label>
-                <input type="text" name="employeeId" class="form-control" placeholder="Enter employee ID" required />
+                <input type="text"
+                       th:field="*{employeeId}"
+                       class="form-control"
+                       placeholder="Enter employee ID"
+                       required />
+                <div th:if="${#fields.hasErrors('employeeId')}" class="text-danger mt-1">
+                    <small th:errors="*{employeeId}"></small>
+                </div>
             </div>
+
             <div class="form-group">
                 <label>Email address</label>
-                <input type="email" name="email" class="form-control" placeholder="Enter email" required />
+                <input type="email"
+                       th:field="*{email}"
+                       class="form-control"
+                       placeholder="Enter email"
+                       required />
+                <div th:if="${#fields.hasErrors('email')}" class="text-danger mt-1">
+                    <small th:errors="*{email}"></small>
+                </div>
             </div>
+
             <div class="form-group">
                 <label>Password</label>
-                <input type="password" name="password" class="form-control" placeholder="Password" required />
+                <input type="password"
+                       th:field="*{password}"
+                       class="form-control"
+                       placeholder="Password (min. 8 characters)"
+                       required />
+                <div th:if="${#fields.hasErrors('password')}" class="text-danger mt-1">
+                    <small th:errors="*{password}"></small>
+                </div>
             </div>
+
             <div class="form-group">
                 <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
             </div>
+
             <div class="form-group text-center">
-                Already have an account? <a th:href="@{/login}" class="text-primary">Login</a>
+                Already have an account?
+                <a th:href="@{/login}" class="text-primary">Login</a>
             </div>
         </form>
     </div>

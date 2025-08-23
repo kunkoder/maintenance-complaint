@@ -1,14 +1,9 @@
 <!DOCTYPE html>
-<html>
-
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <link href="https://fonts.googleapis.com/css?family=Handlee" rel="stylesheet">
     <style>
-        html {
-            margin: 0;
-            padding: 0;
-        }
-
+        html { margin: 0; padding: 0; }
         body {
             font-family: 'Helvetica neue', Helvetica, Arial;
             font-size: 14px;
@@ -17,19 +12,16 @@
             margin: 0;
             justify-content: center;
         }
-
         h1 {
             font-size: 18px;
             color: #000;
             padding: 18px 0 5px 0;
             margin: 0 0 5px 0;
         }
-
         p {
             padding: 0;
             margin: 5px;
         }
-
         .section {
             background-color: #fff;
             padding: 10px 25px;
@@ -37,20 +29,15 @@
             width: 100%;
             max-width: 550px;
         }
-
         table {
             width: 100%;
             font-size: 12px;
         }
-
-        table,
-        th,
-        td {
+        table, th, td {
             text-align: center;
             table-layout: fixed;
             color: #fff;
         }
-
         .activate {
             background-color: #629584;
             padding: 12px 45px;
@@ -63,20 +50,11 @@
             text-decoration: none;
             font-weight: bold;
         }
-
-        .activate:hover {
-            background-color: #9ac7b6;
-        }
-
+        .activate:hover { background-color: #9ac7b6; }
         textarea {
             height: 100px;
-        }
-
-        input,
-        textarea {
-            margin-bottom: 10px;
             font-size: 11pt;
-            padding: 15px 10px 10px;
+            padding: 10px;
             border: 1px solid #cecece;
             background-color: #efefef;
             color: #787575;
@@ -86,16 +64,15 @@
         }
     </style>
 </head>
-
 <body>
     <div class="section">
         <h1>Hello there,</h1>
         <p>
-            Please click on the button to complete the account activation process for <strong>{email}</strong>:
+            Please click on the button to complete the account activation process for <strong th:text="${email}">user@example.com</strong>:
         </p>
     </div>
     <div class="section" style="text-align: center;">
-        <a href="{verification-link}" class="activate">ACTIVATE YOUR ACCOUNT</a>
+        <a th:href="${verificationLink}" class="activate">ACTIVATE YOUR ACCOUNT</a>
     </div>
     <div class="section">
         <p>
@@ -103,7 +80,7 @@
         </p>
     </div>
     <div class="section" style="text-align: center;">
-        <textarea>{verification-link}</textarea>
+        <textarea th:text="${verificationLink}">Link</textarea>
     </div>
     <div class="section" style="background-color: #629584; color: white;">
         <p>
@@ -124,7 +101,7 @@
                 <td>example@email.com</td>
                 <td>@example</td>
             </tr>
+        </table>
     </div>
 </body>
-
 </html>

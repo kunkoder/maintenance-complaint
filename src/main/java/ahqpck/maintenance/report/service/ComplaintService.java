@@ -92,7 +92,7 @@ public class ComplaintService {
 
         // Generate code before mapping
         if (dto.getCode() == null || dto.getCode().trim().isEmpty()) {
-            String generatedCode = codeGenerator.generate("CP");
+            String generatedCode = codeGenerator.generate(Complaint.class, "code", "CP");
             complaint.setCode(generatedCode);
         }
 
@@ -114,6 +114,7 @@ public class ComplaintService {
     public ImportUtil.ImportResult importComplaintsFromExcel(List<Map<String, Object>> data) {
         List<String> errorMessages = new ArrayList<>();
         int importedCount = 0;
+        System.out.println("data imported "+data);
 
         if (data == null || data.isEmpty()) {
             throw new IllegalArgumentException("No data to import.");

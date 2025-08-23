@@ -8,6 +8,7 @@ import ahqpck.maintenance.report.service.AreaService;
 import ahqpck.maintenance.report.service.EquipmentService;
 import ahqpck.maintenance.report.service.UserService;
 import ahqpck.maintenance.report.service.WorkReportService;
+import ahqpck.maintenance.report.util.ImportUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,7 +19,11 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
@@ -43,7 +48,8 @@ public class WorkReportController {
 
         try {
             int zeroBasedPage = page - 1;
-            Page<WorkReportDTO> reportPage = workReportService.getAllWorkReports(keyword, zeroBasedPage, size, sortBy, asc);
+            Page<WorkReportDTO> reportPage = workReportService.getAllWorkReports(keyword, zeroBasedPage, size, sortBy,
+                    asc);
 
             model.addAttribute("workReports", reportPage);
             model.addAttribute("keyword", keyword);
@@ -52,9 +58,22 @@ public class WorkReportController {
             model.addAttribute("sortBy", sortBy);
             model.addAttribute("asc", asc);
 
-            model.addAttribute("title", "Work Reports");
-            model.addAttribute("sortFields", new String[]{
-                    "reportDate", "shift", "category", "status", "startTime", "equipment.name", "area.name", "technician.name"
+            model.addAttribute("title", "Work Report");
+            model.addAttribute("sortFields", new String[] {
+                    "reportDate",
+                    "shift",
+                    "category",
+                    "status",
+                    "startTime",
+                    "stopTime",
+                    "equipment.name",
+                    "area.name",
+                    "technician.name",
+                    "supervisor.name",
+                    "problem",
+                    "solution",
+                    "workType",
+                    "remark"
             });
 
             // Load dropdown data
@@ -140,6 +159,49 @@ public class WorkReportController {
             ra.addFlashAttribute("error", "Failed to delete work report: " + e.getMessage());
         }
         return "redirect:/work-reports";
+    }
+
+    @PostMapping("/import")
+    public String importWorkReports(
+            @RequestParam("data") String dataJson,
+            @RequestParam(value = "sheet", required = false) String sheet,
+            @RequestParam(value = "headerRow", required = false) Integer headerRow,
+            RedirectAttributes ra) {
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            List<Map<String, Object>> data = mapper.readValue(dataJson,
+                    new TypeReference<List<Map<String, Object>>>() {
+                    });
+
+            // ra.addFlashAttribute("error", data);
+
+            ImportUtil.ImportResult result = workReportService.importWorkReportsFromExcel(data);
+
+            if (result.getImportedCount() > 0 && !result.hasErrors()) {
+                ra.addFlashAttribute("success",
+                        "Successfully imported " + result.getImportedCount() + " work report record(s).");
+            } else if (result.getImportedCount() > 0) {
+                StringBuilder msg = new StringBuilder("Imported ").append(result.getImportedCount())
+                        .append(" record(s), but ").append(result.getErrorMessages().size()).append(" error(s):");
+                for (String err : result.getErrorMessages()) {
+                    msg.append("|").append(err);
+                }
+                ra.addFlashAttribute("error", msg.toString());
+            } else {
+                StringBuilder msg = new StringBuilder("Failed to import any work report:");
+                for (String err : result.getErrorMessages()) {
+                    msg.append("|").append(err);
+                }
+                ra.addFlashAttribute("error", msg.toString());
+            }
+
+            return "redirect:/work-reports";
+
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Bulk import failed: " + e.getMessage());
+            return "redirect:/WorkReports";
+        }
     }
 
     // === HELPERS ===

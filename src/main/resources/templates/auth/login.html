@@ -9,19 +9,33 @@
     <div layout:fragment="content">
         <h3 class="text-center mb-4"><strong>LOGIN</strong></h3>
 
-        <!-- Include alerts -->
-        <!-- <div th:replace="~{fragments/alert :: alert}"></div> -->
+        <!-- Flash Messages -->
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
 
-        <form action="/login" method="POST">
+        <!-- Login Form -->
+        <form th:action="@{/login}" method="post">
             <div class="form-group">
-                <label for="username">Email or Employee ID</label>
-                <input id="username" name="username" type="text" class="form-control"
-                       placeholder="Email or Employee ID" required autofocus />
+                <label>Email or Employee ID</label>
+                <input type="text"
+                       name="usernameOrEmployeeId"
+                       class="form-control"
+                       placeholder="Email or Employee ID"
+                       required autofocus />
             </div>
             <div class="form-group">
-                <label for="password">Password</label>
-                <input id="password" name="password" type="password" class="form-control"
-                       placeholder="Enter your password" required />
+                <label>Password</label>
+                <input type="password"
+                       name="password"
+                       class="form-control"
+                       placeholder="Enter your password"
+                       required />
             </div>
             <div class="form-group">
                 <a th:href="@{/forgot-password}" class="text-primary">Forgot Password?</a>
