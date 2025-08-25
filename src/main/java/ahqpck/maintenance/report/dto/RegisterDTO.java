@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -18,7 +19,7 @@ import ahqpck.maintenance.report.entity.User;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDTO {
+public class RegisterDTO {
 
     private String id;
 
@@ -32,18 +33,15 @@ public class UserDTO {
     @Email(message = "Email should be valid")
     private String email;
 
+    @NotBlank(message = "Password is required")
     @Size(min = 8, message = "Password must be at least 8 characters")
     private String password;
 
-    private String image;
-    private LocalDateTime createdAt;
-    private LocalDateTime activatedAt;
-    private String activationToken;
-    private String passwordResetToken;
-    private LocalDateTime passwordResetTokenExpiry;
+    @NotBlank(message = "Please confirm your password")
+    private String confirmPassword;
 
-    private User.Status status;
-
-    private Set<String> roleNames = new HashSet<>();
-    private Set<RoleDTO> roles = new HashSet<>();
+    @AssertTrue(message = "Passwords do not match")
+    public boolean isPasswordMatch() {
+        return password != null && password.equals(confirmPassword);
+    }
 }

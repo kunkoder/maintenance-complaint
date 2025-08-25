@@ -26,12 +26,15 @@ public class EmailUtil {
     @Value("${spring.mail.username}")
     private String sender;
 
+    @Value("${app.base-url}")
+    private String baseUrl;
+
     /**
      * Send account activation email
      */
     public void sendAccountActivationEmail(String email, String token) {
         String subject = "Activate Your Account";
-        String verificationLink = "/auth/activate-account?email=" + email + "&token=" + token;
+        String verificationLink = baseUrl + "/activate-account?email=" + email + "&token=" + token;
 
         Context context = new Context();
         context.setVariable("email", email);
@@ -46,7 +49,7 @@ public class EmailUtil {
      */
     public void sendPasswordResetEmail(String email, String token) {
         String subject = "Reset Your Password";
-        String verificationLink = "/auth/reset-password?email=" + email + "&token=" + token;
+        String verificationLink = baseUrl + "/reset-password?email=" + email + "&token=" + token;
 
         Context context = new Context();
         context.setVariable("email", email);

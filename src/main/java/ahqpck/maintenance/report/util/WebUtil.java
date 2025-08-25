@@ -2,6 +2,7 @@ package ahqpck.maintenance.report.util;
 
 import org.springframework.validation.BindingResult;
 
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class WebUtil {
@@ -27,5 +28,9 @@ public class WebUtil {
      */
     public static boolean hasErrors(BindingResult bindingResult) {
         return bindingResult.hasErrors();
+    }
+
+    public static String generateActivationToken() {
+        return UUID.randomUUID().toString(); // 36-char unique token
     }
 }

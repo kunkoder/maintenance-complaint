@@ -2,7 +2,9 @@ package ahqpck.maintenance.report.entity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import ahqpck.maintenance.report.util.Base62;
@@ -14,6 +16,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
@@ -76,9 +80,12 @@ public class WorkReport {
     @Column(name = "total_resolution_time_minutes", nullable = true)
     private Integer totalResolutionTimeMinutes;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "technician", referencedColumnName = "employee_id", nullable = false)
-    private User technician;
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // @JoinColumn(name = "technician", referencedColumnName = "employee_id", nullable = false)
+    // private User technician;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "work_report_technicians", joinColumns = @JoinColumn(name = "work_report_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+    private final Set<User> technicians = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supervisor", referencedColumnName = "employee_id", nullable = true)
@@ -159,4 +166,12 @@ public class WorkReport {
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    // Add this setter
+public void setTechnicians(Set<User> technicians) {
+    this.technicians.clear();
+    if (technicians != null) {
+        this.technicians.addAll(technicians);
+    }
+}
 }

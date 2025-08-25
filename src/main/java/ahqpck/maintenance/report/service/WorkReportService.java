@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -96,7 +97,7 @@ public class WorkReportService {
     public ImportUtil.ImportResult importWorkReportsFromExcel(List<Map<String, Object>> data) {
         List<String> errorMessages = new ArrayList<>();
         int importedCount = 0;
-        System.out.println("data imported "+data);
+        System.out.println("data imported " + data);
 
         if (data == null || data.isEmpty()) {
             throw new IllegalArgumentException("No data to import.");
@@ -169,13 +170,31 @@ public class WorkReportService {
                 }
 
                 // ✅ TECHNICIAN (required)
+                // String technicianEmpId = importUtil.toString(row.get("technician"));
+                // if (technicianEmpId == null || technicianEmpId.trim().isEmpty()) {
+                // throw new IllegalArgumentException("Technician is required");
+                // }
+                // Replace single technician
                 String technicianEmpId = importUtil.toString(row.get("technician"));
                 if (technicianEmpId == null || technicianEmpId.trim().isEmpty()) {
-                    throw new IllegalArgumentException("Technician is required");
+                    throw new IllegalArgumentException("At least one technician is required");
                 }
-                UserDTO technicianDTO = new UserDTO();
-                technicianDTO.setEmployeeId(technicianEmpId.trim());
-                dto.setTechnician(technicianDTO);
+
+                // Split by comma (support multiple: "EMP001,EMP002")
+                List<String> technicianEmpIds = Arrays.stream(technicianEmpId.trim().split(","))
+                        .map(String::trim)
+                        .filter(id -> !id.isEmpty())
+                        .collect(Collectors.toList());
+
+                List<UserDTO> technicianDTOs = technicianEmpIds.stream()
+                        .map(empId -> {
+                            UserDTO technicianDTO = new UserDTO(); // ✅ Rename to avoid conflict
+                            technicianDTO.setEmployeeId(empId);
+                            return technicianDTO;
+                        })
+                        .collect(Collectors.toList());
+
+                dto.setTechnicians(technicianDTOs);
 
                 // 🟡 SUPERVISOR (optional)
                 String supervisorEmpId = importUtil.toString(row.get("supervisor"));
@@ -302,11 +321,23 @@ public class WorkReportService {
         workReport.setEquipment(equipment);
 
         // Technician (required)
-        String technicianEmpId = dto.getTechnician().getEmployeeId();
-        User technician = userRepository.findByEmployeeId(technicianEmpId)
-                .orElseThrow(
-                        () -> new IllegalArgumentException("Technician not found with employeeId: " + technicianEmpId));
-        workReport.setTechnician(technician);
+        if (dto.getTechnicians() == null || dto.getTechnicians().isEmpty()) {
+            throw new IllegalArgumentException("At least one technician is required");
+        }
+
+        Set<User> technicianUsers = dto.getTechnicians().stream()
+                .map(technicianDTO -> {
+                    String empId = technicianDTO.getEmployeeId();
+                    if (empId == null || empId.trim().isEmpty()) {
+                        throw new IllegalArgumentException("Technician employee ID is required");
+                    }
+                    return userRepository.findByEmployeeId(empId.trim())
+                            .orElseThrow(() -> new IllegalArgumentException(
+                                    "Technician not found with employeeId: " + empId));
+                })
+                .collect(Collectors.toSet());
+
+        workReport.setTechnicians(technicianUsers);
 
         // Supervisor (optional)
         if (dto.getSupervisor() != null && dto.getSupervisor().getEmployeeId() != null
@@ -374,7 +405,9 @@ public class WorkReportService {
         }
 
         // Technician
-        dto.setTechnician(mapToUserDTO(workReport.getTechnician()));
+        dto.setTechnicians(workReport.getTechnicians().stream()
+                .map(this::mapToUserDTO)
+                .collect(Collectors.toList()));
 
         // Supervisor
         dto.setSupervisor(mapToUserDTO(workReport.getSupervisor()));

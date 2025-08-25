@@ -9,6 +9,7 @@ import ahqpck.maintenance.report.exception.NotFoundException;
 import ahqpck.maintenance.report.repository.RoleRepository;
 import ahqpck.maintenance.report.repository.UserRepository;
 import ahqpck.maintenance.report.specification.UserSpecification;
+import ahqpck.maintenance.report.util.EmailUtil;
 import ahqpck.maintenance.report.util.FileUploadUtil;
 import ahqpck.maintenance.report.util.ImportUtil;
 import jakarta.validation.ConstraintViolation;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,9 +42,11 @@ public class UserService {
     @Value("${app.upload-user-image.dir:src/main/resources/static/upload/user/image}")
     private String uploadDir;
 
+    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final FileUploadUtil fileUploadUtil;
+    private final EmailUtil emailUtil;
 
     public Page<UserDTO> getAllUsers(String keyword, int page, int size, String sortBy, boolean asc) {
         Sort sort = asc ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
@@ -70,6 +75,14 @@ public class UserService {
         User user = new User();
         mapToEntity(user, dto);
 
+        String token = UUID.randomUUID().toString();
+        user.setAccountActivationToken(token);
+
+        if (dto.getPassword() == null || dto.getPassword().isBlank()) {
+            throw new IllegalArgumentException("Password is required.");
+        }
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+
         if (imageFile != null && !imageFile.isEmpty()) {
             try {
                 String fileName = fileUploadUtil.saveFile(uploadDir, imageFile, "image");
@@ -81,14 +94,24 @@ public class UserService {
 
         Set<Role> roles = dto.getRoles() == null || dto.getRoles().isEmpty()
                 ? Set.of(roleRepository.findByName(Role.Name.VIEWER)
-                    .orElseThrow(() -> new IllegalStateException("Default role VIEWER not found")))
+                        .orElseThrow(() -> new IllegalStateException("Default role VIEWER not found")))
                 : dto.getRoles().stream()
-                    .map(roleDTO -> roleRepository.findByName(Role.Name.valueOf(roleDTO.getName().toString()))
-                        .orElseThrow(() -> new IllegalArgumentException("Role not found: " + roleDTO.getName())))
-                    .collect(Collectors.toSet());
+                        .map(roleDTO -> roleRepository.findByName(Role.Name.valueOf(roleDTO.getName().toString()))
+                                .orElseThrow(
+                                        () -> new IllegalArgumentException("Role not found: " + roleDTO.getName())))
+                        .collect(Collectors.toSet());
 
         user.getRoles().addAll(roles);
-        userRepository.save(user);
+        // userRepository.save(user);
+
+        try {
+            emailUtil.sendAccountActivationEmail(user.getEmail(), token);
+            userRepository.save(user);
+        } catch (Exception e) {
+            // Optional: delete user if email fails?
+            // Or mark as "email_failed" and retry later
+            throw new RuntimeException("Failed to send activation email to " + user.getEmail(), e);
+        }
     }
 
     // === UPDATE USER ===
@@ -102,15 +125,19 @@ public class UserService {
         String newEmail = dto.getEmail().trim();
 
         if (!newEmployeeId.equals(user.getEmployeeId()) &&
-            userRepository.existsByEmployeeIdIgnoringCase(newEmployeeId)) {
+                userRepository.existsByEmployeeIdIgnoringCase(newEmployeeId)) {
             throw new IllegalArgumentException("Another user with this employee ID already exists.");
         }
         if (!newEmail.equals(user.getEmail()) &&
-            userRepository.existsByEmailIgnoringCase(newEmail)) {
+                userRepository.existsByEmailIgnoringCase(newEmail)) {
             throw new IllegalArgumentException("Another user with this email already exists.");
         }
 
         mapToEntity(user, dto);
+
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
 
         String oldImage = user.getImage();
         if (deleteImage && oldImage != null) {
@@ -131,12 +158,13 @@ public class UserService {
         if (dto.getRoles() != null) {
             user.getRoles().clear();
             Set<Role> roles = dto.getRoles().isEmpty()
-                ? Set.of(roleRepository.findByName(Role.Name.VIEWER)
-                    .orElseThrow(() -> new IllegalStateException("Default role VIEWER not found")))
-                : dto.getRoles().stream()
-                    .map(roleDTO -> roleRepository.findByName(Role.Name.valueOf(roleDTO.getName().toString()))
-                        .orElseThrow(() -> new IllegalArgumentException("Role not found: " + roleDTO.getName())))
-                    .collect(Collectors.toSet());
+                    ? Set.of(roleRepository.findByName(Role.Name.VIEWER)
+                            .orElseThrow(() -> new IllegalStateException("Default role VIEWER not found")))
+                    : dto.getRoles().stream()
+                            .map(roleDTO -> roleRepository.findByName(Role.Name.valueOf(roleDTO.getName().toString()))
+                                    .orElseThrow(
+                                            () -> new IllegalArgumentException("Role not found: " + roleDTO.getName())))
+                            .collect(Collectors.toSet());
             user.getRoles().addAll(roles);
         }
 

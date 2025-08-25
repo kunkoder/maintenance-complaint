@@ -45,16 +45,45 @@ public class AuthService {
         String token = UUID.randomUUID().toString();
         user.setPasswordResetToken(token);
         user.setPasswordResetTokenExpiry(LocalDateTime.now().plusHours(1));
-        userRepository.save(user);
+        // userRepository.save(user);
 
-        emailUtil.sendPasswordResetEmail(email, token);
+        try {
+            emailUtil.sendPasswordResetEmail(email, token);
+            userRepository.save(user);
+        } catch (Exception e) {
+            // Optional: delete user if email fails?
+            // Or mark as "email_failed" and retry later
+            throw new RuntimeException("Failed to send verification email to " + user.getEmail(), e);
+        }
+    }
+
+    @Transactional
+    public void verifyResetPassword(String email, String token) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        if (!token.equals(user.getPasswordResetToken())) {
+            throw new IllegalArgumentException("Invalid password reset token");
+        }
+
+        if (user.getPasswordResetTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Password reset token has expired");
+        }
+
+        // user.setPasswordResetToken(null);
+        userRepository.save(user);
     }
 
     @Transactional
     public void resetPassword(ResetPasswordDTO dto) {
+        String email = dto.getEmail();
         String token = dto.getToken();
-        User user = userRepository.findByPasswordResetToken(token)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid or expired token"));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        if (!token.equals(user.getPasswordResetToken())) {
+            throw new IllegalArgumentException("Invalid password reset token");
+        }
 
         if (user.getPasswordResetTokenExpiry().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("Password reset token has expired");

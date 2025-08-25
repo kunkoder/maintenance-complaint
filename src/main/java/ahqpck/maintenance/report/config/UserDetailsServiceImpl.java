@@ -2,6 +2,7 @@ package ahqpck.maintenance.report.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,12 +13,14 @@ import org.springframework.stereotype.Service;
 import ahqpck.maintenance.report.entity.User;
 import ahqpck.maintenance.report.entity.Role;
 import ahqpck.maintenance.report.repository.UserRepository;
+import jakarta.transaction.Transactional;
 
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+// @Transactional
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserDetailsServiceImpl.class);
@@ -39,7 +42,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         if (user.getStatus() != User.Status.ACTIVE) {
             logger.warn("User is not active: {}", user.getEmail());
-            throw new UsernameNotFoundException("User account is not active");
+            throw new DisabledException("User account is not active");
         }
 
         logger.debug("Found user: {}", user.getEmail());
@@ -51,7 +54,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(
             user.getEmail(), // principal (can also use employeeId if preferred)
             user.getPassword(),
-            true, // enabled (we already checked status)
+            user.getStatus() == User.Status.ACTIVE,
             true, // accountNonExpired
             true, // credentialsNonExpired
             true, // accountNonLocked

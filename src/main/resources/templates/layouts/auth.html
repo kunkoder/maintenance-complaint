@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>Login - Atlantis Admin</title>
@@ -25,9 +25,12 @@
 
     <!-- Custom styles -->
     <style>
-        body.login { background-color: #1572E8 !important; }
+        body.login {
+            background-color: #1572E8 !important;
+        }
     </style>
 </head>
+
 <body class="login" layout:decorator="layouts/auth">
     <div class="wrapper">
         <div class="container pt-5">
@@ -44,11 +47,57 @@
         </div>
     </div>
 
+    <!-- Flash Message Modal (Success or Error) -->
+    <div th:if="${error != null or success != null}" id="flashMessageModalContainer">
+        <div class="modal fade" id="flashMessageModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header"
+                        th:classappend="${error} ? 'bg-danger text-white' : 'bg-success text-white'">
+                        <h5 class="modal-title">
+                            <i
+                                th:class="${error} ? 'fas fa-exclamation-triangle mr-2' : 'fas fa-check-circle mr-2'"></i>
+                            <span th:text="${error} ? 'Error' : 'Success'">Status</span>
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body py-4">
+                        <div th:if="${error}" class="text-center">
+                            <ul class="list-unstyled">
+                                <li th:each="err : ${#strings.listSplit(error, '|')}">
+                                    <p class="mb-2" th:text="${err.trim()}">Error</p>
+                                </li>
+                            </ul>
+                        </div>
+                        <div th:if="${success}" class="text-center">
+                            <p th:text="${success}">Success</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer mt--3">
+                        <button type="button" class="btn" th:classappend="${error} ? 'btn-danger' : 'btn-success'"
+                            data-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Core JS Files -->
     <script src="/assets/js/core/jquery.3.2.1.min.js"></script>
     <script src="/assets/js/core/popper.min.js"></script>
     <script src="/assets/js/core/bootstrap.min.js"></script>
     <script src="/assets/js/plugin/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
     <script src="/assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            if ($('#flashMessageModalContainer').length) {
+                console.log("modal");
+                $('#flashMessageModal').modal('show');
+            }
+        });
+    </script>
 </body>
+
 </html>

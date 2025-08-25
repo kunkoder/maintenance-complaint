@@ -11,6 +11,7 @@ import ahqpck.maintenance.report.entity.WorkReport;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -48,8 +49,9 @@ public class WorkReportDTO {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime stopTime;
 
-    @NotNull(message = "Technician is mandatory")
-    private UserDTO technician;
+    @NotNull(message = "At least one technician is mandatory")
+    @Size(min = 1, message = "At least one technician is required")
+    private List<UserDTO> technicians = new ArrayList<>();
 
     private UserDTO supervisor;
 

@@ -115,18 +115,37 @@
 
                         <!-- Row 3: Technician & Supervisor -->
                         <div class="form-row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="technician">Technician <span class="text-danger">*</span></label>
-                                    <!-- Hidden Select for Binding -->
-                                    <select class="d-none" th:field="*{technician.employeeId}" id="technicianSelect">
-                                        <option th:each="user : ${users}" th:value="${user.employeeId}">User</option>
-                                    </select>
-                                    <!-- Autocomplete Input -->
-                                    <input type="text" class="form-control" list="userOptions" id="technicianInput"
-                                        placeholder="Search technician by name or ID" autocomplete="off" required />
-                                </div>
-                            </div>
+                            <!-- Technician(s) -->
+<div class="col-md-6">
+    <div class="form-group">
+        <label>Technician(s) <span class="text-danger">*</span></label>
+
+        <!-- Hidden select (for form submission) -->
+        <select id="technicianSelect" name="technicians" multiple style="display: none;">
+            <option th:each="user : ${users}" th:value="${user.employeeId}" th:text="${user.employeeId}"></option>
+        </select>
+
+        <!-- Custom tag input UI -->
+        <div class="tag-input" id="technicianTagInput">
+            <div class="tag-list" id="technicianTagList">
+                <!-- Tags will be added here dynamically -->
+            </div>
+            <input type="text" id="technicianTagSearch" class="tag-input-field"
+                   placeholder="Add technician..." list="userOptions">
+        </div>
+
+        <!-- Datalist for autocomplete -->
+        <datalist id="userOptions">
+            <option th:each="user : ${users}" th:value="${user.employeeId}"></option>
+        </datalist>
+
+        <!-- Validation error -->
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('technicians')}"
+             th:errors="*{technicians}">
+            Please select at least one technician.
+        </div>
+    </div>
+</div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="supervisor">Supervisor</label>
@@ -354,15 +373,32 @@
 
                         <!-- Technician & Supervisor -->
                         <div class="form-row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Technician <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" list="userOptions" id="editTechnicianInput"
-                                        placeholder="Search technician by name or ID" autocomplete="off" required />
-                                    <select class="d-none" id="editTechnicianSelect"
-                                        name="technician.employeeId"></select>
-                                </div>
-                            </div>
+                            <!-- Technician(s) -->
+<div class="col-md-6">
+    <div class="form-group">
+        <label>Technician(s) <span class="text-danger">*</span></label>
+
+        <!-- Hidden select (unique ID) -->
+        <select id="editTechnicianSelect" name="technicians" multiple style="display: none;"></select>
+
+        <!-- Custom tag input UI (identical structure) -->
+        <div class="tag-input" id="editTechnicianTagInput">
+            <div class="tag-list" id="editTechnicianTagList">
+                <!-- Tags will be added here dynamically -->
+            </div>
+            <input type="text" id="editTechnicianTagSearch" class="tag-input-field"
+                   placeholder="Add technician..." list="userOptions">
+        </div>
+
+        <!-- Datalist (already defined) -->
+        <!-- <datalist id="userOptions">...</datalist> -->
+
+        <!-- Validation error -->
+        <div class="invalid-feedback">
+            Please select at least one technician.
+        </div>
+    </div>
+</div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Supervisor</label>
@@ -538,6 +574,151 @@
             </div>
         </div>
     </div>
+    <style>
+        /* --- Switch Toggle Styling --- */
+        .switch {
+            position: absolute;
+            width: 0;
+            height: 0;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .switch+.switch-label {
+            position: relative;
+            background: #1a2035;
+            width: 50px;
+            height: 24px;
+            border-radius: 24px;
+            cursor: pointer;
+            transition: background 0.2s ease-in-out;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        .switch+.switch-label::after {
+            content: "";
+            background: #fff;
+            width: 20px;
+            height: 20px;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            border-radius: 50%;
+            transition: left 0.3s ease-in-out;
+        }
+
+        .switch:checked+.switch-label {
+            background: #6861CE;
+        }
+
+        .switch:checked+.switch-label::after {
+            left: 28px;
+        }
+
+        .switch-text {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-left: 8px;
+            transition: color 0.2s ease-in-out;
+        }
+
+        .switch:checked~.switch-text {
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .switch:focus+.switch-label {
+            box-shadow: 0 0 0 2px rgba(104, 97, 206, 0.25);
+        }
+
+        /* Tag Input Container - Bootstrap-like */
+        .tag-input {
+            /* Match .form-control */
+            border: 1px solid #ebedf2;
+            border-radius: 0.25rem;
+            /* 6px - Bootstrap default */
+            padding: 0.375rem 0.75rem;
+            /* 6px 12px - Bootstrap padding */
+            min-height: calc(1.5em + 0.75rem + 2px);
+            /* ~42px, matches input height */
+            line-height: 1.5;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.375rem;
+            /* 6px gap between tags */
+            background-color: #fff;
+            background-clip: padding-box;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            cursor: text;
+            width: 100%;
+        }
+
+        /* Focus style like Bootstrap */
+        .tag-input:focus-within {
+            border-color: #3e93ff;
+            outline: 0;
+        }
+
+        /* Optional: Disabled state */
+        .tag-input:has(input:disabled) {
+            background-color: #e9ecef;
+            opacity: 1;
+            pointer-events: none;
+        }
+
+        /* Tag List */
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        /* Individual Tag */
+        .tag {
+            background: #007bff;
+            color: white;
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+
+        .tag .remove-tag {
+            margin-left: 4px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #fff;
+            opacity: 0.8;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .tag .remove-tag:hover {
+            opacity: 1;
+        }
+
+        /* Input Field inside Tag Input */
+        .tag-input-field {
+            border: none;
+            outline: none;
+            font-size: 0.9rem;
+            padding: 4px;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .tag-input-field::placeholder {
+            color: #999;
+        }
+    </style>
     <script>
         // 1. Parse datetime string
         function parseDateTime(dateTimeStr) {
@@ -682,6 +863,85 @@
         syncSelect('editTechnicianInput', 'editTechnicianSelect');
         syncSelect('editSupervisorInput', 'editSupervisorSelect');
     </script>
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const userOptions = Array.from(document.querySelectorAll("#userOptions option")).map(opt => opt.value);
+
+    function setupTagInput(inputId, tagListId, tagSearchId, selectId, options) {
+        const tagInput = document.getElementById(inputId);
+        const tagList = document.getElementById(tagListId);
+        const tagSearch = document.getElementById(tagSearchId);
+        const hiddenSelect = document.getElementById(selectId);
+
+        if (!tagInput || !tagList || !tagSearch || !hiddenSelect) return;
+
+        function syncSelect() {
+            hiddenSelect.innerHTML = "";
+            Array.from(tagList.querySelectorAll(".tag")).forEach(tag => {
+                const option = document.createElement("option");
+                option.value = tag.dataset.value;
+                option.selected = true;
+                hiddenSelect.appendChild(option);
+            });
+        }
+
+        window.removeTag = function (el, selectId, tagListId) {
+            const tag = el.parentElement;
+            const value = tag.dataset.value;
+            tag.remove();
+            const select = document.getElementById(selectId);
+            const option = select.querySelector(`option[value="${value}"]`);
+            if (option) option.remove();
+            select.dispatchEvent(new Event('change'));
+        };
+
+        function addTag(value) {
+            if (!value || Array.from(tagList.querySelectorAll(".tag")).some(t => t.dataset.value === value)) return;
+            const tag = document.createElement("div");
+            tag.className = "tag";
+            tag.dataset.value = value;
+            tag.innerHTML = `
+                ${value}
+                <span class="remove-tag" onclick="window.removeTag(this, '${selectId}', '${tagListId}')">×</span>
+            `;
+            tagList.appendChild(tag);
+            syncSelect();
+        }
+
+        tagSearch.addEventListener("keydown", e => {
+            if (e.key === "Enter" || e.key === "," || e.key === "Tab") {
+                e.preventDefault();
+                const value = tagSearch.value.trim().replace(/,$/, "");
+                if (options.includes(value)) {
+                    addTag(value);
+                    tagSearch.value = "";
+                }
+            }
+        });
+
+        tagSearch.addEventListener("change", () => {
+            const value = tagSearch.value.trim();
+            if (options.includes(value)) {
+                addTag(value);
+                tagSearch.value = "";
+            }
+        });
+
+        tagInput.addEventListener("click", () => tagSearch.focus());
+    }
+
+    // Initialize Role Tag Inputs (existing)
+    setupTagInput("tagInput", "tagList", "tagSearch", "roleSelect", 
+                  Array.from(document.querySelectorAll("#roleOptions option")).map(o => o.value));
+
+    setupTagInput("editTagInput", "editTagList", "editTagSearch", "editRoleSelect", 
+                  Array.from(document.querySelectorAll("#roleOptions option")).map(o => o.value));
+
+    // Initialize Technician Tag Inputs (new)
+    setupTagInput("technicianTagInput", "technicianTagList", "technicianTagSearch", "technicianSelect", userOptions);
+    setupTagInput("editTechnicianTagInput", "editTechnicianTagList", "editTechnicianTagSearch", "editTechnicianSelect", userOptions);
+});
+</script>
     <script>
         // Debug: Print form data before submission
         document.addEventListener("DOMContentLoaded", function () {

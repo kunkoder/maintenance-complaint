@@ -1,5 +1,7 @@
 package ahqpck.maintenance.report.config;
 
+import ahqpck.maintenance.report.dto.RoleDTO;
+import ahqpck.maintenance.report.dto.UserDTO;
 import ahqpck.maintenance.report.entity.Complaint;
 import ahqpck.maintenance.report.entity.Part;
 import ahqpck.maintenance.report.entity.Role;
@@ -9,7 +11,6 @@ import ahqpck.maintenance.report.entity.Complaint.Category;
 import ahqpck.maintenance.report.entity.Complaint.Status;
 import ahqpck.maintenance.report.service.ComplaintService;
 import ahqpck.maintenance.report.service.UserService;
-import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import ahqpck.maintenance.report.repository.PartRepository;
 import ahqpck.maintenance.report.repository.RoleRepository;
@@ -18,29 +19,22 @@ import ahqpck.maintenance.report.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
-// public class DataInitializer implements CommandLineRunner {
 public class DataInitializer {
+
+    private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
+
     @Autowired
     private RoleRepository roleRepository;
-
-    @PostConstruct
-    public void initDefaultRoles() {
-        Arrays.stream(Role.Name.values()).forEach(name -> {
-            roleRepository.findByName(name).orElseGet(() -> {
-                Role role = new Role();
-                role.setName(name);
-                return roleRepository.save(role);
-            });
-        });
-    }
 
     @Autowired
     private UserRepository userRepository;
@@ -50,54 +44,69 @@ public class DataInitializer {
 
     @PostConstruct
     public void init() {
-        initDefaultRoles();
-        initDefaultUser();
+        try {
+            initDefaultRoles();
+            initDefaultUser();
+        } catch (Exception e) {
+            log.error("Error during data initialization", e);
+        }
     }
 
-    // @Transactional
-    // public void initDefaultRoles() {
-    //     Arrays.stream(Role.Name.values()).forEach(name -> {
-    //         roleRepository.findByName(name).orElseGet(() -> {
-    //             Role role = new Role();
-    //             role.setName(name);
-    //             return roleRepository.save(role);
-    //         });
-    //     });
-    // }
+    private void initDefaultRoles() {
+        log.info("Initializing default roles...");
+        Arrays.stream(Role.Name.values()).forEach(roleName -> {
+            Optional<Role> existingRole = roleRepository.findByName(roleName);
+            if (existingRole.isPresent()) {
+                log.debug("Role '{}' already exists.", roleName);
+                return;
+            }
 
-    @Transactional
-    public void initDefaultUser() {
+            Role role = new Role();
+            role.setName(roleName);
+            roleRepository.save(role);
+            log.info("Created role: {}", roleName);
+        });
+        log.info("Default roles initialization completed.");
+    }
+
+    private void initDefaultUser() {
         String email = "ggomugo@gmail.com";
-        Optional<User> existingUser = userRepository.findByEmail(email);
+        log.info("Checking if default user with email '{}' exists...", email);
 
-        if (existingUser.isPresent()) {
-            // Optional: log that user already exists
+        if (userRepository.findByEmail(email).isPresent()) {
+            log.info("Default user with email '{}' already exists. Skipping creation.", email);
             return;
         }
 
-        // Find required roles
-        Role superAdminRole = roleRepository.findByName(Role.Name.SUPERADMIN)
-                .orElseThrow(() -> new IllegalStateException("SUPERADMIN role not found. Run role init first."));
-        Role adminRole = roleRepository.findByName(Role.Name.ADMIN)
-                .orElseThrow(() -> new IllegalStateException("ADMIN role not found. Run role init first."));
+        log.info("Creating default user with email '{}'", email);
 
-        // Create user entity
-        User user = new User();
-        user.setName("Gema Nur");
-        user.setEmail(email);
-        user.setEmployeeId("0905");
-        user.setStatus(User.Status.ACTIVE);
-        user.setCreatedAt(LocalDateTime.now());
-        user.setActivatedAt(LocalDateTime.now());
+        // Prepare DTO (mimic controller behavior)
+        UserDTO userDTO = new UserDTO();
+        userDTO.setName("Gema Nur");
+        userDTO.setEmail(email);
+        userDTO.setEmployeeId("0905");
+        userDTO.setPassword("ahqpck123"); // Plain text password — will be encoded in service
+        userDTO.setStatus(User.Status.ACTIVE);
+        userDTO.setCreatedAt(LocalDateTime.now());
+        userDTO.setActivatedAt(LocalDateTime.now());
 
-        // Assign roles
-        user.getRoles().add(superAdminRole);
-        user.getRoles().add(adminRole);
+        // Assign roles: SUPERADMIN and ADMIN
+        Set<RoleDTO> roleDTOS = Arrays.stream(new Role.Name[]{Role.Name.SUPERADMIN, Role.Name.ADMIN})
+                .map(name -> {
+                    RoleDTO roleDTO = new RoleDTO();
+                    roleDTO.setName(name);
+                    return roleDTO;
+                })
+                .collect(Collectors.toSet());
+        userDTO.setRoles(roleDTOS);
 
-        // Save directly (or use service if you prefer validation)
-        userRepository.save(user);
+        try {
+            userService.createUser(userDTO, null); // No image file
+            log.info("Default user with email '{}' created successfully.", email);
+        } catch (Exception e) {
+            log.error("Failed to create default user with email '{}'", email, e);
+        }
     }
-
 }
 
 

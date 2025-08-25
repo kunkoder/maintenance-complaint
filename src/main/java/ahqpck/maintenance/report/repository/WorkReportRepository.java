@@ -26,7 +26,7 @@ public interface WorkReportRepository extends JpaRepository<WorkReport, String>,
     /**
      * Optional: find by technician
      */
-    List<WorkReport> findByTechnician(User technician);
+    List<WorkReport> findByTechnicians(User technician);
 
     /**
      * Optional: find by supervisor

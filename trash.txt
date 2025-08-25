@@ -1,0 +1,9 @@
+@Async
+public void sendActivationEmailAsync(String email, String token) {
+    try {
+        emailUtil.sendAccountActivationEmail(email, token);
+    } catch (Exception e) {
+        // Save to DB queue, retry later
+        emailRetryService.scheduleRetry(email, token, "ACTIVATION");
+    }
+}
