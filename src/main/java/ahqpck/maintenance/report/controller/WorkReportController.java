@@ -107,6 +107,8 @@ public class WorkReportController {
             BindingResult bindingResult,
             RedirectAttributes ra) {
 
+                System.out.println("Work Report DTO: " + workReportDTO);
+
         if (bindingResult.hasErrors()) {
             handleBindingErrors(bindingResult, ra, workReportDTO);
             return "redirect:/work-reports";

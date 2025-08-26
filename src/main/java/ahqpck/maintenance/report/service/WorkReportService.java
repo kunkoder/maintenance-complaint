@@ -181,18 +181,18 @@ public class WorkReportService {
                 }
 
                 // Split by comma (support multiple: "EMP001,EMP002")
-                List<String> technicianEmpIds = Arrays.stream(technicianEmpId.trim().split(","))
+                Set<String> technicianEmpIds = Arrays.stream(technicianEmpId.trim().split(","))
                         .map(String::trim)
                         .filter(id -> !id.isEmpty())
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toSet());
 
-                List<UserDTO> technicianDTOs = technicianEmpIds.stream()
+                Set<UserDTO> technicianDTOs = technicianEmpIds.stream()
                         .map(empId -> {
                             UserDTO technicianDTO = new UserDTO(); // ✅ Rename to avoid conflict
                             technicianDTO.setEmployeeId(empId);
                             return technicianDTO;
                         })
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toSet());
 
                 dto.setTechnicians(technicianDTOs);
 
@@ -407,7 +407,7 @@ public class WorkReportService {
         // Technician
         dto.setTechnicians(workReport.getTechnicians().stream()
                 .map(this::mapToUserDTO)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toSet()));
 
         // Supervisor
         dto.setSupervisor(mapToUserDTO(workReport.getSupervisor()));

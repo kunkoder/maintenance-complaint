@@ -2,7 +2,9 @@ package ahqpck.maintenance.report.dto;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -49,9 +51,11 @@ public class WorkReportDTO {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime stopTime;
 
+    private Set<String> technicianEmpIds = new HashSet<>();
+
     @NotNull(message = "At least one technician is mandatory")
     @Size(min = 1, message = "At least one technician is required")
-    private List<UserDTO> technicians = new ArrayList<>();
+    private Set<UserDTO> technicians = new HashSet<>();
 
     private UserDTO supervisor;
 

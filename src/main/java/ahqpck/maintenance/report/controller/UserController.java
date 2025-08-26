@@ -105,6 +105,7 @@ public class UserController {
             BindingResult bindingResult,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
             RedirectAttributes ra) {
+                System.out.println("User DTO: " + userDTO);
 
         if (userDTO.getRoleNames() != null && !userDTO.getRoleNames().isEmpty()) {
             Set<RoleDTO> roleDTOs = userDTO.getRoleNames().stream()
@@ -152,6 +153,8 @@ public class UserController {
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
             @RequestParam(value = "deleteImage", required = false, defaultValue = "false") boolean deleteImage,
             RedirectAttributes ra) {
+
+                System.out.println("User DTO: " + userDTO);
 
         if (userDTO.getRoleNames() != null && !userDTO.getRoleNames().isEmpty()) {
             Set<RoleDTO> roleDTOs = userDTO.getRoleNames().stream()
