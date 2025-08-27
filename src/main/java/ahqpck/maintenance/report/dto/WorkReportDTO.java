@@ -35,7 +35,7 @@ public class WorkReportDTO {
 
     private AreaDTO area;
 
-    @NotNull(message = "Equipment is mandatory")
+    // @NotNull(message = "Equipment is mandatory")
     private EquipmentDTO equipment;
 
     @NotNull(message = "Category is mandatory")

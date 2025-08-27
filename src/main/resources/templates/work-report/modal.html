@@ -313,7 +313,7 @@
                 </div>
 
                 <div class="modal-body p-4">
-                    <form th:action="@{/work-reports/update}" method="post" id="formEdit">
+                    <form th:action="@{/work-reports/update}" th:object="${workReport}" method="post" id="formEdit">
                         <input type="hidden" name="id" id="editId">
 
                         <!-- Report Date & Shift -->
@@ -337,8 +337,7 @@
                         </div>
 
                         <!-- Area & Equipment -->
-                        <div class="form-row">
-                            <!-- Area -->
+                        <!-- <div class="form-row">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Area</label>
@@ -354,7 +353,6 @@
                                 </div>
                             </div>
 
-                            <!-- Equipment -->
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Equipment <span class="text-danger">*</span></label>
@@ -371,8 +369,69 @@
                                     <div class="invalid-feedback">Equipment is required.</div>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
+                        <div class="form-row">
+                            <!-- Area -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Area <span class="text-danger">*</span></label>
 
+                                    <!-- Visible Autocomplete Input -->
+                                    <input type="text" class="form-control" list="areaOptions" id="editAreaInput"
+                                        placeholder="Search area by name or code" autocomplete="off" required />
+
+                                    <!-- Datalist for Suggestions -->
+                                    <datalist id="areaOptions">
+                                        <option th:each="area : ${areas}"
+                                            th:value="${area.name} + ' (' + ${area.code} + ')'"
+                                            th:data-code="${area.code}">
+                                        </option>
+                                    </datalist>
+
+                                    <!-- Hidden Select for Thymeleaf Binding -->
+                                    <select class="d-none" name="area.code" id="editAreaSelect">
+                                        <option th:each="area : ${areas}" th:value="${area.code}">Area</option>
+                                    </select>
+
+                                    <!-- Validation Feedback -->
+                                    <!-- <div class="invalid-feedback" th:if="${#fields.hasErrors('area.code')}"
+                                        th:errors="*{area.code}">
+                                        Please select an area.
+                                    </div> -->
+                                </div>
+                            </div>
+
+                            <!-- Equipment -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Equipment <span class="text-danger">*</span></label>
+
+                                    <!-- Visible Autocomplete Input -->
+                                    <input type="text" class="form-control" list="equipmentOptions" id="editEquipmentInput"
+                                        placeholder="Search equipment by name or code" autocomplete="off" required />
+
+                                    <!-- Datalist for Suggestions -->
+                                    <datalist id="equipmentOptions">
+                                        <option th:each="equipment : ${equipments}"
+                                            th:value="${equipment.name} + ' (' + ${equipment.code} + ')'"
+                                            th:data-code="${equipment.code}">
+                                        </option>
+                                    </datalist>
+
+                                    <!-- Hidden Select for Thymeleaf Binding -->
+                                    <select class="d-none" name="equipment.code" id="editEquipmentSelect">
+                                        <option th:each="equipment : ${equipments}" th:value="${equipment.code}">
+                                            Equipment</option>
+                                    </select>
+
+                                    <!-- Validation Feedback -->
+                                    <!-- <div class="invalid-feedback" th:if="${#fields.hasErrors('equipment.code')}"
+                                        th:errors="*{equipment.code}">
+                                        Please select equipment.
+                                    </div> -->
+                                </div>
+                            </div>
+                        </div>
                         <!-- Technician & Supervisor -->
                         <div class="form-row">
                             <!-- Technician(s) -->
@@ -845,15 +904,22 @@
                 return;
             }
 
-            input.addEventListener('input', () => {
-                const options = document.querySelectorAll(`#${selectId === 'technicianSelect' || selectId === 'supervisorSelect' || selectId === 'editTechnicianSelect' || selectId === 'editSupervisorSelect'
-                    ? 'userOptions'
-                    : selectId === 'areaSelect' || selectId === 'editAreaSelect'
-                        ? 'areaOptions'
-                        : 'equipmentOptions'} option`);
+            // input.addEventListener('input', () => {
+            //     const options = document.querySelectorAll(`#${selectId === 'technicianSelect' || selectId === 'supervisorSelect' || selectId === 'editTechnicianSelect' || selectId === 'editSupervisorSelect'
+            //         ? 'userOptions'
+            //         : selectId === 'areaSelect' || selectId === 'editAreaSelect'
+            //             ? 'areaOptions'
+            //             : 'equipmentOptions'} option`);
 
-                const opt = [...options].find(o => o.value === input.value);
-                select.value = opt ? (opt.dataset.employeeId || opt.dataset.code) : '';
+            //     const opt = [...options].find(o => o.value === input.value);
+            //     select.value = opt ? (opt.dataset.employeeId || opt.dataset.code) : '';
+            // });
+
+            input.addEventListener('input', () => {
+                const selectedOption = [...document.querySelectorAll(optionsSelector + ' option')]
+                    .find(opt => opt.value === input.value.trim());
+
+                select.value = selectedOption ? selectedOption.dataset[dataAttr] || selectedOption.value : '';
             });
         }
 
@@ -964,36 +1030,36 @@
     </script>
     <script>
         // Debug: Print form data before submission
-        document.addEventListener("DOMContentLoaded", function () {
-            const formEdit = document.getElementById("formEdit");
-            if (formEdit) {
-                formEdit.addEventListener("submit", function (event) {
-                    event.preventDefault();
+        // document.addEventListener("DOMContentLoaded", function () {
+        //     const formEdit = document.getElementById("formEdit");
+        //     if (formEdit) {
+        //         formEdit.addEventListener("submit", function (event) {
+        //             event.preventDefault();
 
-                    console.log("📋 DEBUG: Form Submission Data (Add Work Report)");
-                    console.log("=".repeat(50));
+        //             console.log("📋 DEBUG: Form Submission Data (Add Work Report)");
+        //             console.log("=".repeat(50));
 
-                    const formData = new FormData(formEdit);
+        //             const formData = new FormData(formEdit);
 
-                    const entries = {};
-                    for (let [key, value] of formData.entries()) {
-                        if (value === "") {
-                            entries[key] = "(empty)";
-                        } else {
-                            entries[key] = value;
-                        }
-                    }
+        //             const entries = {};
+        //             for (let [key, value] of formData.entries()) {
+        //                 if (value === "") {
+        //                     entries[key] = "(empty)";
+        //                 } else {
+        //                     entries[key] = value;
+        //                 }
+        //             }
 
-                    // Pretty print to console
-                    console.table(entries);
+        //             // Pretty print to console
+        //             console.table(entries);
 
-                    console.log("📦 Full FormData object:", Object.fromEntries(formData));
+        //             console.log("📦 Full FormData object:", Object.fromEntries(formData));
 
-                    // Optional: Submit the form after debug
-                    // Uncomment the line below when ready
-                    // formEdit.submit();
-                });
-            }
-        });
+        //             // Optional: Submit the form after debug
+        //             // Uncomment the line below when ready
+        //             formEdit.submit();
+        //         });
+        //     }
+        // });
     </script>
 </div>

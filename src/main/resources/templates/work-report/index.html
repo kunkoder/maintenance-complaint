@@ -189,17 +189,17 @@
                                             <!-- Total Resolution Time -->
                                             <td data-field="totalResolutionTimeMinutes"
                                                 th:text="${report.totalResolutionTimeMinutes} + ' min'"></td>
-                                            <!-- Technician(s) -->
-                                            <td data-field="technicians">
-                                                <th:block th:each="technician : ${report.technicians}">
-                                                    <span class="badge badge-info mr-1"
-                                                        th:text="${technician.name + ' (' + technician.employeeId + ')'}">
-                                                    </span>
-                                                </th:block>
-                                                <th:block th:if="${#sets.isEmpty(report.technicians)}">
-                                                    <span class="text-muted">-</span>
-                                                </th:block>
-                                            </td>
+<!-- Technician(s) -->
+<td data-field="technicians">
+    <th:block th:each="technician : ${report.technicians}">
+        <span class="badge badge-info mr-1"
+              th:text="${technician.name + ' (' + technician.employeeId + ')'}">
+        </span>
+    </th:block>
+    <th:block th:if="${#sets.isEmpty(report.technicians)}">
+        <span class="text-muted">-</span>
+    </th:block>
+</td>
                                             <!-- Technician -->
                                             <!-- <td data-field="technician"
                                                 th:data-employee-id="${report.technician.employeeId}"
@@ -210,7 +210,7 @@
                                             <!-- Supervisor -->
                                             <td data-field="supervisor"
                                                 th:data-employee-id="${report.supervisor?.employeeId}"
-                                                th:text="${report.supervisor.name ?: '-'}">-</td>
+                                                th:text="${report.supervisor?.name ?: '-'}">-</td>
                                             </td>
                                             <!-- th:text="${report.supervisor?.name != null ? report.supervisor.name + ' (' + report.supervisor.employeeId + ')' : '-'}"> -->
 
@@ -377,54 +377,141 @@
             $(document).ready(function () {
                 // --- Edit Modal Trigger ---
                 $(document).on('click', '.edit-row', function () {
+                    function toIsoDateTime(dateTimeStr) {
+                        if (!dateTimeStr) return '';
+                        const date = new Date(dateTimeStr);
+                        if (isNaN(date.getTime())) return '';
+
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const hours = String(date.getHours()).padStart(2, '0');
+                        const minutes = String(date.getMinutes()).padStart(2, '0');
+
+                        return `${year}-${month}-${day}T${hours}:${minutes}`;
+                    }
+
                     const row = $(this).closest('tr');
                     const currentId = $(this).data('id');
 
-                    // ... other field population ...
+                    // Populate simple fields
+                    $('#editId').val(currentId);
+                    $('#editReportDate').val(toIsoDateTime(row.find('[data-field="reportDate"]').text().trim()));
+                    $('#editShift').val(row.find('[data-field="shift"]').text().trim());
 
-                    // --- Technician(s) ---
+                    // Category
+                    const categoryText = row.find('[data-field="category"]').text().trim();
+                    $('#editCategory').val(
+                        categoryText.toUpperCase().replace(/\s+/g, '_') // "Corrective Maintenance" → "CORRECTIVE_MAINTENANCE"
+                    );
+
+                    // Status
+                    const statusText = row.find('[data-field="status"] span').text().trim().toUpperCase();
+                    $('#editStatus').val(statusText);
+
+                    // Problem & Solution
+                    $('#editProblem').val(row.find('[data-field="problem"]').text().trim());
+                    $('#editSolution').val(row.find('[data-field="solution"]').text().trim());
+
+                    // Start Time & Stop Time (same format as reportDate)
+                    $('#editStartTime').val(toIsoDateTime(row.find('[data-field="startTime"]').text().trim()));
+                    $('#editStopTime').val(toIsoDateTime(row.find('[data-field="stopTime"]').text().trim()));
+
+                    // Total Resolution Time (extract number)
+                    const totalTimeText = row.find('[data-field="totalResolutionTimeMinutes"]').text().trim();
+                    const minutes = totalTimeText.match(/\d+/);
+                    $('#editTotalTime').val(minutes ? minutes[0] : '');
+
+                    // Work Type & Remark
+                    $('#editWorkType').val(row.find('[data-field="workType"]').text().trim());
+                    $('#editRemark').val(row.find('[data-field="remark"]').text().trim());
+
+                    // --- Area: Populate with name and bind code ---
+                    const areaName = row.find('[data-field="area"]').text().trim();
+                    const areaCode = row.find('[data-field="area"]').data('areaCode');
+                    if (areaCode) {
+                        $('#editAreaInput').val(`${areaName} (${areaCode})`);
+                        $('#editAreaSelect').val($(document.querySelector(`#areaOptions option[data-code="${areaCode}"]`)).data('id') || '');
+                    } else {
+                        $('#editAreaInput').val('');
+                        $('#editAreaSelect').val('');
+                    }
+
+                    // --- Equipment ---
+                    const equipName = row.find('[data-field="equipment"]').text().trim();
+                    const equipCode = row.find('[data-field="equipment"]').data('equipmentCode');
+                    // if (equipCode) {
+                        $('#editEquipmentInput').val(`${equipName} (${equipCode})`);
+                        $('#editEquipmentSelect').val(equipCode);
+                    // } else {
+                    //     $('#editEquipmentInput').val('');
+                    //     $('#editEquipmentSelect').val('');
+                    // }
+
                     const technicianTagList = document.getElementById('editTechnicianTagList');
-                    const hiddenSelect = document.getElementById('editTechnicianSelect');
+        const hiddenSelect = document.getElementById('editTechnicianSelect');
+        
+        // Clear previous tags
+        technicianTagList.innerHTML = "";
+        hiddenSelect.innerHTML = "";
 
-                    // Clear previous tags
-                    technicianTagList.innerHTML = "";
-                    hiddenSelect.innerHTML = "";
+        // Get technician data from row (assuming each technician is in a span.badge)
+        const techBadges = row.find('[data-field="technicians"] .badge');
+        const techData = [];
+        techBadges.each(function () {
+            const text = $(this).text().trim(); // "John (AAA)"
+            const match = text.match(/(.+) \((.+)\)/);
+            if (match) {
+                const name = match[1];
+                const empId = match[2];
+                techData.push({ name, empId });
+            }
+        });
 
-                    // Get technician data from row (assuming each technician is in a span.badge)
-                    const techBadges = row.find('[data-field="technicians"] .badge');
-                    const techData = [];
-                    techBadges.each(function () {
-                        const text = $(this).text().trim(); // "John (AAA)"
-                        const match = text.match(/(.+) \((.+)\)/);
-                        if (match) {
-                            const name = match[1];
-                            const empId = match[2];
-                            techData.push({ name, empId });
-                        }
-                    });
-
-                    // Add each as a tag
-                    techData.forEach(tech => {
-                        const tag = document.createElement("div");
-                        tag.className = "tag";
-                        tag.dataset.value = tech.empId;
-                        tag.innerHTML = `
+        // Add each as a tag
+        techData.forEach(tech => {
+            const tag = document.createElement("div");
+            tag.className = "tag";
+            tag.dataset.value = tech.empId;
+            tag.innerHTML = `
                 ${tech.name} (${tech.empId})
                 <span class="remove-tag" onclick="window.removeTag(this, 'editTechnicianSelect', 'editTechnicianTagList')">×</span>
             `;
-                        technicianTagList.appendChild(tag);
+            technicianTagList.appendChild(tag);
 
-                        // Add to hidden select
-                        const option = document.createElement("option");
-                        option.value = tech.empId;
-                        option.selected = true;
-                        hiddenSelect.appendChild(option);
-                    });
+            // Add to hidden select
+            const option = document.createElement("option");
+            option.value = tech.empId;
+            option.selected = true;
+            hiddenSelect.appendChild(option);
+        });
+
+
+                    // --- Technician ---
+                    // const techName = row.find('[data-field="technician"]').text().trim();
+                    // const techId = row.find('[data-field="technician"]').data('employeeId');
+                    // if (techId) {
+                    //    $('#editTechnicianInput').val(`${techName} (${techId})`);
+                    //    $('#editTechnicianSelect').val(techId);
+                    // } else {
+                    //     $('#editTechnicianInput').val('');
+                    //     $('#editTechnicianSelect').val('');
+                    //}
+
+                    // --- Supervisor ---
+                    const supName = row.find('[data-field="supervisor"]').text().trim();
+                    const supId = row.find('[data-field="supervisor"]').data('employeeId');
+                    // if (supId) {
+                        $('#editSupervisorInput').val(`${supName} (${supId})`);
+                        $('#editSupervisorSelect').val(supId);
+                    // } else {
+                    //     $('#editSupervisorInput').val('');
+                    //     $('#editSupervisorSelect').val('');
+                    // }
 
                     // Show modal
                     $('#editRowModal').modal('show');
                 });
-
 
                 // --- Delete Modal Trigger ---
                 $(document).on('click', '.delete-row', function () {
@@ -536,7 +623,7 @@
                 'status': 'Status',
                 'equipment.name': 'Equipment',
                 'area.name': 'Area',
-
+                
                 // 'technician.name': 'Technician',
                 'supervisor.name': 'Supervisor',
                 'workType': 'Work Type',
