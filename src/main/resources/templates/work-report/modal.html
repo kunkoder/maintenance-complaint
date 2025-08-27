@@ -182,11 +182,11 @@
                         </div> -->
 
                         <!-- Datalist for Users -->
-                        <datalist id="userOptions">
+                        <!-- <datalist id="userOptions">
                             <option th:each="user : ${users}" th:value="${user.name} + ' (' + ${user.employeeId} + ')'"
                                 th:data-employee-id="${user.employeeId}">
                             </option>
-                        </datalist>
+                        </datalist> -->
 
                         <!-- Row 4: Category & Status -->
                         <div class="form-row">
@@ -870,11 +870,10 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             // Extract user options as { value: "Name (ID)", id: "ID" }
-            const userOptions = Array.from(document.querySelectorAll("#userOptions option"))
-                .map(opt => ({
-                    display: opt.value,
-                    id: opt.dataset.employeeId
-                }));
+            const userOptions = Array.from(document.querySelectorAll("#userOptions option")).map(opt => ({
+                display: opt.value,
+                id: opt.dataset.employeeId
+            }));
 
             function setupTagInput(inputId, tagListId, tagSearchId, selectId, options) {
                 const tagInput = document.getElementById(inputId);
@@ -892,7 +891,6 @@
                         option.selected = true;
                         hiddenSelect.appendChild(option);
                     });
-                    // Trigger change if needed
                     hiddenSelect.dispatchEvent(new Event('change'));
                 }
 
@@ -943,20 +941,23 @@
                 tagInput.addEventListener("click", () => tagSearch.focus());
             }
 
-            // Initialize technician tag inputs
+            // Initialize Role Tag Inputs
             setupTagInput(
-                "technicianTagInput",
-                "technicianTagList",
-                "technicianTagSearch",
-                "technicianSelect",
-                userOptions
+                "tagInput", "tagList", "tagSearch", "roleSelect",
+                Array.from(document.querySelectorAll("#roleOptions option")).map(o => o.value)
+            );
+            setupTagInput(
+                "editTagInput", "editTagList", "editTagSearch", "editRoleSelect",
+                Array.from(document.querySelectorAll("#roleOptions option")).map(o => o.value)
             );
 
+            // Initialize Technician Tag Inputs (NEW)
             setupTagInput(
-                "editTechnicianTagInput",
-                "editTechnicianTagList",
-                "editTechnicianTagSearch",
-                "editTechnicianSelect",
+                "technicianTagInput", "technicianTagList", "technicianTagSearch", "technicianSelect",
+                userOptions
+            );
+            setupTagInput(
+                "editTechnicianTagInput", "editTechnicianTagList", "editTechnicianTagSearch", "editTechnicianSelect",
                 userOptions
             );
         });

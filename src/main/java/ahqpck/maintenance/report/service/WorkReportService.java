@@ -96,7 +96,7 @@ public class WorkReportService {
             for (String empId : dto.getTechnicianEmpIds()) {
                 if (empId == null || empId.trim().isEmpty()) continue;
                 String trimmedEmpId = empId.trim();
-                User technician = userRepository.findByEmployeeId4Roles(trimmedEmpId)
+                User technician = userRepository.findByEmployeeId(trimmedEmpId)
                         .orElseThrow(() -> new IllegalArgumentException(
                                 "Technician not found with employee ID: " + trimmedEmpId));
                 technicians.add(technician);

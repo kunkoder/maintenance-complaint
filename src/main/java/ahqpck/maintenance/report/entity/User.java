@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -24,24 +25,33 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "users")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = {"areas", "reportedComplaints", "assignedComplaints", "roles"})
+@Getter
+@Setter
 public class User {
 
     @Id
     @Column(name = "id", length = 22, nullable = false, updatable = false)
+    @EqualsAndHashCode.Include
     private String id;
 
     @Column(nullable = false)
     private String name;
 
     @Column(unique = true, name = "employee_id", nullable = false)
+    @EqualsAndHashCode.Include
     private String employeeId;
 
     @Column(unique = true, nullable = false)
@@ -70,6 +80,7 @@ public class User {
     @Column(nullable = false)
     private Status status;
 
+    // Relationships (excluded from equals/hashCode/toString)
     @OneToMany(mappedBy = "responsiblePerson", fetch = FetchType.LAZY)
     private final Set<Area> areas = new HashSet<>();
 
@@ -93,4 +104,29 @@ public class User {
         this.createdAt = LocalDateTime.now();
         this.status = this.status != null ? this.status : Status.INACTIVE;
     }
+
+    // Optional: override toString to avoid lazy loading
+    @Override
+    public String toString() {
+        return "User{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", employeeId='" + employeeId + '\'' +
+                ", email='" + email + '\'' +
+                ", status=" + status +
+                '}';
+    }
 }
+
+// @Override
+// public boolean equals(Object o) {
+//     if (this == o) return true;
+//     if (!(o instanceof User user)) return false;
+//     return Objects.equals(id, user.id) &&
+//            Objects.equals(employeeId, user.employeeId);
+// }
+
+// @Override
+// public int hashCode() {
+//     return Objects.hash(id, employeeId);
+// }
