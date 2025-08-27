@@ -350,12 +350,12 @@ public class ComplaintService {
                         "Equipment not found with code: " + dto.getEquipment().getCode()));
         complaint.setEquipment(equipment);
 
-        User reporter = userRepository.findByEmployeeId(dto.getReporter().getEmployeeId())
+        User reporter = userRepository.findByEmployeeId4Roles(dto.getReporter().getEmployeeId())
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Reporter not found with employeeId: " + dto.getReporter().getEmployeeId()));
         complaint.setReporter(reporter);
 
-        User assignee = userRepository.findByEmployeeId(dto.getAssignee().getEmployeeId())
+        User assignee = userRepository.findByEmployeeId4Roles(dto.getAssignee().getEmployeeId())
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Assignee not found with employeeId: " + dto.getAssignee().getEmployeeId()));
         complaint.setAssignee(assignee);

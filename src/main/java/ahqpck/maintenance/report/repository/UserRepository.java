@@ -16,7 +16,7 @@ public interface UserRepository extends JpaRepository<User, String>, JpaSpecific
     Optional<User> findByEmail(@Param("email") String email);
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.employeeId = :employeeId")
-    Optional<User> findByEmployeeId(@Param("employeeId") String employeeId);
+    Optional<User> findByEmployeeId4Roles(@Param("employeeId") String employeeId);
 
     Optional<User> findByPasswordResetToken(String token);
 

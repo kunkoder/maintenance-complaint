@@ -22,8 +22,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Controller
@@ -107,7 +109,20 @@ public class WorkReportController {
             BindingResult bindingResult,
             RedirectAttributes ra) {
 
-                System.out.println("Work Report DTO: " + workReportDTO);
+        if (workReportDTO.getTechnicianEmpIds() != null && !workReportDTO.getTechnicianEmpIds().isEmpty()) {
+            Set<UserDTO> technicianDTOs = workReportDTO.getTechnicianEmpIds().stream()
+                    .map(empId -> {
+                        UserDTO userDTO = new UserDTO();
+                        userDTO.setEmployeeId(empId);
+                        // Optionally fetch full user from service if needed
+                        // userDTO = userService.findByEmployeeId(empId);
+                        return userDTO;
+                    })
+                    .collect(Collectors.toSet());
+            workReportDTO.setTechnicians(technicianDTOs);
+        }
+
+        System.out.println("Work Report DTO: " + workReportDTO);
 
         if (bindingResult.hasErrors()) {
             handleBindingErrors(bindingResult, ra, workReportDTO);
@@ -115,7 +130,7 @@ public class WorkReportController {
         }
 
         try {
-            System.out.println(workReportDTO);
+            // System.out.println(workReportDTO);
             workReportService.createWorkReport(workReportDTO);
             ra.addFlashAttribute("success", "Work report created successfully.");
             return "redirect:/work-reports";

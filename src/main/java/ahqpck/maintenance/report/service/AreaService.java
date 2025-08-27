@@ -81,7 +81,7 @@ public class AreaService {
         if (dto.getResponsiblePerson() != null && dto.getResponsiblePerson().getEmployeeId() != null) {
             String empId = dto.getResponsiblePerson().getEmployeeId();
 
-            User user = userRepository.findByEmployeeId(empId)
+            User user = userRepository.findByEmployeeId4Roles(empId)
                     .orElseThrow(() -> new IllegalArgumentException("User not found with employeeId: " + empId));
 
             area.setResponsiblePerson(user);

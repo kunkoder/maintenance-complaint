@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -76,22 +77,44 @@ public class WorkReportService {
     }
 
     // ================== CREATE ==================
+    @Transactional
     public void createWorkReport(WorkReportDTO dto) {
-
+    try {
         WorkReport workReport = new WorkReport();
 
-        // Generate code before mapping
         if (dto.getCode() == null || dto.getCode().trim().isEmpty()) {
             String generatedCode = codeGenerator.generate(WorkReport.class, "code", "WR");
             workReport.setCode(generatedCode);
+            System.out.println("code success");
         }
 
         mapToEntity(workReport, dto);
+        System.out.println("entity success" + dto.getTechnicianEmpIds());
 
+        Set<User> technicians = new HashSet<>();
+        if (dto.getTechnicianEmpIds() != null && !dto.getTechnicianEmpIds().isEmpty()) {
+            for (String empId : dto.getTechnicianEmpIds()) {
+                if (empId == null || empId.trim().isEmpty()) continue;
+                String trimmedEmpId = empId.trim();
+                User technician = userRepository.findByEmployeeId4Roles(trimmedEmpId)
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "Technician not found with employee ID: " + trimmedEmpId));
+                technicians.add(technician);
+                System.out.println("techIds success");
+            }
+        } else {
+            throw new IllegalArgumentException("At least one technician must be assigned.");
+        }
+
+        workReport.setTechnicians(technicians);
+        System.out.println("Work Report created: " + workReport);
         workReportRepository.save(workReport);
 
-        // validateAndCreateWorkReport(dto, null);
+    } catch (Exception e) {
+        e.printStackTrace();  // 👈 This will show the real error
+        throw e;
     }
+}
 
     // Add this method to EquipmentService
     public ImportUtil.ImportResult importWorkReportsFromExcel(List<Map<String, Object>> data) {
@@ -321,29 +344,29 @@ public class WorkReportService {
         workReport.setEquipment(equipment);
 
         // Technician (required)
-        if (dto.getTechnicians() == null || dto.getTechnicians().isEmpty()) {
-            throw new IllegalArgumentException("At least one technician is required");
-        }
+        // if (dto.getTechnicians() == null || dto.getTechnicians().isEmpty()) {
+        //     throw new IllegalArgumentException("At least one technician is required");
+        // }
 
-        Set<User> technicianUsers = dto.getTechnicians().stream()
-                .map(technicianDTO -> {
-                    String empId = technicianDTO.getEmployeeId();
-                    if (empId == null || empId.trim().isEmpty()) {
-                        throw new IllegalArgumentException("Technician employee ID is required");
-                    }
-                    return userRepository.findByEmployeeId(empId.trim())
-                            .orElseThrow(() -> new IllegalArgumentException(
-                                    "Technician not found with employeeId: " + empId));
-                })
-                .collect(Collectors.toSet());
+        // Set<User> technicianUsers = dto.getTechnicians().stream()
+        //         .map(technicianDTO -> {
+        //             String empId = technicianDTO.getEmployeeId();
+        //             if (empId == null || empId.trim().isEmpty()) {
+        //                 throw new IllegalArgumentException("Technician employee ID is required");
+        //             }
+        //             return userRepository.findByEmployeeId(empId.trim())
+        //                     .orElseThrow(() -> new IllegalArgumentException(
+        //                             "Technician not found with employeeId: " + empId));
+        //         })
+        //         .collect(Collectors.toSet());
 
-        workReport.setTechnicians(technicianUsers);
+        // workReport.setTechnicians(technicianUsers);
 
         // Supervisor (optional)
         if (dto.getSupervisor() != null && dto.getSupervisor().getEmployeeId() != null
                 && !dto.getSupervisor().getEmployeeId().trim().isEmpty()) {
             String supervisorEmpId = dto.getSupervisor().getEmployeeId();
-            User supervisor = userRepository.findByEmployeeId(supervisorEmpId)
+            User supervisor = userRepository.findByEmployeeId4Roles(supervisorEmpId)
                     .orElseThrow(() -> new IllegalArgumentException(
                             "Supervisor not found with employeeId: " + supervisorEmpId));
             workReport.setSupervisor(supervisor);

@@ -36,7 +36,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         logger.debug("Loading user by email or employee ID: {}", usernameOrEmployeeId);
 
         User user = userRepository.findByEmail(usernameOrEmployeeId)
-            .orElseGet(() -> userRepository.findByEmployeeId(usernameOrEmployeeId)
+            .orElseGet(() -> userRepository.findByEmployeeId4Roles(usernameOrEmployeeId)
                 .orElseThrow(() -> new UsernameNotFoundException(
                     "User not found with email or employee ID: " + usernameOrEmployeeId)));
 

@@ -52,9 +52,6 @@ public class WorkReportDTO {
     private LocalDateTime stopTime;
 
     private Set<String> technicianEmpIds = new HashSet<>();
-
-    @NotNull(message = "At least one technician is mandatory")
-    @Size(min = 1, message = "At least one technician is required")
     private Set<UserDTO> technicians = new HashSet<>();
 
     private UserDTO supervisor;
