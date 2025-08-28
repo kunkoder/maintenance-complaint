@@ -149,10 +149,25 @@ public class WorkReportController {
             BindingResult bindingResult,
             RedirectAttributes ra) {
 
+        if (workReportDTO.getTechnicianEmpIds() != null && !workReportDTO.getTechnicianEmpIds().isEmpty()) {
+            Set<UserDTO> technicianDTOs = workReportDTO.getTechnicianEmpIds().stream()
+                    .map(empId -> {
+                        UserDTO userDTO = new UserDTO();
+                        userDTO.setEmployeeId(empId);
+                        // Optionally fetch full user from service if needed
+                        // userDTO = userService.findByEmployeeId(empId);
+                        return userDTO;
+                    })
+                    .collect(Collectors.toSet());
+            workReportDTO.setTechnicians(technicianDTOs);
+        }
+
         if (bindingResult.hasErrors()) {
             handleBindingErrors(bindingResult, ra, workReportDTO);
             return "redirect:/work-reports";
         }
+
+        System.out.println("Work Report DTO: " + workReportDTO);
 
         try {
             workReportService.updateWorkReport(workReportDTO);

@@ -142,36 +142,41 @@
 			</div>
 			<!-- Chart Card -->
 			<div class="row">
-				<div class="col-md-12">
-					<div class="card full-height">
-						<div class="card-header">
-							<div class="d-flex justify-content-between align-items-center">
-								<h4 class="card-title">Daily Ticket Summary</h4>
-								<!-- Date Range Filter -->
-								<form id="dateRangeForm2" class="form-inline">
-									<div class="input-group input-daterange">
-										<input type="datetime-local" class="form-control form-control-sm" id="from2"
-											name="from" required>
-										<div class="input-group-prepend input-group-append">
-											<span class="input-group-text">to</span>
-										</div>
-										<input type="datetime-local" class="form-control form-control-sm" id="to2"
-											name="to" required>
-										<div class="input-group-append">
-											<button type="submit" class="btn btn-sm btn-primary ml-2">Apply</button>
-										</div>
-									</div>
-								</form>
-							</div>
-						</div>
-						<div class="card-body d-flex flex-column">
-							<div class="chart-container flex-grow-1">
-								<canvas id="multipleBarChart"></canvas>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
+    <div class="col-md-12">
+        <div class="card full-height">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="card-title">Daily Ticket Summary</h4>
+                    <!-- Date Range Filter + Quick Buttons -->
+                    <form id="dateRangeForm2" class="form-inline">
+                        <div class="input-group input-daterange mr-2">
+                            <input type="datetime-local" class="form-control form-control-sm" id="from2" name="from" required>
+                            <div class="input-group-prepend input-group-append">
+                                <span class="input-group-text">to</span>
+                            </div>
+                            <input type="datetime-local" class="form-control form-control-sm" id="to2" name="to" required>
+                            <div class="input-group-append">
+                                <button type="submit" class="btn btn-sm btn-primary ml-2">Apply</button>
+                            </div>
+                        </div>
+
+                        <!-- Quick Range Buttons -->
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-primary" data-range="weekly">Weekly</button>
+                            <button type="button" class="btn btn-outline-primary" data-range="monthly">Monthly</button>
+                            <button type="button" class="btn btn-outline-primary" data-range="yearly">Yearly</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="card-body d-flex flex-column">
+                <div class="chart-container flex-grow-1">
+                    <canvas id="multipleBarChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 			<div class="row">
 				<div class="col-md-8">
@@ -374,170 +379,189 @@
 			});
 		</script>
 		<script>
-			let myMultipleBarChart = null; // Hold chart instance
+    let myMultipleBarChart = null; // Hold chart instance
+    const now = new Date();
 
-			// Set default dates: last 7 days
-			function setDefaultDates() {
-				const now = new Date();
-				const to = new Date(now);
-				const from = new Date(now);
+    // Format date for datetime-local input
+    function toDateTimeLocal(date) {
+        const pad = (n) => n.toString().padStart(2, '0');
+        const year = date.getFullYear();
+        const month = pad(date.getMonth() + 1);
+        const day = pad(date.getDate());
+        const hours = pad(date.getHours());
+        const minutes = pad(date.getMinutes());
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
 
-				from.setDate(from.getDate() - 6); // 7 days ago
+    // Format short date for chart labels (e.g., "Jul 1")
+    function formatLabel(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
 
-				document.getElementById('from2').value = toDateTimeLocal(from);
-				document.getElementById('to2').value = toDateTimeLocal(to);
-			}
+    // Set date range and update chart
+    function setRange(from, to) {
+        document.getElementById('from2').value = toDateTimeLocal(from);
+        document.getElementById('to2').value = toDateTimeLocal(to);
+        updateChart();
+    }
 
-			// Format date for datetime-local input
-			function toDateTimeLocal(date) {
-				const pad = (n) => n.toString().padStart(2, '0');
-				const year = date.getFullYear();
-				const month = pad(date.getMonth() + 1);
-				const day = pad(date.getDate());
-				const hours = pad(date.getHours());
-				const minutes = pad(date.getMinutes());
-				return `${year}-${month}-${day}T${hours}:${minutes}`;
-			}
+    // Fetch and update chart
+    function updateChart() {
+        const from = document.getElementById('from2').value;
+        const to = document.getElementById('to2').value;
 
-			// Format short date for chart labels (e.g., "Jul 1")
-			function formatLabel(dateStr) {
-				const date = new Date(dateStr);
-				return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-			}
+        let url = `${baseUrl}/api/dashboards/daily-status-count`;
+        const params = new URLSearchParams();
+        if (from) params.append('from', from);
+        if (to) params.append('to', to);
+        if (params.toString()) url += '?' + params.toString();
 
-			// Fetch and update chart
-			function updateChart(from, to) {
-				let url = `${baseUrl}/api/dashboards/daily-status-count`;
-				const params = new URLSearchParams();
-				if (from) params.append('from', from);
-				if (to) params.append('to', to);
-				if (params.toString()) url += '?' + params.toString();
+        fetch(url)
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to fetch data');
+                return response.json();
+            })
+            .then(data => {
+                console.log(data);
+                if (!data || data.length === 0) {
+                    console.warn("No data returned");
+                    return;
+                }
 
-				fetch(url)
-					.then(response => {
-						if (!response.ok) throw new Error('Failed to fetch data');
-						return response.json();
-					})
-					.then(data => {
-						console.log(data);
-						if (!data || data.length === 0) {
-							console.warn("No data returned");
-							return;
-						}
+                const labels = data.map(row => formatLabel(row.date));
+                const openData = data.map(row => row.open);
+                const closedData = data.map(row => row.closed);
+                const pendingData = data.map(row => row.pending);
 
-						// Extract labels and values
-						const labels = data.map(row => formatLabel(row.date));
-						const openData = data.map(row => row.open);
-						const closedData = data.map(row => row.closed);
-						const pendingData = data.map(row => row.pending);
+                const stackedMax = Math.max(...data.map(row => row.open + row.closed + row.pending));
+                const yAxisMax = Math.ceil(stackedMax * 1.1);
 
-						const stackedMax = Math.max(
-							...data.map(row => row.open + row.closed + row.pending)
-						);
-						const yAxisMax = Math.ceil(stackedMax * 1.1); // 10% padding
+                // Destroy old chart
+                if (myMultipleBarChart) {
+                    myMultipleBarChart.destroy();
+                }
 
-						// Destroy old chart if exists
-						if (myMultipleBarChart) {
-							myMultipleBarChart.destroy();
-						}
+                const ctx = document.getElementById('multipleBarChart').getContext('2d');
+                myMultipleBarChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: "Open",
+                                backgroundColor: '#fdaf4b',
+                                borderColor: '#fdaf4b',
+                                borderWidth: 1,
+                                data: openData
+                            },
+                            {
+                                label: "Closed",
+                                backgroundColor: '#59d05d',
+                                borderColor: '#59d05d',
+                                borderWidth: 1,
+                                data: closedData
+                            },
+                            {
+                                label: "Pending",
+                                backgroundColor: '#d9534f',
+                                borderColor: '#d9534f',
+                                borderWidth: 1,
+                                data: pendingData
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        legend: {
+                            position: 'bottom',
+                            labels: { fontColor: '#333', fontSize: 12 }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Daily Ticket Summary',
+                            fontColor: '#333',
+                            fontSize: 16
+                        },
+                        tooltips: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleFontColor: '#fff'
+                        },
+                        scales: {
+                            xAxes: [{
+                                stacked: true,
+                                gridLines: { display: false },
+                                ticks: { fontColor: '#333' }
+                            }],
+                            yAxes: [{
+                                stacked: true,
+                                gridLines: { color: 'rgba(0,0,0,0.05)' },
+                                ticks: {
+                                    beginAtZero: true,
+                                    stepSize: 5,
+                                    max: Math.max(10, yAxisMax)
+                                },
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: 'Number of Tickets',
+                                    fontColor: '#333'
+                                }
+                            }]
+                        },
+                        animation: { duration: 1000 }
+                    }
+                });
+            })
+            .catch(err => {
+                console.error('Error loading chart data:', err);
+                alert('Failed to load ticket data.');
+            });
+    }
 
-						// Render new chart
-						const ctx = document.getElementById('multipleBarChart').getContext('2d');
-						myMultipleBarChart = new Chart(ctx, {
-							type: 'bar',
-							data: {
-								labels: labels,
-								datasets: [
-									{
-										label: "Open",
-										backgroundColor: '#fdaf4b',
-										borderColor: '#fdaf4b',
-										borderWidth: 1,
-										data: openData
-									},
-									{
-										label: "Closed",
-										backgroundColor: '#59d05d',
-										borderColor: '#59d05d',
-										borderWidth: 1,
-										data: closedData
-									},
-									{
-										label: "Pending",
-										backgroundColor: '#d9534f',
-										borderColor: '#d9534f',
-										borderWidth: 1,
-										data: pendingData
-									}
-								]
-							},
-							options: {
-								responsive: true,
-								maintainAspectRatio: false,
-								legend: {
-									position: 'bottom',
-									labels: { fontColor: '#333', fontSize: 12 }
-								},
-								title: {
-									display: true,
-									text: 'Daily Ticket Summary',
-									fontColor: '#333',
-									fontSize: 16
-								},
-								tooltips: {
-									mode: 'index',
-									intersect: false,
-									backgroundColor: 'rgba(0,0,0,0.8)',
-									titleFontColor: '#fff'
-								},
-								scales: {
-									xAxes: [{
-										stacked: true,
-										gridLines: { display: false },
-										ticks: { fontColor: '#333' }
-									}],
-									yAxes: [{
-										stacked: true,
-										gridLines: { color: 'rgba(0,0,0,0.05)' },
-										ticks: {
-											beginAtZero: true,
-											stepSize: 5,
-											max: Math.max(10, yAxisMax)
-										},
-										scaleLabel: {
-											display: true,
-											labelString: 'Number of Tickets',
-											fontColor: '#333'
-										}
-									}]
-								},
-								animation: { duration: 1000 }
-							}
-						});
-					})
-					.catch(err => {
-						console.error('Error loading chart data:', err);
-						alert('Failed to load ticket data.');
-					});
-			}
+    // Quick range buttons
+    document.querySelectorAll('[data-range]').forEach(button => {
+        button.addEventListener('click', () => {
+            const now = new Date();
+            let from = new Date(now);
+            let to = new Date(now);
 
+            switch (button.getAttribute('data-range')) {
+                case 'weekly':
+                    from.setDate(now.getDate() - 6);
+                    break;
+                case 'monthly':
+                    from.setDate(1); // First day of current month
+                    from.setHours(0, 0, 0, 0);
+                    break;
+                case 'yearly':
+                    from = new Date(now.getFullYear(), 0, 1); // Jan 1 of current year
+                    from.setHours(0, 0, 0, 0);
+                    break;
+            }
 
-			// Form submission
-			document.getElementById('dateRangeForm2').addEventListener('submit', function (e) {
-				e.preventDefault();
-				const from = document.getElementById('from2').value;
-				const to = document.getElementById('to2').value;
-				updateChart(from, to);
-			});
+            setRange(from, to);
+        });
+    });
 
-			// On load: set defaults and load data
-			window.addEventListener('DOMContentLoaded', function () {
-				setDefaultDates();
-				const from = document.getElementById('from2').value;
-				const to = document.getElementById('to2').value;
-				updateChart(from, to);
-			});
-		</script>
+    // Form submission
+    document.getElementById('dateRangeForm2').addEventListener('submit', function (e) {
+        e.preventDefault();
+        updateChart();
+    });
+
+    // On load: set weekly default and load data
+    window.addEventListener('DOMContentLoaded', function () {
+        const now = new Date();
+        const from = new Date(now);
+        from.setDate(now.getDate() - 6);
+        document.getElementById('from2').value = toDateTimeLocal(from);
+        document.getElementById('to2').value = toDateTimeLocal(now);
+        updateChart();
+    });
+</script>
 		<script>
 			// Hold current date range
 			let currentFrom = null;

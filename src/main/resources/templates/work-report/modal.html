@@ -407,8 +407,9 @@
                                     <label>Equipment <span class="text-danger">*</span></label>
 
                                     <!-- Visible Autocomplete Input -->
-                                    <input type="text" class="form-control" list="equipmentOptions" id="editEquipmentInput"
-                                        placeholder="Search equipment by name or code" autocomplete="off" required />
+                                    <input type="text" class="form-control" list="equipmentOptions"
+                                        id="editEquipmentInput" placeholder="Search equipment by name or code"
+                                        autocomplete="off" required />
 
                                     <!-- Datalist for Suggestions -->
                                     <datalist id="equipmentOptions">
@@ -436,39 +437,58 @@
                         <div class="form-row">
                             <!-- Technician(s) -->
                             <div class="col-md-6">
-                                <div class="form-group">
+                                <!-- <div class="form-group">
                                     <label>Technician(s) <span class="text-danger">*</span></label>
 
-                                    <!-- Hidden select in edit modal -->
                                     <select id="editTechnicianSelect" name="technicianEmpIds" multiple
                                         style="display: none;">
                                     </select>
 
-                                    <!-- Custom tag input UI (identical structure) -->
                                     <div class="tag-input" id="editTechnicianTagInput">
                                         <div class="tag-list" id="editTechnicianTagList">
-                                            <!-- Tags will be added here dynamically -->
+
                                         </div>
                                         <input type="text" id="editTechnicianTagSearch" class="tag-input-field"
                                             placeholder="Add technician..." list="userOptions">
                                     </div>
 
-                                    <!-- Datalist (already defined) -->
-                                    <!-- <datalist id="userOptions">...</datalist> -->
-
-                                    <!-- Validation error -->
                                     <div class="invalid-feedback">
                                         Please select at least one technician.
                                     </div>
+                                </div> -->
+                                <!-- Technicians (Multiple) -->
+                                <div class="form-group">
+                                    <label>Technician(s) <span class="text-danger">*</span></label>
+
+                                    <!-- Hidden select for form submission -->
+                                    <select id="editTechnicianSelect" name="technicianEmpIds" multiple
+                                        class="d-none"></select>
+
+                                    <!-- Custom Tag Input UI -->
+                                    <div class="tag-input" id="editTechnicianTagInput">
+                                        <div class="tag-list" id="editTechnicianTagList">
+                                            <!-- Tags will be dynamically added here -->
+                                        </div>
+                                        <input type="text" id="editTechnicianSearch" class="tag-input-field"
+                                            placeholder="Search technician by name or ID..." list="userOptions">
+                                    </div>
+
+                                    <!-- Datalist is already defined globally -->
+                                    <!-- <datalist id="userOptions"> ... </datalist> -->
+
+                                    <div class="invalid-feedback">Please add at least one technician.</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Supervisor</label>
+                                    <label for="supervisor">Supervisor</label>
+                                    <!-- Hidden Select for Binding -->
+                                    <select class="d-none" name="supervisor.employeeId" id="editSupervisorSelect">
+                                        <option th:each="user : ${users}" th:value="${user.employeeId}">User</option>
+                                    </select>
+                                    <!-- Autocomplete Input -->
                                     <input type="text" class="form-control" list="userOptions" id="editSupervisorInput"
                                         placeholder="Search supervisor by name or ID" autocomplete="off" />
-                                    <select class="d-none" id="editSupervisorSelect"
-                                        name="supervisor.employeeId"></select>
                                 </div>
                             </div>
                         </div>
@@ -895,43 +915,78 @@
     </script>
     <!-- SyncSelect JS (Same as Working Complaint Modal) -->
     <script>
-        function syncSelect(inputId, selectId) {
+        function syncSelect(inputId, selectId, optionsDatalistId) {
             const input = document.getElementById(inputId);
             const select = document.getElementById(selectId);
 
-            if (!input || !select) {
-                console.warn(`Missing input or select: ${inputId}, ${selectId}`);
-                return;
-            }
+            input.addEventListener('input', function () {
+                const value = input.value.trim();
+                if (!value) {
+                    select.value = '';
+                    return;
+                }
 
-            // input.addEventListener('input', () => {
-            //     const options = document.querySelectorAll(`#${selectId === 'technicianSelect' || selectId === 'supervisorSelect' || selectId === 'editTechnicianSelect' || selectId === 'editSupervisorSelect'
-            //         ? 'userOptions'
-            //         : selectId === 'areaSelect' || selectId === 'editAreaSelect'
-            //             ? 'areaOptions'
-            //             : 'equipmentOptions'} option`);
-
-            //     const opt = [...options].find(o => o.value === input.value);
-            //     select.value = opt ? (opt.dataset.employeeId || opt.dataset.code) : '';
-            // });
-
-            input.addEventListener('input', () => {
-                const selectedOption = [...document.querySelectorAll(optionsSelector + ' option')]
-                    .find(opt => opt.value === input.value.trim());
-
-                select.value = selectedOption ? selectedOption.dataset[dataAttr] || selectedOption.value : '';
+                // Find matching option in datalist
+                const options = document.querySelectorAll(`#${optionsDatalistId} option`);
+                for (let opt of options) {
+                    if (opt.value === value) {
+                        // Extract code or employeeId depending on field
+                        const code = opt.dataset.code || opt.dataset.employeeId;
+                        if (code) {
+                            select.value = code;
+                        }
+                        return;
+                    }
+                }
+                // No match
+                select.value = '';
             });
         }
 
-        // Initialize all fields
-        syncSelect('areaInput', 'areaSelect');
-        syncSelect('equipmentInput', 'equipmentSelect');
-        syncSelect('technicianInput', 'technicianSelect');
-        syncSelect('supervisorInput', 'supervisorSelect');
-        syncSelect('editAreaInput', 'editAreaSelect');
-        syncSelect('editEquipmentInput', 'editEquipmentSelect');
-        syncSelect('editTechnicianInput', 'editTechnicianSelect');
-        syncSelect('editSupervisorInput', 'editSupervisorSelect');
+        document.addEventListener('DOMContentLoaded', function () {
+            syncSelect('editAreaInput', 'editAreaSelect', 'areaOptions');
+            syncSelect('editEquipmentInput', 'editEquipmentSelect', 'equipmentOptions');
+            syncSelect('editSupervisorInput', 'editSupervisorSelect', 'userOptions');
+        });
+
+
+        // function syncSelect(inputId, selectId) {
+        //     const input = document.getElementById(inputId);
+        //     const select = document.getElementById(selectId);
+
+        //     if (!input || !select) {
+        //         console.warn(`Missing input or select: ${inputId}, ${selectId}`);
+        //         return;
+        //     }
+
+        //     // input.addEventListener('input', () => {
+        //     //     const options = document.querySelectorAll(`#${selectId === 'technicianSelect' || selectId === 'supervisorSelect' || selectId === 'editTechnicianSelect' || selectId === 'editSupervisorSelect'
+        //     //         ? 'userOptions'
+        //     //         : selectId === 'areaSelect' || selectId === 'editAreaSelect'
+        //     //             ? 'areaOptions'
+        //     //             : 'equipmentOptions'} option`);
+
+        //     //     const opt = [...options].find(o => o.value === input.value);
+        //     //     select.value = opt ? (opt.dataset.employeeId || opt.dataset.code) : '';
+        //     // });
+
+        //     input.addEventListener('input', () => {
+        //         const selectedOption = [...document.querySelectorAll(optionsSelector + ' option')]
+        //             .find(opt => opt.value === input.value.trim());
+
+        //         select.value = selectedOption ? selectedOption.dataset[dataAttr] || selectedOption.value : '';
+        //     });
+        // }
+
+        // // Initialize all fields
+        // syncSelect('areaInput', 'areaSelect');
+        // syncSelect('equipmentInput', 'equipmentSelect');
+        // syncSelect('technicianInput', 'technicianSelect');
+        // syncSelect('supervisorInput', 'supervisorSelect');
+        // syncSelect('editAreaInput', 'editAreaSelect');
+        // syncSelect('editEquipmentInput', 'editEquipmentSelect');
+        // syncSelect('editTechnicianInput', 'editTechnicianSelect');
+        // syncSelect('editSupervisorInput', 'editSupervisorSelect');
     </script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -941,7 +996,7 @@
                 id: opt.dataset.employeeId
             }));
 
-            function setupTagInput(inputId, tagListId, tagSearchId, selectId, options) {
+            function setupTagInput(inputId, tagListId, tagSearchId, selectId, formatDisplay = val => val) {
                 const tagInput = document.getElementById(inputId);
                 const tagList = document.getElementById(tagListId);
                 const tagSearch = document.getElementById(tagSearchId);
@@ -953,113 +1008,148 @@
                     hiddenSelect.innerHTML = "";
                     Array.from(tagList.querySelectorAll(".tag")).forEach(tag => {
                         const option = document.createElement("option");
-                        option.value = tag.dataset.value; // employeeId
+                        option.value = tag.dataset.value;
                         option.selected = true;
                         hiddenSelect.appendChild(option);
                     });
-                    hiddenSelect.dispatchEvent(new Event('change'));
+                }
+
+                function addTag(value, displayText) {
+                    if (!value || Array.from(tagList.querySelectorAll(".tag")).some(t => t.dataset.value === value)) return;
+                    const tag = document.createElement("div");
+                    tag.className = "tag";
+                    tag.dataset.value = value;
+                    tag.innerHTML = `
+            ${displayText || value}
+            <span class="remove-tag" onclick="window.removeTag(this, '${selectId}', '${tagListId}')">×</span>
+        `;
+                    tagList.appendChild(tag);
+                    syncSelect();
                 }
 
                 window.removeTag = function (el, selectId, tagListId) {
                     const tag = el.parentElement;
                     const value = tag.dataset.value;
                     tag.remove();
+
                     const select = document.getElementById(selectId);
                     const option = select.querySelector(`option[value="${value}"]`);
                     if (option) option.remove();
+
                     select.dispatchEvent(new Event('change'));
                 };
 
-                function addTag(displayValue, employeeId) {
-                    if (!employeeId || Array.from(tagList.querySelectorAll(".tag")).some(t => t.dataset.value === employeeId)) return;
-                    const tag = document.createElement("div");
-                    tag.className = "tag";
-                    tag.dataset.value = employeeId;
-                    tag.innerHTML = `
-                ${displayValue}
-                <span class="remove-tag" onclick="window.removeTag(this, '${selectId}', '${tagListId}')">×</span>
-            `;
-                    tagList.appendChild(tag);
-                    syncSelect();
-                }
+                // Autocomplete from datalist
+                const datalist = document.getElementById('userOptions');
+                const options = Array.from(datalist?.options || []).map(opt => ({
+                    value: opt.value,
+                    employeeId: opt.dataset.employeeId
+                }));
 
                 tagSearch.addEventListener("keydown", e => {
                     if (e.key === "Enter" || e.key === "," || e.key === "Tab") {
                         e.preventDefault();
-                        const searchValue = tagSearch.value.trim().replace(/,$/, "");
-                        const matched = options.find(opt => opt.display === searchValue);
+                        const input = tagSearch.value.trim().replace(/,$/, "");
+                        if (!input) return;
+
+                        // Match by display text: "John (EMP001)"
+                        const matched = options.find(opt => opt.value === input);
                         if (matched) {
-                            addTag(matched.display, matched.id);
-                            tagSearch.value = "";
+                            const match = matched.value.match(/(.+) \((.+)\)/);
+                            if (match) {
+                                const name = match[1];
+                                const empId = match[2];
+                                addTag(empId, `${name} (${empId})`);
+                                tagSearch.value = "";
+                            }
                         }
                     }
                 });
 
                 tagSearch.addEventListener("change", () => {
-                    const searchValue = tagSearch.value.trim();
-                    const matched = options.find(opt => opt.display === searchValue);
+                    const input = tagSearch.value.trim();
+                    const matched = options.find(opt => opt.value === input);
                     if (matched) {
-                        addTag(matched.display, matched.id);
-                        tagSearch.value = "";
+                        const match = matched.value.match(/(.+) \((.+)\)/);
+                        if (match) {
+                            const name = match[1];
+                            const empId = match[2];
+                            addTag(empId, `${name} (${empId})`);
+                            tagSearch.value = "";
+                        }
                     }
                 });
 
                 tagInput.addEventListener("click", () => tagSearch.focus());
             }
 
-            // Initialize Role Tag Inputs
             setupTagInput(
-                "tagInput", "tagList", "tagSearch", "roleSelect",
-                Array.from(document.querySelectorAll("#roleOptions option")).map(o => o.value)
-            );
-            setupTagInput(
-                "editTagInput", "editTagList", "editTagSearch", "editRoleSelect",
-                Array.from(document.querySelectorAll("#roleOptions option")).map(o => o.value)
+                "technicianTagInput",        // container
+                "technicianTagList",         // tag list
+                "technicianTagSearch",       // search input
+                "technicianSelect"           // hidden select
             );
 
-            // Initialize Technician Tag Inputs (NEW)
             setupTagInput(
-                "technicianTagInput", "technicianTagList", "technicianTagSearch", "technicianSelect",
-                userOptions
+                "editTechnicianTagInput",   // container
+                "editTechnicianTagList",    // tag list
+                "editTechnicianSearch",     // search input
+                "editTechnicianSelect"      // hidden select
             );
-            setupTagInput(
-                "editTechnicianTagInput", "editTechnicianTagList", "editTechnicianTagSearch", "editTechnicianSelect",
-                userOptions
-            );
+
+            // Initialize Role Tag Inputs
+            // setupTagInput(
+            //     "tagInput", "tagList", "tagSearch", "roleSelect",
+            //     Array.from(document.querySelectorAll("#roleOptions option")).map(o => o.value)
+            // );
+            // setupTagInput(
+            //     "editTagInput", "editTagList", "editTagSearch", "editRoleSelect",
+            //     Array.from(document.querySelectorAll("#roleOptions option")).map(o => o.value)
+            // );
+
+            // // Initialize Technician Tag Inputs (NEW)
+            // setupTagInput(
+            //     "technicianTagInput", "technicianTagList", "technicianTagSearch", "technicianSelect",
+            //     userOptions
+            // );
+            // setupTagInput(
+            //     "editTechnicianTagInput", "editTechnicianTagList", "editTechnicianTagSearch", "editTechnicianSelect",
+            //     userOptions
+            // );
         });
     </script>
     <script>
         // Debug: Print form data before submission
-        // document.addEventListener("DOMContentLoaded", function () {
-        //     const formEdit = document.getElementById("formEdit");
-        //     if (formEdit) {
-        //         formEdit.addEventListener("submit", function (event) {
-        //             event.preventDefault();
+        document.addEventListener("DOMContentLoaded", function () {
+            const formEdit = document.getElementById("formAdd");
+            if (formEdit) {
+                formEdit.addEventListener("submit", function (event) {
+                    event.preventDefault();
 
-        //             console.log("📋 DEBUG: Form Submission Data (Add Work Report)");
-        //             console.log("=".repeat(50));
+                    console.log("📋 DEBUG: Form Submission Data (Add Work Report)");
+                    console.log("=".repeat(50));
 
-        //             const formData = new FormData(formEdit);
+                    const formData = new FormData(formEdit);
 
-        //             const entries = {};
-        //             for (let [key, value] of formData.entries()) {
-        //                 if (value === "") {
-        //                     entries[key] = "(empty)";
-        //                 } else {
-        //                     entries[key] = value;
-        //                 }
-        //             }
+                    const entries = {};
+                    for (let [key, value] of formData.entries()) {
+                        if (value === "") {
+                            entries[key] = "(empty)";
+                        } else {
+                            entries[key] = value;
+                        }
+                    }
 
-        //             // Pretty print to console
-        //             console.table(entries);
+                    // Pretty print to console
+                    console.table(entries);
 
-        //             console.log("📦 Full FormData object:", Object.fromEntries(formData));
+                    console.log("📦 Full FormData object:", Object.fromEntries(formData));
 
-        //             // Optional: Submit the form after debug
-        //             // Uncomment the line below when ready
-        //             formEdit.submit();
-        //         });
-        //     }
-        // });
+                    // Optional: Submit the form after debug
+                    // Uncomment the line below when ready
+                    formEdit.submit();
+                });
+            }
+        });
     </script>
 </div>
