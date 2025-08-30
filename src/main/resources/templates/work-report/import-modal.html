@@ -163,4 +163,105 @@
             });
         });
     </script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Export to Excel (Current Table Data)
+        document.getElementById('exportExcel').addEventListener('click', function (e) {
+            e.preventDefault();
+
+            // Get table headers from #work-report-table (exclude "Action")
+            const headers = [];
+            document.querySelectorAll('#work-report-table thead th').forEach(th => {
+                const text = th.textContent.trim();
+                if (!text.includes('Action')) {
+                    headers.push(text);
+                }
+            });
+
+            // Get all visible rows (skip hidden ones due to filtering)
+            const data = [];
+            document.querySelectorAll('#work-report-table tbody tr').forEach(tr => {
+                if (tr.style.display === 'none') return; // Skip filtered-out rows
+                const row = [];
+                const tds = tr.querySelectorAll('td');
+                for (let i = 0; i < tds.length - 1; i++) { // Skip last "Action" column
+                    row.push(tds[i].textContent.trim());
+                }
+                data.push(row);
+            });
+
+            // Create worksheet and workbook
+            const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Work Reports");
+
+            // Generate filename with date
+            const dateStr = new Date().toISOString().slice(0, 10);
+            XLSX.writeFile(wb, `Work_Report_Data_${dateStr}.xlsx`);
+        });
+
+        // Export to PDF (Current Table Data)
+        document.getElementById('exportPdf').addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            // Extract headers (skip "Action")
+            const headers = [];
+            document.querySelectorAll('#work-report-table thead th').forEach(th => {
+                const text = th.textContent.trim();
+                if (!text.includes('Action')) {
+                    headers.push(text);
+                }
+            });
+
+            // Extract visible row data (skip "Action" column)
+            const data = [];
+            document.querySelectorAll('#work-report-table tbody tr').forEach(tr => {
+                if (tr.style.display === 'none') return;
+                const row = [];
+                const tds = tr.querySelectorAll('td');
+                for (let i = 0; i < tds.length - 1; i++) {
+                    let cellText = tds[i].textContent.trim();
+
+                    // For Technician(s), Supervisor: clean up badge formatting
+                    if (tds[i].querySelector('.badge')) {
+                        cellText = Array.from(tds[i].querySelectorAll('.badge'))
+                            .map(b => b.textContent.trim())
+                            .join(", ");
+                    }
+
+                    row.push(cellText);
+                }
+                data.push(row);
+            });
+
+            // Add title
+            doc.setFontSize(16);
+            doc.text("Work Report Data", 14, 15);
+
+            // Generate table using autoTable
+            doc.autoTable({
+                head: [headers],
+                body: data,
+                startY: 20,
+                theme: 'grid',
+                styles: { fontSize: 8 },
+                columnStyles: headers.reduce((acc, key, i) => {
+                    acc[i] = { cellWidth: 'auto' };
+                    return acc;
+                }, {})
+            });
+
+            // Save PDF
+            const dateStr = new Date().toISOString().slice(0, 10);
+            doc.save(`Work_Report_Data_${dateStr}.pdf`);
+        });
+    });
+</script>
 </div>

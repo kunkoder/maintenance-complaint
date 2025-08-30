@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import ahqpck.maintenance.report.dto.DailyStatusCountDTO;
 import ahqpck.maintenance.report.dto.EquipmentComplaintCountDTO;
+import ahqpck.maintenance.report.dto.MonthlyStatusCountDTO;
 import ahqpck.maintenance.report.dto.StatusCountDTO;
 import ahqpck.maintenance.report.entity.Complaint;
 
@@ -78,7 +79,7 @@ public interface DashboardRepository extends JpaRepository<Complaint, String> {
             FROM (
                 -- Generate continuous date range
                 SELECT DATE_SUB(
-                    COALESCE(:to, CURDATE()),
+                    COALESCE(:to, NOW()),
                     INTERVAL (units.a + tens.a * 10) DAY
                 ) AS day
                 FROM
@@ -91,15 +92,68 @@ public interface DashboardRepository extends JpaRepository<Complaint, String> {
             ) d
 
             WHERE
-                d.day >= COALESCE(:from, DATE_SUB(COALESCE(:to, CURDATE()), INTERVAL 6 DAY))
-                AND d.day <= COALESCE(:to, CURDATE())
-                AND d.day <= CURDATE()
+                d.day >= COALESCE(:from, DATE_SUB(COALESCE(:to, NOW()), INTERVAL 6 DAY))
+                AND d.day <= COALESCE(:to, NOW())
+                AND d.day <= CURDATE()  -- Prevent future dates
 
             ORDER BY d.day ASC
             """, nativeQuery = true)
     List<DailyStatusCountDTO> getDailyStatusCount(
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime to);
+
+    @Query(value = """
+            SELECT
+                DATE_FORMAT(d.month_start, '%Y-%m') AS date,
+
+                -- Open: status = 'OPEN' AND reported in this month
+                CAST(COALESCE((
+                    SELECT COUNT(*)
+                    FROM complaints c
+                    WHERE c.status = 'OPEN'
+                      AND YEAR(c.report_date) = YEAR(d.month_start)
+                      AND MONTH(c.report_date) = MONTH(d.month_start)
+                ), 0) AS SIGNED) AS open,
+
+                -- Closed: status = 'CLOSED' AND closed in this month
+                CAST(COALESCE((
+                    SELECT COUNT(*)
+                    FROM complaints c
+                    WHERE c.status = 'CLOSED'
+                      AND YEAR(c.close_time) = YEAR(d.month_start)
+                      AND MONTH(c.close_time) = MONTH(d.month_start)
+                ), 0) AS SIGNED) AS closed,
+
+                -- Pending: status = 'PENDING' AND reported in this month
+                CAST(COALESCE((
+                    SELECT COUNT(*)
+                    FROM complaints c
+                    WHERE c.status = 'PENDING'
+                      AND YEAR(c.report_date) = YEAR(d.month_start)
+                      AND MONTH(c.report_date) = MONTH(d.month_start)
+                ), 0) AS SIGNED) AS pending
+
+            FROM (
+                -- Generate 12 months: Jan to Dec of the target year
+                SELECT DATE_ADD(
+                    CONCAT(COALESCE(YEAR(:year), YEAR(NOW())), '-01-01'),
+                    INTERVAL (units.a + tens.a * 10) MONTH
+                ) AS month_start
+                FROM
+                    (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+                     UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+                     UNION ALL SELECT 8 UNION ALL SELECT 9) units
+                    CROSS JOIN
+                    (SELECT 0 AS a UNION ALL SELECT 1) tens
+            ) d
+
+            WHERE
+                YEAR(d.month_start) = COALESCE(YEAR(:year), YEAR(NOW()))
+                AND d.month_start <= NOW()  -- Include current month even if partial
+
+            ORDER BY d.month_start ASC
+            """, nativeQuery = true)
+    List<MonthlyStatusCountDTO> getMonthlyStatusCount(@Param("year") LocalDateTime year);
 
     @Query(value = """
             SELECT

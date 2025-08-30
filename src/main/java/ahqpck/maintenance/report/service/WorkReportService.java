@@ -199,26 +199,48 @@ public class WorkReportService {
                 // throw new IllegalArgumentException("Technician is required");
                 // }
                 // Replace single technician
-                String technicianEmpId = importUtil.toString(row.get("technician"));
-                if (technicianEmpId == null || technicianEmpId.trim().isEmpty()) {
+                String technicianEmpIds = importUtil.toString(row.get("technician"));
+                if (technicianEmpIds == null || technicianEmpIds.trim().isEmpty()) {
                     throw new IllegalArgumentException("At least one technician is required");
                 }
 
-                // Split by comma (support multiple: "EMP001,EMP002")
-                Set<String> technicianEmpIds = Arrays.stream(technicianEmpId.trim().split(","))
-                        .map(String::trim)
-                        .filter(id -> !id.isEmpty())
-                        .collect(Collectors.toSet());
+                // Split by comma and trim each ID (support multiple: "0905, 1221")
+                Set<UserDTO> technicianDTOs = new HashSet<>();
+                List<String> invalidTechnicians = new ArrayList<>();
 
-                Set<UserDTO> technicianDTOs = technicianEmpIds.stream()
-                        .map(empId -> {
-                            UserDTO technicianDTO = new UserDTO(); // ✅ Rename to avoid conflict
-                            technicianDTO.setEmployeeId(empId);
-                            return technicianDTO;
-                        })
-                        .collect(Collectors.toSet());
+                String[] empIdArray = technicianEmpIds.split(",");
+                for (String empId : empIdArray) {
+                    String trimmedEmpId = empId.trim(); // ✅ Trim whitespace
+                    if (trimmedEmpId.isEmpty())
+                        continue; // Skip empty parts
+
+                    Optional<User> userOpt = userRepository.findByEmployeeId(trimmedEmpId);
+                    if (userOpt.isPresent()) {
+                        User user = userOpt.get();
+                        UserDTO dtoTechnician = new UserDTO();
+                        dtoTechnician.setId(user.getId());
+                        dtoTechnician.setName(user.getName());
+                        dtoTechnician.setEmployeeId(user.getEmployeeId());
+                        dtoTechnician.setEmail(user.getEmail());
+                        technicianDTOs.add(dtoTechnician);
+                    } else {
+                        invalidTechnicians.add(trimmedEmpId); // Report trimmed ID
+                    }
+                }
+
+                if (!invalidTechnicians.isEmpty()) {
+                    throw new IllegalArgumentException(
+                            "Technician(s) not found: " + String.join(", ", invalidTechnicians));
+                }
 
                 dto.setTechnicians(technicianDTOs);
+
+                Set<String> empIds = technicianDTOs.stream()
+                        .map(UserDTO::getEmployeeId)
+                        .filter(id -> id != null && !id.trim().isEmpty())
+                        .collect(Collectors.toSet());
+
+                dto.setTechnicianEmpIds(empIds);
 
                 // 🟡 SUPERVISOR (optional)
                 String supervisorEmpId = importUtil.toString(row.get("supervisor"));

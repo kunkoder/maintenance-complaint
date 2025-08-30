@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ahqpck.maintenance.report.dto.AssigneeDailyStatusDTO;
 import ahqpck.maintenance.report.dto.DailyStatusCountDTO;
 import ahqpck.maintenance.report.dto.EquipmentComplaintCountDTO;
+import ahqpck.maintenance.report.dto.MonthlyStatusCountDTO;
 import ahqpck.maintenance.report.dto.StatusCountDTO;
 import ahqpck.maintenance.report.service.DashboardService;
 import ahqpck.maintenance.report.util.EmailUtil;
@@ -49,6 +50,15 @@ public class DashboardRestController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/monthly-status-count")
+    public ResponseEntity<List<MonthlyStatusCountDTO>> getMonthlyStatusCount(
+            @RequestParam(name = "year", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime year) {
+
+        List<MonthlyStatusCountDTO> result = dashboardService.getMonthlyStatusCount(year);
+        return ResponseEntity.ok(result);
+    }
+
     @GetMapping("/assignee-daily-status")
     public ResponseEntity<AssigneeDailyStatusDTO> getAssigneeDailyStatus(
             @RequestParam(name = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
@@ -65,15 +75,15 @@ public class DashboardRestController {
         return ResponseEntity.ok(data);
     }
 
-    private final EmailUtil emailUtil;
+    // private final EmailUtil emailUtil;
 
-    @GetMapping("/test-email")
-    public String testEmail() {
-        try {
-            emailUtil.sendAccountActivationEmail("laught.coffin@gmail.com", "test-token-12345");;
-            return "Email sent!";
-        } catch (Exception e) {
-            return "Failed: " + e.getMessage();
-        }
-    }
+    // @GetMapping("/test-email")
+    // public String testEmail() {
+    //     try {
+    //         emailUtil.sendAccountActivationEmail("laught.coffin@gmail.com", "test-token-12345");;
+    //         return "Email sent!";
+    //     } catch (Exception e) {
+    //         return "Failed: " + e.getMessage();
+    //     }
+    // }
 }

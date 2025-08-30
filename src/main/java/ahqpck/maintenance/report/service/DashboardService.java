@@ -4,6 +4,7 @@ import ahqpck.maintenance.report.dto.AssigneeDailyStatusDTO;
 import ahqpck.maintenance.report.dto.AssigneeDailyStatusDetailDTO;
 import ahqpck.maintenance.report.dto.DailyStatusCountDTO;
 import ahqpck.maintenance.report.dto.EquipmentComplaintCountDTO;
+import ahqpck.maintenance.report.dto.MonthlyStatusCountDTO;
 import ahqpck.maintenance.report.dto.StatusCountDTO;
 import ahqpck.maintenance.report.repository.DashboardRepository;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +48,13 @@ public class DashboardService {
         LocalDateTime effectiveTo = to != null ? to : defaultTo;
 
         return dashboardRepository.getDailyStatusCount(effectiveFrom, effectiveTo);
+    }
+
+    public List<MonthlyStatusCountDTO> getMonthlyStatusCount(LocalDateTime year) {
+        // If null, default to current year
+        LocalDateTime effectiveYear = (year != null) ? year : LocalDateTime.now();
+
+        return dashboardRepository.getMonthlyStatusCount(effectiveYear);
     }
 
     public AssigneeDailyStatusDTO getAssigneeDailyStatus(LocalDateTime from, LocalDateTime to) {

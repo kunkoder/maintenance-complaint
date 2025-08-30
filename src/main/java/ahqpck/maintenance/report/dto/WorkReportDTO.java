@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -69,4 +70,13 @@ public class WorkReportDTO {
     private Integer totalResolutionTimeMinutes;
 
     private String resolutionTimeDisplay;
+
+//     public Set<String> getTechnicianEmpIds() {
+//     if (technicians == null) return new HashSet<>();
+//     return technicians.stream()
+//             .map(UserDTO::getEmployeeId)
+//             .filter(id -> id != null && !id.trim().isEmpty())
+//             .map(String::trim)
+//             .collect(Collectors.toSet());
+// }
 }
