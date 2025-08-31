@@ -104,7 +104,11 @@
                                             <th>Full Name</th>
                                             <th>Employee ID</th>
                                             <th>Email</th>
+                                            <th>Designation</th>
                                             <th>Role(s)</th>
+                                            <th>Nationality</th>
+                                            <th>Join Date</th>
+                                            <th>Phone Number</th>
                                             <th>Status</th>
                                             <th>Created At</th>
                                             <th>Activated At</th>
@@ -122,11 +126,15 @@
                                             <td data-field="name" th:text="${user.name}"></td>
                                             <td data-field="employeeId" th:text="${user.employeeId}"></td>
                                             <td data-field="email" th:text="${user.email}"></td>
+                                            <td data-field="designation" th:text="${user.designation}"></td>
                                             <td data-field="role">
                                                 <th:block th:each="role : ${user.roles}">
                                                     <span class="badge badge-info" th:text="${role.name}"></span>
                                                 </th:block>
                                             </td>
+                                            <td data-field="nationality" th:text="${user.nationality}"></td>
+                                            <td data-field="joinDate" th:text="${#temporals.format(user.joinDate, 'yyyy-MM-dd')} ?: '-'"></td>
+                                            <td data-field="phoneNumber" th:text="${user.phoneNumber}"></td>
                                             <td>
                                                 <span data-field="status" class="badge"
                                                     th:classappend="${user.status} == 'ACTIVE' ? 'badge-success' : 'badge-danger'"
@@ -153,7 +161,7 @@
                                             </td>
                                         </tr>
                                         <tr th:if="${users.totalElements == 0}">
-                                            <td colspan="9" class="text-center">No users found</td>
+                                            <td colspan="13" class="text-center">No users found</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -214,6 +222,10 @@
                 'employeeId': 'Employee Id',
                 'email': 'Email',
                 'status': 'Status',
+                'designation': 'Designation',
+                'nationality': 'Nationality',
+                'joinDate': 'Join Date',
+                'phoneNumber': 'Phone Number',
                 'createdAt': 'Created At',
                 'activatedAt': 'Activated At'
             };
@@ -350,6 +362,10 @@
                     $('#editName').val(row.find('[data-field="name"]').text().trim());
                     $('#editEmployeeId').val(row.find('[data-field="employeeId"]').text().trim());
                     $('#editEmail').val(row.find('[data-field="email"]').text().trim());
+                    $('#editDesignation').val(row.find('[data-field="designation"]').text().trim());
+                    $('#editNationality').val(row.find('[data-field="nationality"]').text().trim());
+                    $('#editJoinDate').val(row.find('[data-field="joinDate"]').text().trim());
+                    $('#editPhoneNumber').val(row.find('[data-field="phoneNumber"]').text().trim());
                     const roleCell = row.find('[data-field="role"]')[0];
                     const roles = getRolesFromCell(roleCell);
                     initEditRoleInput(roles)

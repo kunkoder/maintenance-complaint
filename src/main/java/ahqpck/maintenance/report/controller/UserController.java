@@ -56,6 +56,11 @@ public class UserController {
     @Value("${app.upload-user-image.dir:src/main/resources/static/upload/user/image}")
     private String uploadDir;
 
+    @ModelAttribute("userDTO")
+    public UserDTO userDTO() {
+        return new UserDTO();
+    }
+
     // === LIST USERS ===
     @GetMapping
     public String listUsers(
@@ -65,10 +70,11 @@ public class UserController {
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "true") boolean asc,
             Model model) {
+            
+            int zeroBasedPage = page - 1;
+            Page<UserDTO> userPage = userService.getAllUsers(keyword, zeroBasedPage, size, sortBy, asc);
 
         try {
-            int zeroBasedPage = page - 1;
-            var userPage = userService.getAllUsers(keyword, zeroBasedPage, size, sortBy, asc);
 
             model.addAttribute("users", userPage);
             model.addAttribute("keyword", keyword);
@@ -92,6 +98,7 @@ public class UserController {
             model.addAttribute("userDTO", new UserDTO());
 
         } catch (Exception e) {
+            model.addAttribute("users", userPage);
             model.addAttribute("error", "Failed to load users: " + e.getMessage());
         }
 

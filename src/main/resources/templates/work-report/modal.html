@@ -278,6 +278,25 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
+                                    <label>Scope <span class="text-danger">*</span></label>
+                                    <select class="form-control" th:field="*{scope}" th:errorclass="is-invalid"
+                                        required>
+                                        <option value="" disabled selected>Select scope</option>
+                                        <option value="MECHANICAL">Mechanical</option>
+                                        <option value="ELECTRICAL">Electrical</option>
+                                        <option value="IT">IT</option>
+                                        <option value="OTHER">Other</option>
+                                    </select>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('scope')}"
+                                        th:errors="*{scope}">
+                                        scope is mandatory.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="col-md-12">
+                                <div class="form-group">
                                     <label>Remark</label>
                                     <textarea class="form-control" th:field="*{remark}" rows="2"></textarea>
                                 </div>
@@ -575,6 +594,20 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Scope</label>
+                                    <select class="form-control" id="editScope" name="scope" required>
+                                        <option value="MECHANICAL">Mechanical</option>
+                                        <option value="ELECTRICAL">Electrical</option>
+                                        <option value="IT">IT</option>
+                                        <option value="OTHER">Other</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select a scope.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="col-md-12">
                                 <div class="form-group">
                                     <label>Remark</label>
                                     <textarea class="form-control" id="editRemark" name="remark" rows="2"></textarea>

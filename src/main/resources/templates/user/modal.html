@@ -90,7 +90,49 @@
                             </div>
                         </div>
 
-                        <!-- Image Upload -->
+                        <div class="form-row">
+                            <!-- Image Upload & Management -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Designation <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" th:field="*{designation}">
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('designation')}"
+                                        th:errors="*{designation}">Please enter a designation.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Status</label>
+                                    <div class="d-flex align-items-center mt-2">
+                                        <input type="checkbox" class="switch" id="statusSwitch">
+                                        <label class="switch-label mr-2 mb-0" for="statusSwitch"></label>
+                                        <span class="switch-text" id="statusText"></span>
+                                        <input type="hidden" name="status" id="statusTextHidden">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nationality & Phone Number -->
+                        <div class="form-row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Nationality</label>
+                                    <input type="text" class="form-control" th:field="*{nationality}"
+                                        placeholder="e.g., Indonesian">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Phone Number</label>
+                                    <input type="text" class="form-control" th:field="*{phoneNumber}"
+                                        placeholder="+966 55 123 4567">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Join Date & Image Upload -->
                         <div class="form-row">
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -106,8 +148,13 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Join Date</label>
+                                    <input type="date" class="form-control" th:field="*{joinDate}">
+                                </div>
+                            </div>
                         </div>
-
                     </form>
                 </div>
                 <div class="modal-footer border-0 pt-2 pb-4 px-4 d-flex justify-content-between">
@@ -202,9 +249,47 @@
 
                         </div>
 
-                        <!-- Image Upload & Status Toggle -->
                         <div class="form-row">
-                            <!-- Image Upload & Management -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Designation <span class="text-danger">*</span></label>
+                                    <input type="text" name="designation" class="form-control" id="editDesignation">
+                                    <div class="invalid-feedback">Please enter a designation.</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Status</label>
+                                    <div class="d-flex align-items-center mt-2">
+                                        <input type="checkbox" class="switch" id="editStatusSwitch">
+                                        <label class="switch-label mr-2 mb-0" for="editStatusSwitch"></label>
+                                        <span class="switch-text" id="editStatusText"></span>
+                                        <input type="hidden" name="status" id="editStatusTextHidden">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nationality & Phone Number -->
+                        <div class="form-row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Nationality</label>
+                                    <input type="text" name="nationality" class="form-control" id="editNationality"
+                                        placeholder="e.g., Saudi Arabian">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Phone Number</label>
+                                    <input type="text" name="phoneNumber" class="form-control" id="editPhoneNumber"
+                                        placeholder="+966 55 123 4567">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Join Date & Image Upload -->
+                        <div class="form-row">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Current Image <span class="text-muted">(optional)</span></label>
@@ -231,13 +316,8 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Status</label>
-                                    <div class="d-flex align-items-center mt-2">
-                                        <input type="checkbox" class="switch" id="editStatusSwitch">
-                                        <label class="switch-label mr-2 mb-0" for="editStatusSwitch"></label>
-                                        <span class="switch-text" id="editStatusText"></span>
-                                        <input type="hidden" name="status" id="editStatusTextHidden">
-                                    </div>
+                                    <label>Join Date</label>
+                                    <input type="date" name="joinDate" class="form-control" id="editJoinDate">
                                 </div>
                             </div>
                         </div>
@@ -589,6 +669,6 @@
                 });
             }
         });
-    
+
     </script>
 </div>

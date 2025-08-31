@@ -139,9 +139,9 @@
                                             <th>Stop Time</th>
                                             <th>Total Time (min)</th>
                                             <th>Technician(s)</th>
-                                            <!-- <th>Technician</th> -->
                                             <th>Supervisor</th>
                                             <th>Status</th>
+                                            <th>Scope</th>
                                             <th>Work Type</th>
                                             <th>Remark</th>
                                             <th>Action</th>
@@ -223,6 +223,16 @@
                       report.status == 'CLOSED' ? 'badge-success' :
                       'badge-secondary'
                   }" th:text="${report.status ?: '-'}"></span>
+                                            </td>
+
+                                            <!-- Scope -->
+                                            <td data-field="scope">
+                                                <span class="badge badge-pill px-3 py-2" th:classappend="${
+                      report.scope == 'ELECTRICAL' ? 'badge-danger' :
+                      report.scope == 'MECHANICAL' ? 'badge-info' :
+                      report.scope == 'IT' ? 'badge-success' :
+                      'badge-secondary'
+                  }" th:text="${report.scope ?: '-'}"></span>
                                             </td>
 
                                             <!-- Work Type -->
@@ -377,36 +387,36 @@
             $(document).ready(function () {
 
                 // Extract technician objects from the table cell
-function getTechniciansFromCell(cell) {
-    const technicians = [];
-    const badges = cell.querySelectorAll('.badge');
-    for (let badge of badges) {
-        const text = badge.textContent.trim(); // "John (EMP001)"
-        const match = text.match(/^(.+) \((.+)\)$/);
-        if (match) {
-            const name = match[1].trim();
-            const empId = match[2].trim();
-            technicians.push({ name, empId });
-        }
-    }
-    return technicians;
-}
+                function getTechniciansFromCell(cell) {
+                    const technicians = [];
+                    const badges = cell.querySelectorAll('.badge');
+                    for (let badge of badges) {
+                        const text = badge.textContent.trim(); // "John (EMP001)"
+                        const match = text.match(/^(.+) \((.+)\)$/);
+                        if (match) {
+                            const name = match[1].trim();
+                            const empId = match[2].trim();
+                            technicians.push({ name, empId });
+                        }
+                    }
+                    return technicians;
+                }
 
-// Initialize the tag input and hidden select for technicians
-function initEditTechnicianInput(technicians) {
-    const tagList = document.getElementById("editTechnicianTagList");
-    const hiddenSelect = document.getElementById("editTechnicianSelect");
+                // Initialize the tag input and hidden select for technicians
+                function initEditTechnicianInput(technicians) {
+                    const tagList = document.getElementById("editTechnicianTagList");
+                    const hiddenSelect = document.getElementById("editTechnicianSelect");
 
-    // Clear previous content
-    tagList.innerHTML = "";
-    hiddenSelect.innerHTML = "";
+                    // Clear previous content
+                    tagList.innerHTML = "";
+                    hiddenSelect.innerHTML = "";
 
-    technicians.forEach(tech => {
-        const tag = document.createElement("div");
-        tag.className = "tag";
-        tag.dataset.value = tech.empId;
+                    technicians.forEach(tech => {
+                        const tag = document.createElement("div");
+                        tag.className = "tag";
+                        tag.dataset.value = tech.empId;
 
-        tag.innerHTML = `
+                        tag.innerHTML = `
             ${tech.name} (${tech.empId})
             <span class="remove-tag" 
                   onclick="window.removeTag(this, 'editTechnicianSelect', 'editTechnicianTagList')">
@@ -414,18 +424,18 @@ function initEditTechnicianInput(technicians) {
             </span>
         `;
 
-        tagList.appendChild(tag);
+                        tagList.appendChild(tag);
 
-        // Add to hidden <select>
-        const option = document.createElement("option");
-        option.value = tech.empId;
-        option.selected = true;
-        hiddenSelect.appendChild(option);
-    });
+                        // Add to hidden <select>
+                        const option = document.createElement("option");
+                        option.value = tech.empId;
+                        option.selected = true;
+                        hiddenSelect.appendChild(option);
+                    });
 
-    // Sync event (if needed)
-    hiddenSelect.dispatchEvent(new Event('change'));
-}
+                    // Sync event (if needed)
+                    hiddenSelect.dispatchEvent(new Event('change'));
+                }
                 // --- Edit Modal Trigger ---
                 $(document).on('click', '.edit-row', function () {
                     function toIsoDateTime(dateTimeStr) {
@@ -459,6 +469,9 @@ function initEditTechnicianInput(technicians) {
                     // Status
                     const statusText = row.find('[data-field="status"] span').text().trim().toUpperCase();
                     $('#editStatus').val(statusText);
+
+                    const scopeText = row.find('[data-field="scope"] span').text().trim().toUpperCase();
+                    $('#editScope').val(scopeText);
 
                     // Problem & Solution
                     $('#editProblem').val(row.find('[data-field="problem"]').text().trim());
@@ -502,48 +515,48 @@ function initEditTechnicianInput(technicians) {
                     //     $('#editEquipmentSelect').val('');
                     // }
 
-            //         const technicianTagList = document.getElementById('editTechnicianTagList');
-            //         const hiddenSelect = document.getElementById('editTechnicianSelect');
+                    //         const technicianTagList = document.getElementById('editTechnicianTagList');
+                    //         const hiddenSelect = document.getElementById('editTechnicianSelect');
 
-            //         // Clear previous tags
-            //         technicianTagList.innerHTML = "";
-            //         hiddenSelect.innerHTML = "";
+                    //         // Clear previous tags
+                    //         technicianTagList.innerHTML = "";
+                    //         hiddenSelect.innerHTML = "";
 
-            //         // Get technician data from row (assuming each technician is in a span.badge)
-            //         const techBadges = row.find('[data-field="technicians"] .badge');
-            //         const techData = [];
-            //         techBadges.each(function () {
-            //             const text = $(this).text().trim(); // "John (AAA)"
-            //             const match = text.match(/(.+) \((.+)\)/);
-            //             if (match) {
-            //                 const name = match[1];
-            //                 const empId = match[2];
-            //                 techData.push({ name, empId });
-            //             }
-            //         });
+                    //         // Get technician data from row (assuming each technician is in a span.badge)
+                    //         const techBadges = row.find('[data-field="technicians"] .badge');
+                    //         const techData = [];
+                    //         techBadges.each(function () {
+                    //             const text = $(this).text().trim(); // "John (AAA)"
+                    //             const match = text.match(/(.+) \((.+)\)/);
+                    //             if (match) {
+                    //                 const name = match[1];
+                    //                 const empId = match[2];
+                    //                 techData.push({ name, empId });
+                    //             }
+                    //         });
 
-            //         // Add each as a tag
-            //         techData.forEach(tech => {
-            //             const tag = document.createElement("div");
-            //             tag.className = "tag";
-            //             tag.dataset.value = tech.empId;
-            //             tag.innerHTML = `
-            //     ${tech.name} (${tech.empId})
-            //     <span class="remove-tag" onclick="window.removeTag(this, 'editTechnicianSelect', 'editTechnicianTagList')">×</span>
-            // `;
-            //             technicianTagList.appendChild(tag);
+                    //         // Add each as a tag
+                    //         techData.forEach(tech => {
+                    //             const tag = document.createElement("div");
+                    //             tag.className = "tag";
+                    //             tag.dataset.value = tech.empId;
+                    //             tag.innerHTML = `
+                    //     ${tech.name} (${tech.empId})
+                    //     <span class="remove-tag" onclick="window.removeTag(this, 'editTechnicianSelect', 'editTechnicianTagList')">×</span>
+                    // `;
+                    //             technicianTagList.appendChild(tag);
 
-            //             // Add to hidden select
-            //             const option = document.createElement("option");
-            //             option.value = tech.empId;
-            //             option.selected = true;
-            //             hiddenSelect.appendChild(option);
-            //         });
+                    //             // Add to hidden select
+                    //             const option = document.createElement("option");
+                    //             option.value = tech.empId;
+                    //             option.selected = true;
+                    //             hiddenSelect.appendChild(option);
+                    //         });
 
-            // --- Technicians ---
-const techCell = row.find('[data-field="technicians"]')[0];
-const technicians = getTechniciansFromCell(techCell);
-initEditTechnicianInput(technicians);
+                    // --- Technicians ---
+                    const techCell = row.find('[data-field="technicians"]')[0];
+                    const technicians = getTechniciansFromCell(techCell);
+                    initEditTechnicianInput(technicians);
 
 
                     // --- Technician ---
@@ -615,6 +628,7 @@ initEditTechnicianInput(technicians);
                     // { key: "technician", label: "Technician", visible: true },
                     { key: "supervisor", label: "Supervisor", visible: false },
                     { key: "status", label: "Status", visible: true },
+                    { key: "scope", label: "Scope", visible: true },
                     { key: "workType", label: "Work Type", visible: false },
                     { key: "remark", label: "Remark", visible: false }
                     // "Action" column is excluded from toggle (always visible or managed separately)

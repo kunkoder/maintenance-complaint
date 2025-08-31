@@ -12,7 +12,8 @@
                     </button>
                 </div>
                 <div class="modal-body p-4">
-                    <form id="importForm" method="post" th:action="@{/work-reports/import}" enctype="multipart/form-data">
+                    <form id="importForm" method="post" th:action="@{/work-reports/import}"
+                        enctype="multipart/form-data">
                         <!-- Step 1: Upload File -->
                         <div class="step mb-4">
                             <h6><i class="fas fa-upload mr-1"></i> Step 1: Upload File</h6>
@@ -41,7 +42,8 @@
                         <div class="step mb-4" id="columnMapping" style="display:none;">
                             <h6><i class="fas fa-columns mr-1"></i> Step 3: Map Columns</h6>
                             <p class="text-muted mb-3">
-                                Click to select/deselect columns. Detected header row: <strong id="headerRow">Row 1</strong>
+                                Click to select/deselect columns. Detected header row: <strong id="headerRow">Row
+                                    1</strong>
                             </p>
                             <div class="row border rounded p-3 bg-light" id="columnCheckboxes">
                                 <!-- Buttons will be inserted here -->
@@ -164,104 +166,192 @@
         });
     </script>
     <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Export to Excel (Current Table Data)
-        document.getElementById('exportExcel').addEventListener('click', function (e) {
-            e.preventDefault();
+        document.addEventListener("DOMContentLoaded", function () {
+            // Export to Excel (Current Table Data)
+            document.getElementById('exportExcel').addEventListener('click', function (e) {
+                e.preventDefault();
 
-            // Get table headers from #work-report-table (exclude "Action")
-            const headers = [];
-            document.querySelectorAll('#work-report-table thead th').forEach(th => {
-                const text = th.textContent.trim();
-                if (!text.includes('Action')) {
-                    headers.push(text);
-                }
-            });
+                const table = document.getElementById('work-report-table');
+                const headers = [
+                    "Report Date",
+                    "Shift",
+                    "Area Name",
+                    "Area Code",
+                    "Equipment Name",
+                    "Equipment Code",
+                    "Category",
+                    "Problem",
+                    "Solution",
+                    "Start Time",
+                    "Stop Time",
+                    "Total Time (min)",
+                    "Technician Names",
+                    "Technician Employee IDs",
+                    "Supervisor",
+                    "Status",
+                    "Scope",
+                    "Work Type",
+                    "Remark"
+                ];
 
-            // Get all visible rows (skip hidden ones due to filtering)
-            const data = [];
-            document.querySelectorAll('#work-report-table tbody tr').forEach(tr => {
-                if (tr.style.display === 'none') return; // Skip filtered-out rows
-                const row = [];
-                const tds = tr.querySelectorAll('td');
-                for (let i = 0; i < tds.length - 1; i++) { // Skip last "Action" column
-                    row.push(tds[i].textContent.trim());
-                }
-                data.push(row);
-            });
+                const data = [];
+                document.querySelectorAll('#work-report-table tbody tr').forEach(tr => {
+                    if (tr.style.display === 'none') return; // Skip filtered rows
 
-            // Create worksheet and workbook
-            const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Work Reports");
+                    const tds = tr.querySelectorAll('td');
+                    let colIndex = 0;
+                    const row = [];
 
-            // Generate filename with date
-            const dateStr = new Date().toISOString().slice(0, 10);
-            XLSX.writeFile(wb, `Work_Report_Data_${dateStr}.xlsx`);
-        });
+                    // Report Date
+                    row.push(tds[colIndex++].textContent.trim());
 
-        // Export to PDF (Current Table Data)
-        document.getElementById('exportPdf').addEventListener('click', function (e) {
-            e.preventDefault();
+                    // Shift
+                    row.push(tds[colIndex++].textContent.trim());
 
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({
-                orientation: 'landscape',
-                unit: 'mm',
-                format: 'a4'
-            });
+                    // ✅ Area Name & Code
+                    const areaCell = tds[colIndex++];
+                    const areaName = areaCell.textContent.trim();
+                    const areaCode = areaCell.getAttribute('data-area-code') || '-';
+                    row.push(areaName || '-');
+                    row.push(areaCode);
 
-            // Extract headers (skip "Action")
-            const headers = [];
-            document.querySelectorAll('#work-report-table thead th').forEach(th => {
-                const text = th.textContent.trim();
-                if (!text.includes('Action')) {
-                    headers.push(text);
-                }
-            });
+                    // ✅ Equipment Name & Code
+                    const equipmentCell = tds[colIndex++];
+                    const equipmentName = equipmentCell.textContent.trim();
+                    const equipmentCode = equipmentCell.getAttribute('data-equipment-code') || '-';
+                    row.push(equipmentName || '-');
+                    row.push(equipmentCode);
 
-            // Extract visible row data (skip "Action" column)
-            const data = [];
-            document.querySelectorAll('#work-report-table tbody tr').forEach(tr => {
-                if (tr.style.display === 'none') return;
-                const row = [];
-                const tds = tr.querySelectorAll('td');
-                for (let i = 0; i < tds.length - 1; i++) {
-                    let cellText = tds[i].textContent.trim();
+                    // Category
+                    row.push(tds[colIndex++].textContent.trim());
 
-                    // For Technician(s), Supervisor: clean up badge formatting
-                    if (tds[i].querySelector('.badge')) {
-                        cellText = Array.from(tds[i].querySelectorAll('.badge'))
-                            .map(b => b.textContent.trim())
-                            .join(", ");
+                    // Problem
+                    row.push(tds[colIndex++].textContent.trim());
+
+                    // Solution
+                    row.push(tds[colIndex++].textContent.trim());
+
+                    // Start Time
+                    row.push(tds[colIndex++].textContent.trim());
+
+                    // Stop Time
+                    row.push(tds[colIndex++].textContent.trim());
+
+                    // Total Time (min)
+                    row.push(tds[colIndex++].textContent.trim());
+
+                    // ✅ Technician Names & Employee IDs
+                    const techCell = tds[colIndex++];
+                    const techNames = [];
+                    const techEmpIds = [];
+
+                    if (techCell.querySelector('.badge')) {
+                        Array.from(techCell.querySelectorAll('.badge')).forEach(badge => {
+                            const text = badge.textContent.trim(); // "Alex (EMP001)"
+                            const match = text.match(/^(.+) \(([^)]+)\)$/);
+                            if (match) {
+                                techNames.push(match[1].trim());
+                                techEmpIds.push(match[2].trim());
+                            } else {
+                                techNames.push(text); // fallback
+                            }
+                        });
                     }
 
-                    row.push(cellText);
-                }
-                data.push(row);
+                    row.push(techNames.join(", ") || '-');
+                    row.push(techEmpIds.join(", ") || '-');
+
+                    // Supervisor
+                    row.push(tds[colIndex++].textContent.trim());
+
+                    // Status
+                    row.push(tds[colIndex++].textContent.trim());
+
+                    // Scope
+                    row.push(tds[colIndex++].textContent.trim());
+
+                    // Work Type
+                    row.push(tds[colIndex++].textContent.trim());
+
+                    // Remark
+                    row.push(tds[colIndex++].textContent.trim());
+
+                    data.push(row);
+                });
+
+                // Create worksheet and workbook
+                const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Work Reports");
+
+                // Generate filename with date
+                const dateStr = new Date().toISOString().slice(0, 10);
+                XLSX.writeFile(wb, `Work_Report_Data_${dateStr}.xlsx`);
             });
 
-            // Add title
-            doc.setFontSize(16);
-            doc.text("Work Report Data", 14, 15);
 
-            // Generate table using autoTable
-            doc.autoTable({
-                head: [headers],
-                body: data,
-                startY: 20,
-                theme: 'grid',
-                styles: { fontSize: 8 },
-                columnStyles: headers.reduce((acc, key, i) => {
-                    acc[i] = { cellWidth: 'auto' };
-                    return acc;
-                }, {})
+            // Export to PDF (Current Table Data)
+            document.getElementById('exportPdf').addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+
+                // Extract headers (skip "Action")
+                const headers = [];
+                document.querySelectorAll('#work-report-table thead th').forEach(th => {
+                    const text = th.textContent.trim();
+                    if (!text.includes('Action')) {
+                        headers.push(text);
+                    }
+                });
+
+                // Extract visible row data (skip "Action" column)
+                const data = [];
+                document.querySelectorAll('#work-report-table tbody tr').forEach(tr => {
+                    if (tr.style.display === 'none') return;
+                    const row = [];
+                    const tds = tr.querySelectorAll('td');
+                    for (let i = 0; i < tds.length - 1; i++) {
+                        let cellText = tds[i].textContent.trim();
+
+                        // For Technician(s), Supervisor: clean up badge formatting
+                        if (tds[i].querySelector('.badge')) {
+                            cellText = Array.from(tds[i].querySelectorAll('.badge'))
+                                .map(b => b.textContent.trim())
+                                .join(", ");
+                        }
+
+                        row.push(cellText);
+                    }
+                    data.push(row);
+                });
+
+                // Add title
+                doc.setFontSize(16);
+                doc.text("Work Report Data", 14, 15);
+
+                // Generate table using autoTable
+                doc.autoTable({
+                    head: [headers],
+                    body: data,
+                    startY: 20,
+                    theme: 'grid',
+                    styles: { fontSize: 8 },
+                    columnStyles: headers.reduce((acc, key, i) => {
+                        acc[i] = { cellWidth: 'auto' };
+                        return acc;
+                    }, {})
+                });
+
+                // Save PDF
+                const dateStr = new Date().toISOString().slice(0, 10);
+                doc.save(`Work_Report_Data_${dateStr}.pdf`);
             });
-
-            // Save PDF
-            const dateStr = new Date().toISOString().slice(0, 10);
-            doc.save(`Work_Report_Data_${dateStr}.pdf`);
         });
-    });
-</script>
+    </script>
 </div>

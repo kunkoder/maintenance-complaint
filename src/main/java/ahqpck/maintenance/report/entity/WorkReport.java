@@ -91,6 +91,10 @@ public class WorkReport {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Scope scope;
     
     @Column(name = "work_type", nullable = true)
     private String workType;
@@ -107,6 +111,13 @@ public class WorkReport {
     }
     
     // Enumerations
+    public enum Scope {
+        MECHANICAL,
+        ELECTRICAL,
+        IT,
+        OTHER
+    }
+
     public enum Category {
         CORRECTIVE_MAINTENANCE,
         PREVENTIVE_MAINTENANCE,

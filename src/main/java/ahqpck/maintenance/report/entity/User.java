@@ -1,5 +1,6 @@
 package ahqpck.maintenance.report.entity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -79,6 +80,17 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status;
+
+    private String designation;
+
+    @Column(length = 50)
+    private String nationality;
+
+    @Column(name = "join_date")
+    private LocalDate joinDate;
+
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
 
     // Relationships (excluded from equals/hashCode/toString)
     @OneToMany(mappedBy = "responsiblePerson", fetch = FetchType.LAZY)

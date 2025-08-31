@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -42,6 +43,14 @@ public class UserDTO {
     private LocalDateTime passwordResetTokenExpiry;
 
     private User.Status status;
+
+    private String designation;
+
+    private String nationality;
+
+    private LocalDate joinDate;
+
+    private String phoneNumber;
 
     private Set<String> roleNames = new HashSet<>();
     private Set<RoleDTO> roles = new HashSet<>();

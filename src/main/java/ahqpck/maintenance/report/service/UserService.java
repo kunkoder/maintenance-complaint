@@ -186,6 +186,10 @@ public class UserService {
         user.setEmployeeId(dto.getEmployeeId().trim());
         user.setEmail(dto.getEmail().trim());
         user.setStatus(dto.getStatus());
+        user.setDesignation(dto.getDesignation());
+        user.setNationality(dto.getNationality());
+        user.setJoinDate(dto.getJoinDate());
+        user.setPhoneNumber(dto.getPhoneNumber());
     }
 
     private UserDTO toDTO(User user) {
@@ -196,8 +200,12 @@ public class UserService {
         dto.setEmail(user.getEmail());
         dto.setImage(user.getImage());
         dto.setStatus(user.getStatus());
+        dto.setDesignation(user.getDesignation());
         dto.setCreatedAt(user.getCreatedAt());
         dto.setActivatedAt(user.getActivatedAt());
+        dto.setNationality(user.getNationality());
+        dto.setJoinDate(user.getJoinDate());
+        dto.setPhoneNumber(user.getPhoneNumber());
 
         dto.setRoles(user.getRoles().stream()
                 .map(RoleDTO::new)

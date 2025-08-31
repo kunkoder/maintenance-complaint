@@ -60,6 +60,8 @@ public class WorkReportDTO {
     @NotNull(message = "Status is mandatory")
     private WorkReport.Status status;
 
+    private WorkReport.Scope scope;
+
     private String workType;
 
     private String remark;

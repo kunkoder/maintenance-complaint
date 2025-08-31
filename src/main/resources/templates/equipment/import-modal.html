@@ -81,6 +81,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
+    <script src="/assets/js/import-wizard.js"></script>
+
     <!-- Custom Styles to Guarantee Visibility -->
     <style>
         /* Custom toggle buttons instead of checkboxes */
@@ -129,6 +131,50 @@
     </style>
 
     <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            new ImportWizard({
+                // Fields that should be auto-selected if found
+                likelyFields: [
+                    "code",
+                    "name",
+                    "model",
+                    "unit",
+                    "qty",
+                    "manufacturer",
+                    "serial no.",
+                    "manufactured date",
+                    "commissioned date",
+                    "capacity",
+                    "remarks"
+                ],
+
+                // Map Excel column headers to backend field names
+                fieldMapping: {
+                    "Code": "code",
+                    "Name": "name",
+                    "Model": "model",
+                    "Unit": "unit",
+                    "Qty": "qty",
+                    "Manufacturer": "manufacturer",
+                    "Serial No.": "serialNo",
+                    "Manufactured Date": "manufacturedDate",
+                    "Commissioned Date": "commissionedDate",
+                    "Capacity": "capacity",
+                    "Remarks": "remarks"
+                },
+
+                // Optional: customize behavior
+                onError: (err) => {
+                    alert("Import Error: " + err.message);
+                }
+
+                // onSuccess, onBeforeImport, etc. can be added
+            });
+        });
+    </script>
+
+
+    <!-- <script>
         let workbook = null;
         let selectedSheet = "";
         let headerRowIndex = 0;
@@ -444,5 +490,5 @@
             // Save PDF
             doc.save("Equipment_Data_" + new Date().toISOString().slice(0, 10) + ".pdf");
         });
-    </script>
+    </script> -->
 </div>

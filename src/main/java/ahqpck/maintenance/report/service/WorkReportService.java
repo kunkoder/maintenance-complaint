@@ -88,6 +88,7 @@ public class WorkReportService {
                 System.out.println("code success");
             }
 
+            validateNoDuplicateReport(dto);
             mapToEntity(workReport, dto);
             System.out.println("entity success" + dto.getTechnicianEmpIds());
 
@@ -191,6 +192,17 @@ public class WorkReportService {
                     dto.setStatus(WorkReport.Status.valueOf(statusStr.trim().toUpperCase()));
                 } catch (IllegalArgumentException e) {
                     throw new IllegalArgumentException("Invalid Status value: '" + statusStr + "'");
+                }
+
+                // ✅ SCOPE (required)
+                String scopeStr = importUtil.toString(row.get("scope"));
+                if (scopeStr == null || scopeStr.trim().isEmpty()) {
+                    throw new IllegalArgumentException("Scope is required");
+                }
+                try {
+                    dto.setScope(WorkReport.Scope.valueOf(scopeStr.trim().toUpperCase()));
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalArgumentException("Invalid Scope value: '" + scopeStr + "'");
                 }
 
                 // ✅ TECHNICIAN (required)
@@ -309,6 +321,7 @@ public class WorkReportService {
 
         try {
             // Update basic fields
+            validateNoDuplicateReport(dto);
             mapToEntity(workReport, dto);
 
             // Handle technicians
@@ -352,6 +365,40 @@ public class WorkReportService {
 
     // ================== PRIVATE HELPERS ==================
 
+    private void validateNoDuplicateReport(WorkReportDTO dto) {
+        // Only check if problem and equipment are provided
+        if (dto.getProblem() == null || dto.getProblem().trim().isEmpty()) {
+            return; // Nothing to compare
+        }
+
+        if (dto.getEquipment() == null || dto.getEquipment().getCode() == null) {
+            return; // Equipment needed
+        }
+
+        String problem = dto.getProblem().trim();
+        String equipmentCode = dto.getEquipment().getCode().trim();
+        LocalDateTime reportDate = dto.getReportDate();
+
+        if (reportDate == null) {
+            return;
+        }
+
+        // Define time window: e.g., same day ± 1 hour
+        LocalDateTime start = reportDate.minusHours(1);
+        LocalDateTime end = reportDate.plusHours(1);
+
+        // Query: Is there an existing report with same equipment, problem, and
+        // overlapping time?
+        boolean exists = workReportRepository.existsByEquipmentCodeAndProblemAndReportDateBetween(
+                equipmentCode, problem, start, end);
+
+        if (exists) {
+            throw new IllegalArgumentException(
+                    "A similar report already exists for '" + equipmentCode +
+                            "' with the same problem around this time. Preventing duplicate.");
+        }
+    }
+
     private void validateAndCreateWorkReport(WorkReportDTO dto, WorkReport existing) {
         // Generate code if creating new
         if (existing == null) {
@@ -377,6 +424,7 @@ public class WorkReportService {
         workReport.setWorkType(dto.getWorkType());
         workReport.setRemark(dto.getRemark());
         workReport.setStatus(dto.getStatus());
+        workReport.setScope(dto.getScope());
         workReport.setTotalResolutionTimeMinutes(dto.getTotalResolutionTimeMinutes());
 
         // Area (optional)
@@ -446,6 +494,7 @@ public class WorkReportService {
         dto.setWorkType(workReport.getWorkType());
         dto.setRemark(workReport.getRemark());
         dto.setStatus(workReport.getStatus());
+        dto.setScope(workReport.getScope());
         dto.setTotalResolutionTimeMinutes(workReport.getTotalResolutionTimeMinutes());
 
         // Format resolution time
