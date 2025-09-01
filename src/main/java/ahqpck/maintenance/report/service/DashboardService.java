@@ -2,8 +2,10 @@ package ahqpck.maintenance.report.service;
 
 import ahqpck.maintenance.report.dto.AssigneeDailyStatusDTO;
 import ahqpck.maintenance.report.dto.AssigneeDailyStatusDetailDTO;
+import ahqpck.maintenance.report.dto.DailyBreakdownDTO;
 import ahqpck.maintenance.report.dto.DailyStatusCountDTO;
 import ahqpck.maintenance.report.dto.EquipmentComplaintCountDTO;
+import ahqpck.maintenance.report.dto.MonthlyBreakdownDTO;
 import ahqpck.maintenance.report.dto.MonthlyStatusCountDTO;
 import ahqpck.maintenance.report.dto.StatusCountDTO;
 import ahqpck.maintenance.report.repository.DashboardRepository;
@@ -134,5 +136,20 @@ public class DashboardService {
 
     public List<EquipmentComplaintCountDTO> getEquipmentComplaintCount() {
         return dashboardRepository.getEquipmentComplaintCount();
+    }
+
+    public List<DailyBreakdownDTO> getDailyBreakdownTime(LocalDate from, LocalDate to) {
+        LocalDate defaultTo = LocalDate.now();
+        LocalDate defaultFrom = defaultTo.minusDays(6); // last 7 days
+
+        LocalDate effectiveFrom = from != null ? from : defaultFrom;
+        LocalDate effectiveTo = to != null ? to : defaultTo;
+
+        return dashboardRepository.getDailyBreakdownTime(effectiveFrom, effectiveTo);
+    }
+
+    public List<MonthlyBreakdownDTO> getMonthlyBreakdownTime(Integer year) {
+        Integer effectiveYear = (year != null && year > 1900) ? year : LocalDate.now().getYear();
+        return dashboardRepository.getMonthlyBreakdownTime(effectiveYear);
     }
 }

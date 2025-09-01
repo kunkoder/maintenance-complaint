@@ -154,7 +154,10 @@ public class DataInitializer {
                 { "0695", "Hassan Abdullah Al Nasser", "Mechanic", "Saudi", "23 Aug 2023", "053 747 6613" },
                 { "0823", "Husain Al Ashwan", "Mechanic", "Saudi", "", "057 023 5423" },
                 { "0906", "Ali Al Taha", "Mechanic", "Saudi", "01 Dec 2024", "056 720 5289" },
-                { "0978", "Hussain Ali Al Mohsin", "Mechanic", "Saudi", "24 Aug 2025", "053 054 5255" }
+                { "0978", "Hussain Ali Al Mohsin", "Mechanic", "Saudi", "24 Aug 2025", "053 054 5255" },
+                { "0978", "Hussain Ali Al Mohsin", "Mechanic", "Saudi", "24 Aug 2025", "053 054 5255" },
+                { "0732", "ViJun Peralta Mendoza", "Mechanical Technician", "Filipino", "04 Nov 2023", "050 615 2661" }
+
         };
 
         // Get VIEWER role
@@ -221,7 +224,8 @@ public class DataInitializer {
                 log.info("Created user: {} ({}), Email: {}", name, empNo, email);
 
             } catch (Exception e) {
-                log.error("Failed to create user: {} (Emp: {})", name, empNo, e);
+                // log.error("Failed to create user: {} (Emp: {})", name, empNo, e);
+                System.out.println("error");
             }
         }
 

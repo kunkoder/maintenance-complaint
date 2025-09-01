@@ -21,7 +21,7 @@ public class WorkReportSpecification {
             // LEFT JOINs to related entities
             Join<WorkReport, Equipment> equipment = root.join("equipment", JoinType.LEFT);
             Join<WorkReport, Area> area = root.join("area", JoinType.LEFT);
-            Join<WorkReport, User> technician = root.join("technician", JoinType.LEFT);
+            // Join<WorkReport, User> technician = root.join("technician", JoinType.LEFT);
             Join<WorkReport, User> supervisor = root.join("supervisor", JoinType.LEFT);
 
             return cb.or(
@@ -43,9 +43,9 @@ public class WorkReportSpecification {
                 cb.like(cb.lower(cb.coalesce(area.<String>get("code"), "")), pattern),
 
                 // Search in Technician
-                cb.like(cb.lower(cb.coalesce(technician.<String>get("name"), "")), pattern),
-                cb.like(cb.lower(cb.coalesce(technician.<String>get("employeeId"), "")), pattern),
-                cb.like(cb.lower(cb.coalesce(technician.<String>get("email"), "")), pattern),
+                // cb.like(cb.lower(cb.coalesce(technician.<String>get("name"), "")), pattern),
+                // cb.like(cb.lower(cb.coalesce(technician.<String>get("employeeId"), "")), pattern),
+                // cb.like(cb.lower(cb.coalesce(technician.<String>get("email"), "")), pattern),
 
                 // Search in Supervisor
                 cb.like(cb.lower(cb.coalesce(supervisor.<String>get("name"), "")), pattern),

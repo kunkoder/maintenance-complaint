@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,7 +55,7 @@ public class WorkReportService {
     private final ImportUtil importUtil;
     private final ZeroPaddedCodeGenerator codeGenerator;
 
-    private static final Logger log = LoggerFactory.getLogger(ComplaintService.class);
+    private static final Logger log = LoggerFactory.getLogger(WorkReportService.class);
 
     // ================== GET ALL WITH PAGINATION & SEARCH ==================
     @Transactional(readOnly = true)
@@ -109,7 +110,6 @@ public class WorkReportService {
             }
 
             workReport.setTechnicians(technicians);
-            System.out.println("Work Report created: " + workReport);
             workReportRepository.save(workReport);
 
         } catch (Exception e) {
@@ -135,13 +135,16 @@ public class WorkReportService {
 
                 // ✅ REPORT DATE (required)
                 Object reportDateObj = row.get("reportDate");
+                System.out.println("report date before = " + reportDateObj);
                 if (reportDateObj == null) {
                     throw new IllegalArgumentException("Report Date is required");
                 }
-                LocalDateTime reportDate = importUtil.toLocalDateTime(reportDateObj);
+                LocalDate reportDate = importUtil.toLocalDate(reportDateObj);
                 if (reportDate == null) {
                     throw new IllegalArgumentException("Invalid Report Date format");
                 }
+
+                System.out.println("report date after = " + reportDate);
                 dto.setReportDate(reportDate);
 
                 // ✅ SHIFT (required)
@@ -321,7 +324,7 @@ public class WorkReportService {
 
         try {
             // Update basic fields
-            validateNoDuplicateReport(dto);
+            // validateNoDuplicateReport(dto);
             mapToEntity(workReport, dto);
 
             // Handle technicians
@@ -376,21 +379,25 @@ public class WorkReportService {
         }
 
         String problem = dto.getProblem().trim();
+        String solution = dto.getSolution() != null ? dto.getSolution().trim() : null;
         String equipmentCode = dto.getEquipment().getCode().trim();
-        LocalDateTime reportDate = dto.getReportDate();
+        LocalDateTime startTime = dto.getStartTime();
+        LocalDate reportDate = dto.getReportDate();
 
         if (reportDate == null) {
             return;
         }
 
         // Define time window: e.g., same day ± 1 hour
-        LocalDateTime start = reportDate.minusHours(1);
-        LocalDateTime end = reportDate.plusHours(1);
+       
 
         // Query: Is there an existing report with same equipment, problem, and
         // overlapping time?
-        boolean exists = workReportRepository.existsByEquipmentCodeAndProblemAndReportDateBetween(
-                equipmentCode, problem, start, end);
+        // boolean exists = workReportRepository.existsByEquipmentCodeAndProblemAndReportDateBetween(
+        //         equipmentCode, problem, start, end);
+
+        boolean exists = workReportRepository.hasSimilarReportOnDate(
+                equipmentCode, problem, solution, startTime);
 
         if (exists) {
             throw new IllegalArgumentException(

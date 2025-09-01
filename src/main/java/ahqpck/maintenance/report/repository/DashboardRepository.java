@@ -9,8 +9,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import ahqpck.maintenance.report.dto.DailyBreakdownDTO;
 import ahqpck.maintenance.report.dto.DailyStatusCountDTO;
 import ahqpck.maintenance.report.dto.EquipmentComplaintCountDTO;
+import ahqpck.maintenance.report.dto.MonthlyBreakdownDTO;
 import ahqpck.maintenance.report.dto.MonthlyStatusCountDTO;
 import ahqpck.maintenance.report.dto.StatusCountDTO;
 import ahqpck.maintenance.report.entity.Complaint;
@@ -184,4 +186,65 @@ public interface DashboardRepository extends JpaRepository<Complaint, String> {
             ORDER BY total_complaints DESC
             """, nativeQuery = true)
     List<EquipmentComplaintCountDTO> getEquipmentComplaintCount();
+
+    // Daily breakdown: last N days
+    @Query(value = """
+            SELECT
+                d.day AS date,
+                COALESCE(SUM(CASE WHEN wr.category = 'BREAKDOWN' THEN 1 ELSE 0 END), 0) AS breakdownCount,
+                COALESCE(SUM(CASE WHEN wr.category = 'BREAKDOWN' THEN wr.total_resolution_time_minutes ELSE 0 END), 0) AS totalResolutionTimeMinutes
+            FROM (
+                -- Generate date range: from :from to :to
+                SELECT DATE_SUB(:to, INTERVAL (units.a + tens.a * 10) DAY) AS day
+                FROM
+                    (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+                     UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+                     UNION ALL SELECT 8 UNION ALL SELECT 9) units
+                    CROSS JOIN
+                    (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+                     UNION ALL SELECT 4 UNION ALL SELECT 5) tens
+            ) d
+            LEFT JOIN work_reports wr ON wr.report_date = d.day
+            WHERE
+                d.day >= :from
+                AND d.day <= :to
+                AND d.day <= CURRENT_DATE()
+            GROUP BY d.day
+            ORDER BY d.day
+            """, nativeQuery = true)
+    List<DailyBreakdownDTO> getDailyBreakdownTime(
+            @Param("from") LocalDate from,
+            @Param("to") LocalDate to);
+
+    // Monthly breakdown: all months in a year
+    @Query(value = """
+    SELECT
+        YEAR(d.month_start) AS year,
+        MONTH(d.month_start) AS month,
+        COALESCE(SUM(CASE WHEN wr.category = 'BREAKDOWN' THEN 1 ELSE 0 END), 0) AS breakdownCount,
+        COALESCE(SUM(CASE WHEN wr.category = 'BREAKDOWN' THEN wr.total_resolution_time_minutes ELSE 0 END), 0) AS totalResolutionTimeMinutes
+    FROM (
+        -- Generate 12 months of the year
+        SELECT DATE_ADD(
+            CONCAT(COALESCE(:year, YEAR(CURDATE())), '-01-01'),
+            INTERVAL (units.a + tens.a * 10) MONTH
+        ) AS month_start
+        FROM
+            (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+             UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+             UNION ALL SELECT 8 UNION ALL SELECT 9) units
+            CROSS JOIN
+            (SELECT 0 AS a UNION ALL SELECT 1) tens
+    ) d
+    LEFT JOIN work_reports wr
+        ON YEAR(wr.report_date) = YEAR(d.month_start)
+       AND MONTH(wr.report_date) = MONTH(d.month_start)
+    WHERE
+        YEAR(d.month_start) = COALESCE(:year, YEAR(CURDATE()))
+        AND d.month_start <= NOW()
+    GROUP BY YEAR(d.month_start), MONTH(d.month_start)
+    ORDER BY YEAR(d.month_start), MONTH(d.month_start)
+    """, nativeQuery = true)
+List<MonthlyBreakdownDTO> getMonthlyBreakdownTime(@Param("year") Integer year);
+
 }

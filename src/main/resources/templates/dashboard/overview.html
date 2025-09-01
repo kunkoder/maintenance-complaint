@@ -146,23 +146,21 @@
 					<div class="card full-height">
 						<div class="card-header">
 							<div class="d-flex justify-content-between align-items-center">
-								<h4 class="card-title">Daily Ticket Summary</h4>
-								<!-- Date Range Filter + Quick Buttons -->
-								<form id="dateRangeForm2" class="form-inline">
+								<h4 class="card-title">Complaint Chart</h4>
+								<!-- Complaint Chart Form -->
+								<form id="complaint-chart-form" class="form-inline">
 									<div class="input-group input-daterange mr-2">
-										<input type="datetime-local" class="form-control form-control-sm" id="from2"
-											name="from" required>
+										<input type="date" class="form-control form-control-sm" id="complaint-from"
+											required>
 										<div class="input-group-prepend input-group-append">
 											<span class="input-group-text">to</span>
 										</div>
-										<input type="datetime-local" class="form-control form-control-sm" id="to2"
-											name="to" required>
+										<input type="date" class="form-control form-control-sm" id="complaint-to"
+											required>
 										<div class="input-group-append">
 											<button type="submit" class="btn btn-sm btn-primary ml-2">Apply</button>
 										</div>
 									</div>
-
-									<!-- Quick Range Buttons -->
 									<div class="btn-group btn-group-sm" role="group">
 										<button type="button" class="btn btn-outline-primary"
 											data-range="weekly">Weekly</button>
@@ -171,12 +169,16 @@
 										<button type="button" class="btn btn-outline-primary"
 											data-range="yearly">Yearly</button>
 									</div>
+									<div class="ml-2" id="complaint-year-selector" style="display: none;">
+										<select id="complaint-year-select"
+											class="form-control form-control-sm"></select>
+									</div>
 								</form>
 							</div>
 						</div>
 						<div class="card-body d-flex flex-column">
 							<div class="chart-container flex-grow-1">
-								<canvas id="multipleBarChart"></canvas>
+								<canvas id="complaint-bar-chart"></canvas>
 							</div>
 						</div>
 					</div>
@@ -268,6 +270,352 @@
 				</div>
 
 			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<div class="card full-height">
+						<div class="card-header">
+							<div class="d-flex justify-content-between align-items-center">
+								<h4 class="card-title">Breakdown Chart</h4>
+								<!-- Breakdown Chart Form -->
+								<form id="breakdown-chart-form" class="form-inline">
+									<div class="input-group input-daterange mr-2">
+										<input type="date" class="form-control form-control-sm" id="breakdown-from"
+											required>
+										<div class="input-group-prepend input-group-append">
+											<span class="input-group-text">to</span>
+										</div>
+										<input type="date" class="form-control form-control-sm" id="breakdown-to"
+											required>
+										<div class="input-group-append">
+											<button type="submit" class="btn btn-sm btn-primary ml-2">Apply</button>
+										</div>
+									</div>
+									<div class="btn-group btn-group-sm" role="group">
+										<button type="button" class="btn btn-outline-primary"
+											data-range="weekly">Weekly</button>
+										<button type="button" class="btn btn-outline-primary"
+											data-range="monthly">Monthly</button>
+										<button type="button" class="btn btn-outline-primary"
+											data-range="yearly">Yearly</button>
+									</div>
+									<div class="ml-2" id="breakdown-year-selector" style="display: none;">
+										<select id="breakdown-year-select"
+											class="form-control form-control-sm"></select>
+									</div>
+								</form>
+							</div>
+						</div>
+						<div class="card-body d-flex flex-column">
+							<div class="chart-container flex-grow-1">
+								<canvas id="breakdown-line-chart"></canvas>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<script>
+				function formatDate(date) {
+					return date.toISOString().split('T')[0]; // YYYY-MM-DD
+				}
+
+				// Populate year selector
+				function populateYearSelector(selectId, selectedYear = null) {
+					const select = document.getElementById(selectId);
+					const currentYear = new Date().getFullYear();
+					select.innerHTML = '';
+					for (let y = currentYear - 10; y <= currentYear + 1; y++) {
+						const opt = new Option(y, y);
+						if (y === selectedYear || (selectedYear === null && y === currentYear)) {
+							opt.selected = true;
+						}
+						select.appendChild(opt);
+					}
+				}
+			</script>
+
+			<script>
+				let complaintChart = null;
+
+				function updateComplaintChart(mode, from = null, to = null, year = null) {
+					let url, labels = [], openData = [], closedData = [], pendingData = [];
+
+					if (mode === 'yearly') {
+						url = `/api/dashboards/monthly-status-count?year=${year}`;
+						fetch(url)
+							.then(r => r.json())
+							.then(data => {
+								if (!Array.isArray(data)) return;
+								const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+									"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+								labels = months;
+								openData = Array(12).fill(0);
+								closedData = Array(12).fill(0);
+								pendingData = Array(12).fill(0);
+
+								data.forEach(d => {
+									const i = d.month - 1;
+									if (i >= 0 && i < 12) {
+										openData[i] = d.open || 0;
+										closedData[i] = d.closed || 0;
+										pendingData[i] = d.pending || 0;
+									}
+								});
+
+								renderComplaintChart(labels, openData, closedData, pendingData, 'Monthly Ticket Summary');
+							});
+					} else {
+						url = `/api/dashboards/daily-status-count?from=${from}&to=${to}`;
+						fetch(url)
+							.then(r => r.json())
+							.then(data => {
+								if (!Array.isArray(data)) return;
+								labels = data.map(d => d.date.split('-')[2]); // Day of month
+								openData = data.map(d => d.open || 0);
+								closedData = data.map(d => d.closed || 0);
+								pendingData = data.map(d => d.pending || 0);
+								renderComplaintChart(labels, openData, closedData, pendingData, 'Daily Ticket Summary');
+							});
+					}
+				}
+
+				function renderComplaintChart(labels, open, closed, pending, title) {
+					const ctx = document.getElementById('complaint-bar-chart').getContext('2d');
+					if (complaintChart) complaintChart.destroy();
+					complaintChart = new Chart(ctx, {
+						type: 'bar',
+						data: {
+							labels, datasets: [
+								{ label: "Open", backgroundColor: '#fdaf4b', data: open },
+								{ label: "Closed", backgroundColor: '#59d05d', data: closed },
+								{ label: "Pending", backgroundColor: '#d9534f', data: pending }
+							]
+						},
+						options: {
+							responsive: true,
+							maintainAspectRatio: false,
+							title: { display: true, text: title },
+							scales: { x: { stacked: true }, y: { stacked: true } }
+						}
+					});
+				}
+
+				function initComplaintChartForm() {
+					const now = new Date();
+					const from = new Date(now);
+					from.setDate(now.getDate() - 6);
+
+					document.getElementById('complaint-from').value = formatDate(from);
+					document.getElementById('complaint-to').value = formatDate(now);
+
+					// Populate year selector
+					populateYearSelector('complaint-year-select', now.getFullYear());
+
+					// Quick buttons
+					document.querySelectorAll('#complaint-chart-form .btn[data-range]').forEach(btn => {
+						btn.addEventListener('click', () => {
+							const range = btn.getAttribute('data-range');
+							const now = new Date();
+							if (range === 'weekly') {
+								document.getElementById('complaint-year-selector').style.display = 'none';
+								const from = new Date(now);
+								from.setDate(now.getDate() - 6);
+								document.getElementById('complaint-from').value = formatDate(from);
+								document.getElementById('complaint-to').value = formatDate(now);
+								updateComplaintChart('daily', formatDate(from), formatDate(now));
+							} else if (range === 'monthly') {
+								document.getElementById('complaint-year-selector').style.display = 'none';
+								const from = new Date(now.getFullYear(), now.getMonth(), 1);
+								document.getElementById('complaint-from').value = formatDate(from);
+								document.getElementById('complaint-to').value = formatDate(now);
+								updateComplaintChart('daily', formatDate(from), formatDate(now));
+							} else if (range === 'yearly') {
+								document.getElementById('complaint-year-selector').style.display = 'inline-block';
+								const year = document.getElementById('complaint-year-select').value;
+								updateComplaintChart('yearly', null, null, year);
+							}
+						});
+					});
+
+					// Year change
+					document.getElementById('complaint-year-select').addEventListener('change', () => {
+						const year = document.getElementById('complaint-year-select').value;
+						updateComplaintChart('yearly', null, null, year);
+					});
+
+					// Apply button
+					document.getElementById('complaint-chart-form').addEventListener('submit', e => {
+						e.preventDefault();
+						const from = document.getElementById('complaint-from').value;
+						const to = document.getElementById('complaint-to').value;
+						document.getElementById('complaint-year-selector').style.display = 'none';
+						updateComplaintChart('daily', from, to);
+					});
+
+					// Initial load
+					updateComplaintChart('daily', formatDate(from), formatDate(now));
+				}
+			</script>
+
+			<script>
+				let breakdownChart = null;
+
+				function updateBreakdownChart(mode, from = null, to = null, year = null) {
+					const ctx = document.getElementById('breakdown-line-chart').getContext('2d');
+					if (breakdownChart) breakdownChart.destroy();
+
+					if (mode === 'yearly') {
+						fetch(`/api/dashboards/monthly-breakdown?year=${year}`)
+							.then(r => r.json())
+							.then(data => {
+								if (!Array.isArray(data)) return;
+								const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+									"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+								const values = Array(12).fill(0);
+								data.forEach(d => {
+									const i = d.month - 1;
+									if (i >= 0 && i < 12) {
+										values[i] = d.totalResolutionTimeMinutes || 0;
+									}
+								});
+								breakdownChart = new Chart(ctx, {
+									type: 'line',
+									data: {
+										labels: months,
+										datasets: [{
+											label: "Total Resolution Time (min)",
+											borderColor: "#1d7af3",
+											pointBorderColor: "#FFF",
+											pointBackgroundColor: "#1d7af3",
+											pointBorderWidth: 2,
+											pointHoverRadius: 4,
+											pointRadius: 4,
+											backgroundColor: 'transparent',
+											fill: true,
+											borderWidth: 2,
+											data: values
+										}]
+									},
+									options: {
+										responsive: true,
+										maintainAspectRatio: false,
+										legend: { position: 'bottom', labels: { fontColor: '#1d7af3' } },
+										tooltips: { mode: "nearest", intersect: false }
+									}
+								});
+							});
+					} else {
+						fetch(`/api/dashboards/daily-breakdown?from=${from}&to=${to}`)
+							.then(r => r.json())
+							.then(data => {
+								if (!Array.isArray(data)) return;
+								const labels = data.map(d => d.date);
+								const values = data.map(d => d.totalResolutionTimeMinutes || 0);
+								breakdownChart = new Chart(ctx, {
+									type: 'line',
+									data: {
+										labels,
+										datasets: [{
+											label: "Total Resolution Time (min)",
+											borderColor: "#1d7af3",
+											pointBorderColor: "#FFF",
+											pointBackgroundColor: "#1d7af3",
+											pointBorderWidth: 2,
+											pointHoverRadius: 4,
+											pointRadius: 4,
+											backgroundColor: 'transparent',
+											fill: true,
+											borderWidth: 2,
+											data: values
+										}]
+									},
+									options: {
+										responsive: true,
+										maintainAspectRatio: false,
+										legend: { position: 'bottom', labels: { fontColor: '#1d7af3' } },
+										tooltips: { mode: "nearest", intersect: false }
+									}
+								});
+							});
+					}
+				}
+
+				function initBreakdownChartForm() {
+					const now = new Date();
+					const from = new Date(now);
+					from.setDate(now.getDate() - 6);
+
+					document.getElementById('breakdown-from').value = formatDate(from);
+					document.getElementById('breakdown-to').value = formatDate(now);
+
+					// Populate year selector
+					populateYearSelector('breakdown-year-select', now.getFullYear());
+
+					// Quick buttons
+					document.querySelectorAll('#breakdown-chart-form .btn[data-range]').forEach(btn => {
+						btn.addEventListener('click', () => {
+							const range = btn.getAttribute('data-range');
+							const now = new Date();
+							if (range === 'weekly') {
+								document.getElementById('breakdown-year-selector').style.display = 'none';
+								const from = new Date(now);
+								from.setDate(now.getDate() - 6);
+								document.getElementById('breakdown-from').value = formatDate(from);
+								document.getElementById('breakdown-to').value = formatDate(now);
+								updateBreakdownChart('daily', formatDate(from), formatDate(now));
+							} else if (range === 'monthly') {
+								document.getElementById('breakdown-year-selector').style.display = 'none';
+								const from = new Date(now.getFullYear(), now.getMonth(), 1);
+								document.getElementById('breakdown-from').value = formatDate(from);
+								document.getElementById('breakdown-to').value = formatDate(now);
+								updateBreakdownChart('daily', formatDate(from), formatDate(now));
+							} else if (range === 'yearly') {
+								document.getElementById('breakdown-year-selector').style.display = 'inline-block';
+								const year = document.getElementById('breakdown-year-select').value;
+								updateBreakdownChart('yearly', null, null, year);
+							}
+						});
+					});
+
+					// Year change
+					document.getElementById('breakdown-year-select').addEventListener('change', () => {
+						const year = document.getElementById('breakdown-year-select').value;
+						updateBreakdownChart('yearly', null, null, year);
+					});
+
+					// Apply button
+					document.getElementById('breakdown-chart-form').addEventListener('submit', e => {
+						e.preventDefault();
+						const from = document.getElementById('breakdown-from').value;
+						const to = document.getElementById('breakdown-to').value;
+						document.getElementById('breakdown-year-selector').style.display = 'none';
+						updateBreakdownChart('daily', from, to);
+					});
+
+					// Initial load
+					updateBreakdownChart('daily', formatDate(from), formatDate(now));
+				}
+			</script>
+
+			<script>
+				window.addEventListener('DOMContentLoaded', () => {
+					initComplaintChartForm();
+					initBreakdownChartForm();
+				});
+			</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 		</div>
 
@@ -363,7 +711,6 @@
 					})
 					.catch(err => {
 						console.error('Fetch error:', err);
-						alert('Failed to load dashboard data.');
 					});
 			}
 
@@ -383,7 +730,7 @@
 				fetchDashboardData(from, to);
 			});
 		</script>
-		<script>
+		<!-- <script>
 			let myMultipleBarChart = null; // Hold chart instance
 			const now = new Date();
 
@@ -603,7 +950,7 @@
 
 				updateChart('daily'); // Load daily data by default
 			});
-		</script>
+		</script> -->
 		<script>
 			// Hold current date range
 			let currentFrom = null;
@@ -698,7 +1045,6 @@
 					})
 					.catch(err => {
 						console.error('Failed to load engineer data:', err);
-						alert('Could not load data.');
 					});
 			}
 
@@ -1010,13 +1356,58 @@
 
 				} catch (err) {
 					console.error('PDF generation error:', err);
-					alert('Failed to generate report. Some content may not support capture.');
 				} finally {
 					btn.innerHTML = originalText;
 					btn.disabled = false;
 				}
 			});
 		</script>
+		<!-- <script>
+			var lineChart = document.getElementById('LineChartBreakdown').getContext('2d');
+			var myLineChart = new Chart(lineChart, {
+				type: 'line',
+				data: {
+					labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+					datasets: [{
+						label: "Active Users",
+						borderColor: "#1d7af3",
+						pointBorderColor: "#FFF",
+						pointBackgroundColor: "#1d7af3",
+						pointBorderWidth: 2,
+						pointHoverRadius: 4,
+						pointHoverBorderWidth: 1,
+						pointRadius: 4,
+						backgroundColor: 'transparent',
+						fill: true,
+						borderWidth: 2,
+						data: [542, 480, 430, 550, 530, 453, 380, 434, 568, 610, 700, 900]
+					}]
+				},
+				options: {
+					responsive: true,
+					maintainAspectRatio: false,
+					legend: {
+						position: 'bottom',
+						labels: {
+							padding: 10,
+							fontColor: '#1d7af3',
+						}
+					},
+					tooltips: {
+						bodySpacing: 4,
+						mode: "nearest",
+						intersect: 0,
+						position: "nearest",
+						xPadding: 10,
+						yPadding: 10,
+						caretPadding: 10
+					},
+					layout: {
+						padding: { left: 15, right: 15, top: 15, bottom: 15 }
+					}
+				}
+			});
+		</script> -->
 	</th:block>
 </body>
 

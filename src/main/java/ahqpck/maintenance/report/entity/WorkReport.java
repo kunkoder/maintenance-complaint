@@ -1,5 +1,6 @@
 package ahqpck.maintenance.report.entity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -48,7 +49,7 @@ public class WorkReport {
     private Shift shift;
 
     @Column(name = "report_date", nullable = false)
-    private LocalDateTime reportDate;
+    private LocalDate reportDate;
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
@@ -163,7 +164,7 @@ public class WorkReport {
         
         LocalDateTime now = LocalDateTime.now();
         if (this.reportDate == null) {
-            this.reportDate = now;
+            this.reportDate = now.toLocalDate();
         }
         this.updatedAt = now;
         

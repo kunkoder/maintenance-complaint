@@ -1,5 +1,6 @@
 package ahqpck.maintenance.report.dto;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,7 +31,7 @@ public class WorkReportDTO {
 
     private WorkReport.Shift shift;
 
-    private LocalDateTime reportDate;
+    private LocalDate reportDate;
 
     private LocalDateTime updatedAt;
 

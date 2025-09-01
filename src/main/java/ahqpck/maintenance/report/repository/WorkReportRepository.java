@@ -10,6 +10,7 @@ import ahqpck.maintenance.report.entity.Equipment;
 import ahqpck.maintenance.report.entity.User;
 import ahqpck.maintenance.report.entity.WorkReport;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,6 +21,17 @@ public interface WorkReportRepository extends JpaRepository<WorkReport, String>,
      * Find all work reports by status
      */
     List<WorkReport> findByStatus(WorkReport.Status status);
+
+    @Query("SELECT COUNT(w) > 0 FROM WorkReport w " +
+            "WHERE w.equipment.code = :equipmentCode " +
+            "  AND w.problem = :problem " +
+            "  AND (:solution IS NULL AND w.solution IS NULL OR w.solution = :solution) " +
+            "  AND w.startTime = :startTime")
+    boolean hasSimilarReportOnDate(
+            @Param("equipmentCode") String equipmentCode,
+            @Param("problem") String problem,
+            @Param("solution") String solution,
+            @Param("startTime") LocalDateTime startTime);
 
     /**
      * Find by equipment (useful for equipment history)
@@ -37,9 +49,9 @@ public interface WorkReportRepository extends JpaRepository<WorkReport, String>,
     List<WorkReport> findBySupervisor(User supervisor);
 
     @Query("SELECT COUNT(w) > 0 FROM WorkReport w " +
-           "WHERE w.equipment.code = :equipmentCode " +
-           "AND w.problem = :problem " +
-           "AND w.reportDate BETWEEN :start AND :end")
+            "WHERE w.equipment.code = :equipmentCode " +
+            "AND w.problem = :problem " +
+            "AND w.reportDate BETWEEN :start AND :end")
     boolean existsByEquipmentCodeAndProblemAndReportDateBetween(
             @Param("equipmentCode") String equipmentCode,
             @Param("problem") String problem,

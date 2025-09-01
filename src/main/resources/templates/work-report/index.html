@@ -151,7 +151,7 @@
                                         <tr th:each="report : ${workReports.content}" th:data-id="${report.id}">
                                             <!-- Report Date -->
                                             <td data-field="reportDate"
-                                                th:text="${#temporals.format(report.reportDate, 'MMM dd, yyyy, hh:mm a')}">
+                                                th:text="${#temporals.format(report.reportDate, 'MMM dd, yyyy')}">
                                             </td>
 
                                             <!-- Shift -->
@@ -438,6 +438,18 @@
                 }
                 // --- Edit Modal Trigger ---
                 $(document).on('click', '.edit-row', function () {
+                    function toIsoDate(dateStr) {
+                        if (!dateStr) return '';
+                        const date = new Date(dateStr);
+                        if (isNaN(date.getTime())) return '';
+
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+
+                        return `${year}-${month}-${day}`; // e.g., "2025-04-05"
+                    }
+
                     function toIsoDateTime(dateTimeStr) {
                         if (!dateTimeStr) return '';
                         const date = new Date(dateTimeStr);
@@ -457,7 +469,7 @@
 
                     // Populate simple fields
                     $('#editId').val(currentId);
-                    $('#editReportDate').val(toIsoDateTime(row.find('[data-field="reportDate"]').text().trim()));
+                    $('#editReportDate').val(toIsoDate(row.find('[data-field="reportDate"]').text().trim()));
                     $('#editShift').val(row.find('[data-field="shift"]').text().trim());
 
                     // Category

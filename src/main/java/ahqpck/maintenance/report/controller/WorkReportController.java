@@ -22,10 +22,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 @Controller
@@ -38,6 +40,11 @@ public class WorkReportController {
     private final EquipmentService equipmentService;
     private final UserService userService;
 
+    @ModelAttribute("workReportDTO")
+    public WorkReportDTO workReportDTO() {
+        return new WorkReportDTO();
+    }
+
     // === LIST WORK REPORTS ===
     @GetMapping
     public String listWorkReports(
@@ -48,10 +55,15 @@ public class WorkReportController {
             @RequestParam(defaultValue = "false") boolean asc,
             Model model) {
 
-        try {
-            int zeroBasedPage = page - 1;
+                System.out.println("Timezone: " + TimeZone.getDefault().getDisplayName());
+System.out.println("Now: " + LocalDateTime.now());
+
+        int zeroBasedPage = page - 1;
             Page<WorkReportDTO> reportPage = workReportService.getAllWorkReports(keyword, zeroBasedPage, size, sortBy,
                     asc);
+
+        try {
+            
 
             model.addAttribute("workReports", reportPage);
             model.addAttribute("keyword", keyword);

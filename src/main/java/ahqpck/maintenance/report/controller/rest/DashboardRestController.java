@@ -1,5 +1,6 @@
 package ahqpck.maintenance.report.controller.rest;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Properties;
@@ -15,8 +16,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import ahqpck.maintenance.report.dto.AssigneeDailyStatusDTO;
+import ahqpck.maintenance.report.dto.DailyBreakdownDTO;
 import ahqpck.maintenance.report.dto.DailyStatusCountDTO;
 import ahqpck.maintenance.report.dto.EquipmentComplaintCountDTO;
+import ahqpck.maintenance.report.dto.MonthlyBreakdownDTO;
 import ahqpck.maintenance.report.dto.MonthlyStatusCountDTO;
 import ahqpck.maintenance.report.dto.StatusCountDTO;
 import ahqpck.maintenance.report.service.DashboardService;
@@ -73,6 +76,23 @@ public class DashboardRestController {
     public ResponseEntity<List<EquipmentComplaintCountDTO>> getEquipmentComplaintCount() {
         List<EquipmentComplaintCountDTO> data = dashboardService.getEquipmentComplaintCount();
         return ResponseEntity.ok(data);
+    }
+
+    @GetMapping("/daily-breakdown")
+    public ResponseEntity<List<DailyBreakdownDTO>> getDailyBreakdown(
+            @RequestParam(name = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(name = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+
+        List<DailyBreakdownDTO> result = dashboardService.getDailyBreakdownTime(from, to);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/monthly-breakdown")
+    public ResponseEntity<List<MonthlyBreakdownDTO>> getMonthlyBreakdown(
+            @RequestParam(name = "year", required = false) Integer year) {
+
+        List<MonthlyBreakdownDTO> result = dashboardService.getMonthlyBreakdownTime(year);
+        return ResponseEntity.ok(result);
     }
 
     // private final EmailUtil emailUtil;

@@ -2,9 +2,11 @@ package ahqpck.maintenance.report.util;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -91,7 +93,19 @@ public class ImportUtil {
             return null;
         }
 
+        if (obj instanceof Date) {
+            System.out.println("report date util shit");
+            return ((Date) obj).toInstant()
+                    // .atZone(ZoneId.of("Asia/Riyadh"))
+                    .atZone(ZoneId.of("UTC"))
+                    .toLocalDate()
+                    .plusDays(1);
+        }
+
         String str = obj.toString().trim();
+
+        System.out.println("is date = " + (obj instanceof Date));
+        
 
         // Handle Excel serial date
         if (str.matches("\\d+(\\.\\d+)?")) {
@@ -144,12 +158,20 @@ public class ImportUtil {
         int n = (int) serial;
         if (n >= 60)
             n--; // Excel 1900 leap year bug
-        return LocalDate.of(1899, 12, 30).plusDays(n);
+        return LocalDate.of(1899, 12, 31).plusDays(n);
     }
 
     public LocalDateTime toLocalDateTime(Object obj) {
         if (obj == null || obj.toString().trim().isEmpty()) {
             return null;
+        }
+
+        if (obj instanceof Date) {
+            return ((Date) obj).toInstant()
+            // .atZone(ZoneId.of("Asia/Riyadh"))
+                    .atZone(ZoneId.of("UTC"))
+                    .toLocalDateTime()
+                    .plusHours(3);
         }
 
         String str = obj.toString().trim();
