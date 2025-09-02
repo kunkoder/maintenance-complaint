@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MonthlyStatusCountDTO {
-    private String date;   // Format: "YYYY-MM"
+public class DailyComplaintDTO {
+    private String date;
     private Long open;
     private Long closed;
     private Long pending;

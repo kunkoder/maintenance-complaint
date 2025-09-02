@@ -17,10 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ahqpck.maintenance.report.dto.AssigneeDailyStatusDTO;
 import ahqpck.maintenance.report.dto.DailyBreakdownDTO;
-import ahqpck.maintenance.report.dto.DailyStatusCountDTO;
+import ahqpck.maintenance.report.dto.DailyComplaintDTO;
+import ahqpck.maintenance.report.dto.DailyWorkReportDTO;
 import ahqpck.maintenance.report.dto.EquipmentComplaintCountDTO;
+import ahqpck.maintenance.report.dto.EquipmentWorkReportDTO;
 import ahqpck.maintenance.report.dto.MonthlyBreakdownDTO;
-import ahqpck.maintenance.report.dto.MonthlyStatusCountDTO;
+import ahqpck.maintenance.report.dto.MonthlyComplaintDTO;
+import ahqpck.maintenance.report.dto.MonthlyWorkReportDTO;
 import ahqpck.maintenance.report.dto.StatusCountDTO;
 import ahqpck.maintenance.report.service.DashboardService;
 import ahqpck.maintenance.report.util.EmailUtil;
@@ -43,22 +46,21 @@ public class DashboardRestController {
         return ResponseEntity.ok(result.orZero());
     }
 
-    @GetMapping("/daily-status-count")
-    public ResponseEntity<List<DailyStatusCountDTO>> getDailyStatusCount(
+    @GetMapping("/daily-complaint")
+    public ResponseEntity<List<DailyComplaintDTO>> getDailyComplaint(
             @RequestParam(name = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
 
             @RequestParam(name = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to) {
 
-        List<DailyStatusCountDTO> result = dashboardService.getDailyStatusCount(from, to);
+        List<DailyComplaintDTO> result = dashboardService.getDailyComplaint(from, to);
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/monthly-status-count")
-    public ResponseEntity<List<MonthlyStatusCountDTO>> getMonthlyStatusCount(
-            @RequestParam(name = "year", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime year) {
+    @GetMapping("/monthly-complaint")
+    public ResponseEntity<List<MonthlyComplaintDTO>> getMonthlyComplaint(
+            @RequestParam(name = "year", required = false) Integer year) {
 
-        List<MonthlyStatusCountDTO> result = dashboardService.getMonthlyStatusCount(year);
+        List<MonthlyComplaintDTO> result = dashboardService.getMonthlyComplaint(year);
         return ResponseEntity.ok(result);
     }
 
@@ -95,15 +97,58 @@ public class DashboardRestController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/equipment-work-report")
+    public ResponseEntity<List<EquipmentWorkReportDTO>> getEquipmentWorkReport() {
+        List<EquipmentWorkReportDTO> data = dashboardService.getEquipmentWorkReport();
+        return ResponseEntity.ok(data);
+    }
+
+    @GetMapping("/daily-work-report")
+    public ResponseEntity<List<DailyWorkReportDTO>> getDailyWorkReport(
+            @RequestParam(name = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(name = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+
+        List<DailyWorkReportDTO> result = dashboardService.getDailyWorkReport(from, to);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/monthly-work-report")
+    public ResponseEntity<List<MonthlyWorkReportDTO>> getMonthlyWorkReport(
+            @RequestParam(name = "year", required = false) Integer year) {
+
+        List<MonthlyWorkReportDTO> result = dashboardService.getMonthlyWorkReport(year);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/daily-work-report-equipment")
+    public ResponseEntity<List<DailyWorkReportDTO>> getDailyWorkReportEquipment(
+            @RequestParam(name = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(name = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(name = "equipmentCode", required = false) String equipmentCode) {
+
+        List<DailyWorkReportDTO> result = dashboardService.getDailyWorkReportEquipment(from, to, equipmentCode);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/monthly-work-report-equipment")
+    public ResponseEntity<List<MonthlyWorkReportDTO>> getMonthlyWorkReportEquipment(
+            @RequestParam(name = "year", required = false) Integer year,
+            @RequestParam(name = "equipmentCode", required = false) String equipmentCode) {
+
+        List<MonthlyWorkReportDTO> result = dashboardService.getMonthlyWorkReportEquipment(year, equipmentCode);
+        return ResponseEntity.ok(result);
+    }
+
     // private final EmailUtil emailUtil;
 
     // @GetMapping("/test-email")
     // public String testEmail() {
-    //     try {
-    //         emailUtil.sendAccountActivationEmail("laught.coffin@gmail.com", "test-token-12345");;
-    //         return "Email sent!";
-    //     } catch (Exception e) {
-    //         return "Failed: " + e.getMessage();
-    //     }
+    // try {
+    // emailUtil.sendAccountActivationEmail("laught.coffin@gmail.com",
+    // "test-token-12345");;
+    // return "Email sent!";
+    // } catch (Exception e) {
+    // return "Failed: " + e.getMessage();
+    // }
     // }
 }

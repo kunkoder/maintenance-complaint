@@ -1,6 +1,7 @@
 package ahqpck.maintenance.report.service;
 
 import ahqpck.maintenance.report.dto.AreaDTO;
+import ahqpck.maintenance.report.dto.ComplaintDTO;
 import ahqpck.maintenance.report.dto.RoleDTO;
 import ahqpck.maintenance.report.dto.UserDTO;
 import ahqpck.maintenance.report.entity.Area;
@@ -9,6 +10,8 @@ import ahqpck.maintenance.report.exception.NotFoundException;
 import ahqpck.maintenance.report.repository.AreaRepository;
 import ahqpck.maintenance.report.repository.UserRepository;
 import ahqpck.maintenance.report.specification.AreaSpecification;
+import ahqpck.maintenance.report.util.ImportUtil;
+import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +21,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -29,6 +37,7 @@ public class AreaService {
     private final AreaRepository areaRepository;
     private final UserRepository userRepository;
     private final Validator validator;
+    private final ImportUtil importUtil;
 
     public Page<AreaDTO> getAllAreas(String keyword, int page, int size, String sortBy, boolean asc) {
         Sort sort = asc ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
@@ -54,6 +63,94 @@ public class AreaService {
         Area area = new Area();
         mapToEntity(area, dto);
         areaRepository.save(area);
+    }
+
+    @Transactional
+    public ImportUtil.ImportResult importAreasFromExcel(List<Map<String, Object>> data) {
+        List<String> errorMessages = new ArrayList<>();
+        int importedCount = 0;
+
+        if (data == null || data.isEmpty()) {
+            throw new IllegalArgumentException("No data to import.");
+        }
+
+        for (int i = 0; i < data.size(); i++) {
+            Map<String, Object> row = data.get(i);
+            try {
+                AreaDTO dto = new AreaDTO();
+
+                // ✅ CODE (required)
+                String code = importUtil.toString(row.get("code"));
+                if (code == null || code.trim().isEmpty()) {
+                    throw new IllegalArgumentException("Area code is required");
+                }
+                dto.setCode(code.trim());
+
+                // ✅ NAME (required)
+                String name = importUtil.toString(row.get("name"));
+                if (name == null || name.trim().isEmpty()) {
+                    throw new IllegalArgumentException("Area name is required");
+                }
+                dto.setName(name.trim());
+
+                // 🟡 DESCRIPTION (optional)
+                dto.setDescription(importUtil.toString(row.get("description")));
+
+                // 🟡 STATUS (optional, default: ACTIVE)
+                String statusStr = importUtil.toString(row.get("status"));
+                if (statusStr != null && !statusStr.trim().isEmpty()) {
+                    try {
+                        dto.setStatus(Area.Status.valueOf(statusStr.trim().toUpperCase()));
+                    } catch (IllegalArgumentException e) {
+                        throw new IllegalArgumentException("Invalid Status value: '" + statusStr + "'");
+                    }
+                } else {
+                    dto.setStatus(Area.Status.ACTIVE); // default
+                }
+
+                // ✅ RESPONSIBLE PERSON (required)
+                String empIdRaw = importUtil.toString(row.get("responsiblePerson"));
+                if (empIdRaw == null || empIdRaw.trim().isEmpty()) {
+                    throw new IllegalArgumentException("Responsible person (employee ID) is required");
+                }
+                String empId = empIdRaw.trim(); // ✅ Assigned once
+
+                User user = userRepository.findByEmployeeId4Roles(empId)
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "User not found with employee ID: " + empId));
+
+                UserDTO userDTO = new UserDTO();
+                userDTO.setId(user.getId());
+                userDTO.setEmployeeId(user.getEmployeeId());
+                userDTO.setName(user.getName());
+                userDTO.setEmail(user.getEmail());
+                dto.setResponsiblePerson(userDTO);
+
+                // Final validation (optional fields like description are allowed to be null)
+                Set<ConstraintViolation<AreaDTO>> violations = validator.validate(dto);
+                List<String> filteredMessages = violations.stream()
+                        .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                        .collect(Collectors.toList());
+
+                if (!filteredMessages.isEmpty()) {
+                    throw new IllegalArgumentException("Validation failed: " + String.join(", ", filteredMessages));
+                }
+
+                // Check duplicate code
+                if (areaRepository.existsByCodeIgnoreCase(dto.getCode())) {
+                    throw new IllegalArgumentException("Area with code '" + dto.getCode() + "' already exists.");
+                }
+
+                createArea(dto);
+                importedCount++;
+
+            } catch (Exception e) {
+                String message = e.getMessage() != null ? e.getMessage() : "Unknown error";
+                errorMessages.add("Row " + (i + 1) + ": " + message);
+            }
+        }
+
+        return new ImportUtil.ImportResult(importedCount, errorMessages);
     }
 
     public void updateArea(AreaDTO dto) {

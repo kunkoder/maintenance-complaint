@@ -3,10 +3,13 @@ package ahqpck.maintenance.report.service;
 import ahqpck.maintenance.report.dto.AssigneeDailyStatusDTO;
 import ahqpck.maintenance.report.dto.AssigneeDailyStatusDetailDTO;
 import ahqpck.maintenance.report.dto.DailyBreakdownDTO;
-import ahqpck.maintenance.report.dto.DailyStatusCountDTO;
+import ahqpck.maintenance.report.dto.DailyComplaintDTO;
+import ahqpck.maintenance.report.dto.DailyWorkReportDTO;
 import ahqpck.maintenance.report.dto.EquipmentComplaintCountDTO;
+import ahqpck.maintenance.report.dto.EquipmentWorkReportDTO;
 import ahqpck.maintenance.report.dto.MonthlyBreakdownDTO;
-import ahqpck.maintenance.report.dto.MonthlyStatusCountDTO;
+import ahqpck.maintenance.report.dto.MonthlyComplaintDTO;
+import ahqpck.maintenance.report.dto.MonthlyWorkReportDTO;
 import ahqpck.maintenance.report.dto.StatusCountDTO;
 import ahqpck.maintenance.report.repository.DashboardRepository;
 import lombok.RequiredArgsConstructor;
@@ -42,21 +45,26 @@ public class DashboardService {
         return dashboardRepository.getStatusCount(effectiveFrom, effectiveTo);
     }
 
-    public List<DailyStatusCountDTO> getDailyStatusCount(LocalDateTime from, LocalDateTime to) {
-        LocalDateTime defaultTo = LocalDateTime.now().with(LocalTime.MAX);
-        LocalDateTime defaultFrom = defaultTo.minusDays(6);
+    public List<DailyComplaintDTO> getDailyComplaint(LocalDateTime from, LocalDateTime to) {
+        // Default: last 7 days (today + 6 previous days)
+        LocalDateTime defaultTo = LocalDateTime.now().with(LocalTime.MAX); // 23:59:59.999
+        LocalDateTime defaultFrom = defaultTo.minusDays(6).with(LocalTime.MIN); // 00:00:00.000
 
         LocalDateTime effectiveFrom = from != null ? from : defaultFrom;
         LocalDateTime effectiveTo = to != null ? to : defaultTo;
 
-        return dashboardRepository.getDailyStatusCount(effectiveFrom, effectiveTo);
+        // Ensure from <= to
+        // if (effectiveFrom.isAfter(effectiveTo)) {
+        //     throw new IllegalArgumentException("Invalid date range: 'from' must be before or equal to 'to'");
+        // }
+
+        return dashboardRepository.getDailyComplaint(effectiveFrom, effectiveTo);
     }
 
-    public List<MonthlyStatusCountDTO> getMonthlyStatusCount(LocalDateTime year) {
-        // If null, default to current year
-        LocalDateTime effectiveYear = (year != null) ? year : LocalDateTime.now();
-
-        return dashboardRepository.getMonthlyStatusCount(effectiveYear);
+    public List<MonthlyComplaintDTO> getMonthlyComplaint(Integer year) {
+        
+        Integer effectiveYear = (year != null && year > 1900) ? year : LocalDate.now().getYear();
+        return dashboardRepository.getMonthlyComplaint(effectiveYear);
     }
 
     public AssigneeDailyStatusDTO getAssigneeDailyStatus(LocalDateTime from, LocalDateTime to) {
@@ -152,4 +160,60 @@ public class DashboardService {
         Integer effectiveYear = (year != null && year > 1900) ? year : LocalDate.now().getYear();
         return dashboardRepository.getMonthlyBreakdownTime(effectiveYear);
     }
+
+    public List<EquipmentWorkReportDTO> getEquipmentWorkReport() {
+        return dashboardRepository.getEquipmentWorkReport();
+    }
+
+    public List<DailyWorkReportDTO> getDailyWorkReport(LocalDate from, LocalDate to) {
+        LocalDate defaultTo = LocalDate.now();
+        LocalDate defaultFrom = defaultTo.minusDays(6); // last 7 days
+
+        LocalDate effectiveFrom = from != null ? from : defaultFrom;
+        LocalDate effectiveTo = to != null ? to : defaultTo;
+
+        return dashboardRepository.getDailyWorkReport(effectiveFrom, effectiveTo);
+    }
+
+    // === Monthly Work Report Count ===
+    public List<MonthlyWorkReportDTO> getMonthlyWorkReport(Integer year) {
+        Integer effectiveYear = (year != null && year > 1900) ? year : LocalDate.now().getYear();
+        return dashboardRepository.getMonthlyWorkReport(effectiveYear);
+    }
+
+    public List<DailyWorkReportDTO> getDailyWorkReportEquipment(
+        LocalDate from, 
+        LocalDate to, 
+        String equipmentCode) {
+
+    // Default: last 7 days
+    LocalDate defaultTo = LocalDate.now();
+    LocalDate defaultFrom = defaultTo.minusDays(6);
+
+    LocalDate effectiveFrom = from != null ? from : defaultFrom;
+    LocalDate effectiveTo = to != null ? to : defaultTo;
+
+    // Default equipment code
+    String effectiveEquipmentCode = equipmentCode != null && !equipmentCode.trim().isEmpty()
+        ? equipmentCode.trim()
+        : "AQPCK-1008";
+
+    return dashboardRepository.getDailyWorkReportEquipment(effectiveFrom, effectiveTo, effectiveEquipmentCode);
+}
+
+    // === Monthly Work Report Count ===
+    public List<MonthlyWorkReportDTO> getMonthlyWorkReportEquipment(
+        Integer year, 
+        String equipmentCode) {
+
+    // Default year
+    Integer effectiveYear = (year != null && year > 1900) ? year : LocalDate.now().getYear();
+
+    // Default equipment code
+    String effectiveEquipmentCode = equipmentCode != null && !equipmentCode.trim().isEmpty()
+        ? equipmentCode.trim()
+        : "AQPCK-1008";
+
+    return dashboardRepository.getMonthlyWorkReportEquipment(effectiveYear, effectiveEquipmentCode);
+}
 }

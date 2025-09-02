@@ -1,12 +1,14 @@
 package ahqpck.maintenance.report.controller;
 
 import ahqpck.maintenance.report.dto.AreaDTO;
+import ahqpck.maintenance.report.dto.ComplaintDTO;
 import ahqpck.maintenance.report.dto.EquipmentDTO;
 import ahqpck.maintenance.report.dto.UserDTO;
 import ahqpck.maintenance.report.entity.User;
 import ahqpck.maintenance.report.repository.UserRepository;
 import ahqpck.maintenance.report.service.AreaService;
 import ahqpck.maintenance.report.service.UserService;
+import ahqpck.maintenance.report.util.ImportUtil;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +22,11 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
@@ -167,7 +172,65 @@ public class AreaController {
         return "redirect:/areas";
     }
 
+    @PostMapping("/import")
+    public String importComplaints(
+            @RequestParam("data") String dataJson,
+            @RequestParam(value = "sheet", required = false) String sheet,
+            @RequestParam(value = "headerRow", required = false) Integer headerRow,
+            RedirectAttributes ra) {
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            List<Map<String, Object>> data = mapper.readValue(dataJson,
+                    new TypeReference<List<Map<String, Object>>>() {
+                    });
+
+            // ra.addFlashAttribute("error", data);
+
+            ImportUtil.ImportResult result = areaService.importAreasFromExcel(data);
+
+            if (result.getImportedCount() > 0 && !result.hasErrors()) {
+                ra.addFlashAttribute("success",
+                        "Successfully imported " + result.getImportedCount() + " area record(s).");
+            } else if (result.getImportedCount() > 0) {
+                StringBuilder msg = new StringBuilder("Imported ").append(result.getImportedCount())
+                        .append(" record(s), but ").append(result.getErrorMessages().size()).append(" error(s):");
+                for (String err : result.getErrorMessages()) {
+                    msg.append("|").append(err);
+                }
+                ra.addFlashAttribute("error", msg.toString());
+            } else {
+                StringBuilder msg = new StringBuilder("Failed to import any area:");
+                for (String err : result.getErrorMessages()) {
+                    msg.append("|").append(err);
+                }
+                ra.addFlashAttribute("error", msg.toString());
+            }
+
+            return "redirect:/areas";
+
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Bulk import failed: " + e.getMessage());
+            return "redirect:/areas";
+        }
+    }
+
     // === HELPERS ===
+
+    private void handleBindingErrors(BindingResult bindingResult, RedirectAttributes ra, ComplaintDTO dto) {
+        String errorMessage = bindingResult.getAllErrors().stream()
+                .map(error -> {
+                    String field = (error instanceof org.springframework.validation.FieldError)
+                            ? ((org.springframework.validation.FieldError) error).getField()
+                            : "Input";
+                    String message = error.getDefaultMessage();
+                    return field + ": " + message;
+                })
+                .collect(Collectors.joining(" | "));
+
+        ra.addFlashAttribute("error", errorMessage.isEmpty() ? "Invalid input" : errorMessage);
+        ra.addFlashAttribute("complaintDTO", dto);
+    }
 
     // Map User → UserDTO for dropdown
     private UserDTO mapToUserDTO(User user) {

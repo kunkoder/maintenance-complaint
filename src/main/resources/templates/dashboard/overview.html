@@ -30,17 +30,16 @@
 						<!-- Card Header with Title and Filter -->
 						<div class="card-header">
 							<div class="d-flex justify-content-between align-items-center">
-								<h4 class="card-title">Overall Ticket Statistics</h4>
-								<!-- Date Range Filter in Header -->
-								<form id="dateRangeForm1" class="form-inline">
+								<h4 class="card-title">Overall Complaint</h4>
+								<form id="complaint-stats-form" class="form-inline">
 									<div class="input-group input-daterange">
-										<input type="datetime-local" class="form-control form-control-sm" id="from1"
-											name="from" required>
+										<input type="datetime-local" class="form-control form-control-sm"
+											id="complaint-stats-from" name="from" required>
 										<div class="input-group-prepend input-group-append">
 											<span class="input-group-text">to</span>
 										</div>
-										<input type="datetime-local" class="form-control form-control-sm" id="to1"
-											name="to" required>
+										<input type="datetime-local" class="form-control form-control-sm"
+											id="complaint-stats-to" name="to" required>
 										<div class="input-group-append">
 											<button type="submit" class="btn btn-sm btn-primary ml-2">Apply</button>
 										</div>
@@ -52,7 +51,7 @@
 						<!-- Card Body with 4 Stat Cards in Grid -->
 						<div class="card-body">
 							<div class="row row-card-no-pd mb-0" style="box-shadow: none;">
-								<!-- 1. Total Tickets -->
+								<!-- 1. Total Complaints -->
 								<div class="col-sm-6 col-md-3">
 									<div class="card card-stats card-primary card-round mt-1">
 										<div class="card-body">
@@ -64,8 +63,8 @@
 												</div>
 												<div class="col-7 col-stats">
 													<div class="numbers">
-														<p class="card-category">Total Tickets</p>
-														<h4 class="card-title" id="totalAllComplaints">--</h4>
+														<p class="card-category">Total Complaints</p>
+														<h4 class="card-title" id="complaint-stats-total">--</h4>
 													</div>
 												</div>
 											</div>
@@ -86,7 +85,7 @@
 												<div class="col-7 col-stats">
 													<div class="numbers">
 														<p class="card-category">Total Pending</p>
-														<h4 class="card-title" id="totalPending">--</h4>
+														<h4 class="card-title" id="complaint-stats-pending">--</h4>
 													</div>
 												</div>
 											</div>
@@ -106,8 +105,8 @@
 												</div>
 												<div class="col-7 col-stats">
 													<div class="numbers">
-														<p class="card-category">Open Today</p>
-														<h4 class="card-title" id="totalOpen">--</h4>
+														<p class="card-category">Open</p>
+														<h4 class="card-title" id="complaint-stats-open">--</h4>
 													</div>
 												</div>
 											</div>
@@ -127,8 +126,8 @@
 												</div>
 												<div class="col-7 col-stats">
 													<div class="numbers">
-														<p class="card-category">Closed Today</p>
-														<h4 class="card-title" id="totalClosed">--</h4>
+														<p class="card-category">Closed</p>
+														<h4 class="card-title" id="complaint-stats-closed">--</h4>
 													</div>
 												</div>
 											</div>
@@ -261,7 +260,7 @@
 									</button>
 								</div>
 							</div>
-							<p class="card-category">Most equipment breakdowns</p>
+							<p class="card-category">Most equipment complained</p>
 						</div>
 						<div class="card-body pb-0" id="equipmentListContainer">
 							<!-- Dynamic list will be injected here -->
@@ -270,6 +269,97 @@
 				</div>
 
 			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<div class="card full-height">
+						<div class="card-header">
+							<div class="d-flex justify-content-between align-items-center">
+								<h4 class="card-title">Work Report Chart</h4>
+								<!-- Work Report Chart Form -->
+								<form id="work-report-chart-form" class="form-inline">
+									<div class="input-group input-daterange mr-2">
+										<input type="date" class="form-control form-control-sm" id="work-report-from"
+											required>
+										<div class="input-group-prepend input-group-append">
+											<span class="input-group-text">to</span>
+										</div>
+										<input type="date" class="form-control form-control-sm" id="work-report-to"
+											required>
+										<div class="input-group-append">
+											<button type="submit" class="btn btn-sm btn-primary ml-2">Apply</button>
+										</div>
+									</div>
+									<div class="btn-group btn-group-sm" role="group">
+										<button type="button" class="btn btn-outline-primary"
+											data-range="weekly">Weekly</button>
+										<button type="button" class="btn btn-outline-primary"
+											data-range="monthly">Monthly</button>
+										<button type="button" class="btn btn-outline-primary"
+											data-range="yearly">Yearly</button>
+									</div>
+									<div class="ml-2" id="work-report-year-selector" style="display: none;">
+										<select id="work-report-year-select"
+											class="form-control form-control-sm"></select>
+									</div>
+								</form>
+							</div>
+						</div>
+						<div class="card-body d-flex flex-column">
+							<div class="chart-container flex-grow-1">
+								<canvas id="work-report-line-chart"></canvas>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+    <div class="col-md-12">
+        <div class="card full-height">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="card-title">Work Report Chart</h4>
+                    <!-- Work Report Chart Form -->
+                    <form id="wr-chart-form" class="form-inline">
+                        <div class="input-group input-daterange mr-2">
+                            <input type="date" class="form-control form-control-sm" id="wr-from" required>
+                            <div class="input-group-prepend input-group-append">
+                                <span class="input-group-text">to</span>
+                            </div>
+                            <input type="date" class="form-control form-control-sm" id="wr-to" required>
+                            <div class="input-group-append">
+                                <button type="submit" class="btn btn-sm btn-primary ml-2">Apply</button>
+                            </div>
+                        </div>
+
+                        <!-- Equipment Dropdown -->
+                        <div class="mr-2">
+                            <select id="wr-equipment" class="form-control form-control-sm" style="min-width: 180px;">
+                                <option value="">All Equipment</option>
+                            </select>
+                        </div>
+
+                        <!-- Quick Buttons -->
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-primary" data-range="weekly">Weekly</button>
+                            <button type="button" class="btn btn-outline-primary" data-range="monthly">Monthly</button>
+                            <button type="button" class="btn btn-outline-primary" data-range="yearly">Yearly</button>
+                        </div>
+
+                        <!-- Year Selector -->
+                        <div class="ml-2" id="wr-year-selector" style="display: none;">
+                            <select id="wr-year-select" class="form-control form-control-sm"></select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="card-body d-flex flex-column">
+                <div class="chart-container flex-grow-1">
+                    <canvas id="wr-equipment-line-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 			<div class="row">
 				<div class="col-md-12">
 					<div class="card full-height">
@@ -313,10 +403,54 @@
 					</div>
 				</div>
 			</div>
+			<div class="row">
+				<div class="col-md-6">
+					<!-- Top Equipment -->
+					<div class="card">
+						<div class="card-header">
+							<div class="card-head-row card-tools-still-right">
+								<h4 class="card-title">Equipment</h4>
+								<div class="card-tools">
+									<!-- Previous Button -->
+									<button class="btn btn-icon btn-link btn-primary btn-xs"
+										id="equipment-work-prev-btn" title="Previous">
+										<i class="fas fa-chevron-up"></i>
+									</button>
+									<!-- Next Button -->
+									<button class="btn btn-icon btn-link btn-primary btn-xs"
+										id="equipment-work-next-btn" title="Next">
+										<i class="fas fa-chevron-down"></i>
+									</button>
+									<!-- Refresh Button -->
+									<button class="btn btn-icon btn-link btn-primary btn-xs"
+										id="equipment-work-refresh-btn" title="Refresh">
+										<i class="fa fa-sync-alt"></i>
+									</button>
+								</div>
+							</div>
+							<p class="card-category">Most equipment repaired</p>
+						</div>
+						<div class="card-body pb-0" id="equipment-work-list-container">
+							<!-- Dynamic list will be injected here -->
+						</div>
+					</div>
+				</div>
+			</div>
 
 			<script>
 				function formatDate(date) {
 					return date.toISOString().split('T')[0]; // YYYY-MM-DD
+				}
+
+				function toApiDateTime(dateStr, isEnd = false) {
+					if (!dateStr) return '';
+					const date = new Date(dateStr);
+					if (isEnd) {
+						date.setHours(23, 59, 59, 999); // 23:59:59.999
+					} else {
+						date.setHours(0, 0, 0, 0); // 00:00:00.000
+					}
+					return date.toISOString().slice(0, 16); // "2025-08-01T00:00"
 				}
 
 				// Populate year selector
@@ -341,39 +475,56 @@
 					let url, labels = [], openData = [], closedData = [], pendingData = [];
 
 					if (mode === 'yearly') {
-						url = `/api/dashboards/monthly-status-count?year=${year}`;
+						url = `/api/dashboards/monthly-complaint${year ? '?year=' + year : ''}`;
 						fetch(url)
 							.then(r => r.json())
 							.then(data => {
-								if (!Array.isArray(data)) return;
+								if (!Array.isArray(data) || data.length === 0) return;
+
 								const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
 									"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-								labels = months;
-								openData = Array(12).fill(0);
-								closedData = Array(12).fill(0);
-								pendingData = Array(12).fill(0);
+								const labels = Array(12).fill('');
+								const openData = Array(12).fill(0);
+								const closedData = Array(12).fill(0);
+								const pendingData = Array(12).fill(0);
 
 								data.forEach(d => {
-									const i = d.month - 1;
-									if (i >= 0 && i < 12) {
-										openData[i] = d.open || 0;
-										closedData[i] = d.closed || 0;
-										pendingData[i] = d.pending || 0;
+									const dateStr = d.date; // "2025-01"
+									const monthIndex = parseInt(dateStr.split('-')[1]) - 1; // 0-based
+									if (monthIndex >= 0 && monthIndex < 12) {
+										labels[monthIndex] = months[monthIndex];
+										openData[monthIndex] = d.open || 0;
+										closedData[monthIndex] = d.closed || 0;
+										pendingData[monthIndex] = d.pending || 0;
 									}
 								});
 
+								// Fill missing months
+								for (let i = 0; i < 12; i++) {
+									if (!labels[i]) labels[i] = months[i];
+								}
+
 								renderComplaintChart(labels, openData, closedData, pendingData, 'Monthly Ticket Summary');
-							});
+							})
+							.catch(err => console.error('Monthly fetch error:', err));
+
+
 					} else {
-						url = `/api/dashboards/daily-status-count?from=${from}&to=${to}`;
+						const fromApi = toApiDateTime(from, false); // T00:00
+						const toApi = toApiDateTime(to, true);     // T23:59
+						url = `/api/dashboards/daily-complaint?from=${fromApi}&to=${toApi}`;
+
 						fetch(url)
 							.then(r => r.json())
 							.then(data => {
 								if (!Array.isArray(data)) return;
-								labels = data.map(d => d.date.split('-')[2]); // Day of month
+								console.log(data);
+								// ✅ Use full date as label (API already returns correct range)
+								labels = data.map(d => d.date); // e.g., "2025-08-27"
 								openData = data.map(d => d.open || 0);
 								closedData = data.map(d => d.closed || 0);
 								pendingData = data.map(d => d.pending || 0);
+
 								renderComplaintChart(labels, openData, closedData, pendingData, 'Daily Ticket Summary');
 							});
 					}
@@ -382,10 +533,39 @@
 				function renderComplaintChart(labels, open, closed, pending, title) {
 					const ctx = document.getElementById('complaint-bar-chart').getContext('2d');
 					if (complaintChart) complaintChart.destroy();
+
+					// Combine all data to find max value
+					const allData = [...open, ...closed, ...pending];
+					const maxValue = Math.max(...allData, 0);
+					const stackedValues = labels.map((_, i) => (open[i] || 0) + (closed[i] || 0) + (pending[i] || 0));
+					const totalMax = Math.max(...stackedValues, 0);
+
+					// Dynamic step size based on max value
+					let stepSize;
+					let maxTicks = 10; // Max number of ticks
+
+					if (totalMax <= 20) {
+						stepSize = 5;
+					} else if (totalMax <= 50) {
+						stepSize = 10;
+					} else if (totalMax <= 100) {
+						stepSize = 20;
+					} else if (totalMax <= 200) {
+						stepSize = 25;
+					} else if (totalMax <= 500) {
+						stepSize = 50;
+					} else {
+						stepSize = Math.ceil(totalMax / maxTicks / 10) * 10; // Round to nearest 10
+					}
+
+					// Ensure max axis is multiple of stepSize
+					const yAxisMax = Math.ceil(totalMax / stepSize) * stepSize;
+
 					complaintChart = new Chart(ctx, {
 						type: 'bar',
 						data: {
-							labels, datasets: [
+							labels: labels,
+							datasets: [
 								{ label: "Open", backgroundColor: '#fdaf4b', data: open },
 								{ label: "Closed", backgroundColor: '#59d05d', data: closed },
 								{ label: "Pending", backgroundColor: '#d9534f', data: pending }
@@ -395,10 +575,35 @@
 							responsive: true,
 							maintainAspectRatio: false,
 							title: { display: true, text: title },
-							scales: { x: { stacked: true }, y: { stacked: true } }
+							scales: {
+								x: { stacked: true },
+								y: {
+									stacked: true,
+									beginAtZero: true,
+									max: yAxisMax,
+									ticks: {
+										stepSize: stepSize,
+										callback: function (value) {
+											return value; // Show plain number
+										}
+									}
+								}
+							},
+							plugins: {
+								tooltip: {
+									mode: 'index',
+									intersect: false,
+									callbacks: {
+										label: function (context) {
+											return `${context.dataset.label}: ${context.parsed.y}`;
+										}
+									}
+								}
+							}
 						}
 					});
 				}
+
 
 				function initComplaintChartForm() {
 					const now = new Date();
@@ -455,6 +660,7 @@
 					// Initial load
 					updateComplaintChart('daily', formatDate(from), formatDate(now));
 				}
+
 			</script>
 
 			<script>
@@ -469,18 +675,23 @@
 							.then(r => r.json())
 							.then(data => {
 								if (!Array.isArray(data)) return;
+
 								const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
 									"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 								const values = Array(12).fill(0);
+								const counts = Array(12).fill(0); // Store breakdownCount
+
 								data.forEach(d => {
 									const i = d.month - 1;
 									if (i >= 0 && i < 12) {
 										values[i] = d.totalResolutionTimeMinutes || 0;
+										counts[i] = d.breakdownCount || 0;
 									}
 								});
+
 								breakdownChart = new Chart(ctx, {
 									type: 'line',
-									data: {
+									data: {  // ✅ Fixed: Added 'data:'
 										labels: months,
 										datasets: [{
 											label: "Total Resolution Time (min)",
@@ -493,28 +704,50 @@
 											backgroundColor: 'transparent',
 											fill: true,
 											borderWidth: 2,
-											data: values
+											data: values,
+											breakdownCounts: counts // Attach for tooltip
 										}]
 									},
 									options: {
 										responsive: true,
 										maintainAspectRatio: false,
-										legend: { position: 'bottom', labels: { fontColor: '#1d7af3' } },
-										tooltips: { mode: "nearest", intersect: false }
+										legend: {
+											position: 'bottom',
+											labels: { fontColor: '#1d7af3' }
+										},
+										tooltips: {
+											mode: "nearest",
+											intersect: false,
+											callbacks: {
+												label: function (tooltipItem, data) {
+													const dataset = data.datasets[0];
+													const value = dataset.data[tooltipItem.index];
+													const count = dataset.breakdownCounts[tooltipItem.index];
+													return [
+														`Breakdown Total Time: ${value} min`,
+														`Breakdown Count: ${count}`
+													];
+												}
+											}
+										}
 									}
 								});
 							});
+
 					} else {
 						fetch(`/api/dashboards/daily-breakdown?from=${from}&to=${to}`)
 							.then(r => r.json())
 							.then(data => {
 								if (!Array.isArray(data)) return;
+
 								const labels = data.map(d => d.date);
 								const values = data.map(d => d.totalResolutionTimeMinutes || 0);
+								const counts = data.map(d => d.breakdownCount || 0);
+
 								breakdownChart = new Chart(ctx, {
 									type: 'line',
-									data: {
-										labels,
+									data: {  // ✅ Fixed: Added 'data:'
+										labels: labels,
 										datasets: [{
 											label: "Total Resolution Time (min)",
 											borderColor: "#1d7af3",
@@ -526,20 +759,37 @@
 											backgroundColor: 'transparent',
 											fill: true,
 											borderWidth: 2,
-											data: values
+											data: values,
+											breakdownCounts: counts // Attach for tooltip
 										}]
 									},
 									options: {
 										responsive: true,
 										maintainAspectRatio: false,
-										legend: { position: 'bottom', labels: { fontColor: '#1d7af3' } },
-										tooltips: { mode: "nearest", intersect: false }
+										legend: {
+											position: 'bottom',
+											labels: { fontColor: '#1d7af3' }
+										},
+										tooltips: {
+											mode: "nearest",
+											intersect: false,
+											callbacks: {
+												label: function (tooltipItem, data) {
+													const dataset = data.datasets[0];
+													const value = dataset.data[tooltipItem.index];
+													const count = dataset.breakdownCounts[tooltipItem.index];
+													return [
+														`Total Time: ${value} min`,
+														`Count: ${count}`
+													];
+												}
+											}
+										}
 									}
 								});
 							});
 					}
 				}
-
 				function initBreakdownChartForm() {
 					const now = new Date();
 					const from = new Date(now);
@@ -596,11 +846,621 @@
 					updateBreakdownChart('daily', formatDate(from), formatDate(now));
 				}
 			</script>
+			<script>
+				let workReportChart = null;
+
+				function updateWorkReportChart(mode, from = null, to = null, year = null) {
+					const ctx = document.getElementById('work-report-line-chart').getContext('2d');
+					if (workReportChart) workReportChart.destroy();
+
+					if (mode === 'yearly') {
+						fetch(`/api/dashboards/monthly-work-report?year=${year}`)
+							.then(r => r.json())
+							.then(data => {
+								if (!Array.isArray(data)) return;
+
+								const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+									"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+								const labels = months;
+
+								// Initialize datasets
+								const correctiveData = Array(12).fill(0);
+								const preventiveData = Array(12).fill(0);
+								const breakdownData = Array(12).fill(0);
+								const otherData = Array(12).fill(0);
+
+								data.forEach(d => {
+									const i = d.month - 1;
+									if (i >= 0 && i < 12) {
+										correctiveData[i] = d.correctiveMaintenanceCount || 0;
+										preventiveData[i] = d.preventiveMaintenanceCount || 0;
+										breakdownData[i] = d.breakdownCount || 0;
+										otherData[i] = d.otherCount || 0;
+									}
+								});
+
+								workReportChart = new Chart(ctx, {
+									type: 'line',
+									data: {
+										labels: labels,
+										datasets: [
+											{
+												label: "Corrective Maintenance",
+												borderColor: "#e74c3c",
+												pointBorderColor: "#FFF",
+												pointBackgroundColor: "#e74c3c",
+												pointBorderWidth: 2,
+												pointHoverRadius: 4,
+												pointRadius: 4,
+												backgroundColor: 'transparent',
+												fill: false,
+												borderWidth: 2,
+												data: correctiveData,
+												counts: correctiveData
+											},
+											{
+												label: "Preventive Maintenance",
+												borderColor: "#3498db",
+												pointBorderColor: "#FFF",
+												pointBackgroundColor: "#3498db",
+												pointBorderWidth: 2,
+												pointHoverRadius: 4,
+												pointRadius: 4,
+												backgroundColor: 'transparent',
+												fill: false,
+												borderWidth: 2,
+												data: preventiveData,
+												counts: preventiveData
+											},
+											{
+												label: "Breakdown",
+												borderColor: "#f39c12",
+												pointBorderColor: "#FFF",
+												pointBackgroundColor: "#f39c12",
+												pointBorderWidth: 2,
+												pointHoverRadius: 4,
+												pointRadius: 4,
+												backgroundColor: 'transparent',
+												fill: false,
+												borderWidth: 2,
+												data: breakdownData,
+												counts: breakdownData
+											},
+											{
+												label: "Other",
+												borderColor: "#95a5a6",
+												pointBorderColor: "#FFF",
+												pointBackgroundColor: "#95a5a6",
+												pointBorderWidth: 2,
+												pointHoverRadius: 4,
+												pointRadius: 4,
+												backgroundColor: 'transparent',
+												fill: false,
+												borderWidth: 2,
+												data: otherData,
+												counts: otherData
+											}
+										]
+									},
+									options: {
+										responsive: true,
+										maintainAspectRatio: false,
+										legend: {
+											position: 'bottom',
+											labels: { fontColor: '#333', padding: 15 }
+										},
+										tooltips: {
+											mode: "nearest",
+											intersect: false,
+											callbacks: {
+												label: function (tooltipItem, data) {
+													const dataset = data.datasets[tooltipItem.datasetIndex];
+													const value = dataset.data[tooltipItem.index];
+													const label = dataset.label;
+													return `${label}: ${value} reports`;
+												}
+											}
+										},
+										scales: {
+											x: { stacked: false },
+											y: {
+												beginAtZero: true,
+												ticks: {
+													stepSize: 1,
+													callback: function (value) {
+														return Number.isInteger(value) ? value : null;
+													}
+												},
+												title: {
+													display: true,
+													text: 'Number of Reports'
+												}
+											}
+										}
+									}
+								});
+							});
+
+					} else {
+						fetch(`/api/dashboards/daily-work-report?from=${from}&to=${to}`)
+							.then(r => r.json())
+							.then(data => {
+								if (!Array.isArray(data)) return;
+
+								const labels = data.map(d => d.date);
+								const correctiveData = data.map(d => d.correctiveMaintenanceCount || 0);
+								const preventiveData = data.map(d => d.preventiveMaintenanceCount || 0);
+								const breakdownData = data.map(d => d.breakdownCount || 0);
+								const otherData = data.map(d => d.otherCount || 0);
+
+								workReportChart = new Chart(ctx, {
+									type: 'line',
+									data: {
+										labels: labels,
+										datasets: [
+											{
+												label: "Corrective Maintenance",
+												borderColor: "#e74c3c",
+												pointBorderColor: "#FFF",
+												pointBackgroundColor: "#e74c3c",
+												pointBorderWidth: 2,
+												pointHoverRadius: 4,
+												pointRadius: 4,
+												backgroundColor: 'transparent',
+												fill: false,
+												borderWidth: 2,
+												data: correctiveData,
+												counts: correctiveData
+											},
+											{
+												label: "Preventive Maintenance",
+												borderColor: "#3498db",
+												pointBorderColor: "#FFF",
+												pointBackgroundColor: "#3498db",
+												pointBorderWidth: 2,
+												pointHoverRadius: 4,
+												pointRadius: 4,
+												backgroundColor: 'transparent',
+												fill: false,
+												borderWidth: 2,
+												data: preventiveData,
+												counts: preventiveData
+											},
+											{
+												label: "Breakdown",
+												borderColor: "#f39c12",
+												pointBorderColor: "#FFF",
+												pointBackgroundColor: "#f39c12",
+												pointBorderWidth: 2,
+												pointHoverRadius: 4,
+												pointRadius: 4,
+												backgroundColor: 'transparent',
+												fill: false,
+												borderWidth: 2,
+												data: breakdownData,
+												counts: breakdownData
+											},
+											{
+												label: "Other",
+												borderColor: "#95a5a6",
+												pointBorderColor: "#FFF",
+												pointBackgroundColor: "#95a5a6",
+												pointBorderWidth: 2,
+												pointHoverRadius: 4,
+												pointRadius: 4,
+												backgroundColor: 'transparent',
+												fill: false,
+												borderWidth: 2,
+												data: otherData,
+												counts: otherData
+											}
+										]
+									},
+									options: {
+										responsive: true,
+										maintainAspectRatio: false,
+										legend: {
+											position: 'bottom',
+											labels: { fontColor: '#333', padding: 15 }
+										},
+										tooltips: {
+											mode: "nearest",
+											intersect: false,
+											callbacks: {
+												label: function (tooltipItem, data) {
+													const dataset = data.datasets[tooltipItem.datasetIndex];
+													const value = dataset.data[tooltipItem.index];
+													const label = dataset.label;
+													return `${label}: ${value} reports`;
+												}
+											}
+										},
+										scales: {
+											x: { stacked: false },
+											y: {
+												beginAtZero: true,
+												ticks: {
+													stepSize: 1,
+													callback: function (value) {
+														return Number.isInteger(value) ? value : null;
+													}
+												},
+												title: {
+													display: true,
+													text: 'Number of Reports'
+												}
+											}
+										}
+									}
+								});
+							});
+					}
+				}
+
+				function initWorkReportChartForm() {
+					const now = new Date();
+					const from = new Date(now);
+					from.setDate(now.getDate() - 6);
+
+					document.getElementById('work-report-from').value = formatDate(from);
+					document.getElementById('work-report-to').value = formatDate(now);
+
+					// Populate year selector
+					populateYearSelector('work-report-year-select', now.getFullYear());
+
+					// Quick buttons
+					document.querySelectorAll('#work-report-chart-form .btn[data-range]').forEach(btn => {
+						btn.addEventListener('click', () => {
+							const range = btn.getAttribute('data-range');
+							const now = new Date();
+							if (range === 'weekly') {
+								document.getElementById('work-report-year-selector').style.display = 'none';
+								const from = new Date(now);
+								from.setDate(now.getDate() - 6);
+								document.getElementById('work-report-from').value = formatDate(from);
+								document.getElementById('work-report-to').value = formatDate(now);
+								updateWorkReportChart('daily', formatDate(from), formatDate(now));
+							} else if (range === 'monthly') {
+								document.getElementById('work-report-year-selector').style.display = 'none';
+								const from = new Date(now.getFullYear(), now.getMonth(), 1);
+								document.getElementById('work-report-from').value = formatDate(from);
+								document.getElementById('work-report-to').value = formatDate(now);
+								updateWorkReportChart('daily', formatDate(from), formatDate(now));
+							} else if (range === 'yearly') {
+								document.getElementById('work-report-year-selector').style.display = 'inline-block';
+								const year = document.getElementById('work-report-year-select').value;
+								updateWorkReportChart('yearly', null, null, year);
+							}
+						});
+					});
+
+					// Year change
+					document.getElementById('work-report-year-select').addEventListener('change', () => {
+						const year = document.getElementById('work-report-year-select').value;
+						updateWorkReportChart('yearly', null, null, year);
+					});
+
+					// Apply button
+					document.getElementById('work-report-chart-form').addEventListener('submit', e => {
+						e.preventDefault();
+						const from = document.getElementById('work-report-from').value;
+						const to = document.getElementById('work-report-to').value;
+						document.getElementById('work-report-year-selector').style.display = 'none';
+						updateWorkReportChart('daily', from, to);
+					});
+
+					// Initial load
+					updateWorkReportChart('daily', formatDate(from), formatDate(now));
+				}
+
+				// Helper: format date to YYYY-MM-DD
+				function formatDate(date) {
+					return date.toISOString().split('T')[0];
+				}
+
+				// Helper: populate year selector
+				function populateYearSelector(selectId, selectedYear) {
+					const select = document.getElementById(selectId);
+					const currentYear = new Date().getFullYear();
+					select.innerHTML = '';
+					for (let y = currentYear - 10; y <= currentYear + 1; y++) {
+						const opt = new Option(y, y);
+						if (y === selectedYear) opt.selected = true;
+						select.appendChild(opt);
+					}
+				}
+			</script>
+			<script>
+(() => {
+    // Unique identifiers
+    const CHART_FORM_ID = 'wr-chart-form';
+    const FROM_INPUT_ID = 'wr-from';
+    const TO_INPUT_ID = 'wr-to';
+    const EQUIPMENT_SELECT_ID = 'wr-equipment';
+    const YEAR_SELECT_ID = 'wr-year-select';
+    const YEAR_SELECTOR_DIV = 'wr-year-selector';
+    const CHART_CANVAS_ID = 'wr-equipment-line-chart';
+
+    const DAILY_API_URL = `${baseUrl}/api/dashboards/daily-work-report-equipment`;
+    const MONTHLY_API_URL = `${baseUrl}/api/dashboards/monthly-work-report-equipment`;
+    const EQUIPMENT_API_URL = `${baseUrl}/api/dashboards/equipment-complaint-count`;
+
+    let workReportChart = null;
+    let equipmentList = [];
+
+    // --- Helper: Format Date to YYYY-MM-DD ---
+    function formatDate(date) {
+        return date.toISOString().split('T')[0];
+    }
+
+    // --- Helper: Populate Year Selector ---
+    function populateYearSelector(selectId, selectedYear) {
+        const select = document.getElementById(selectId);
+        const currentYear = new Date().getFullYear();
+        select.innerHTML = '';
+        for (let y = currentYear - 10; y <= currentYear + 1; y++) {
+            const opt = new Option(y, y);
+            if (y === selectedYear) opt.selected = true;
+            select.appendChild(opt);
+        }
+    }
+
+    // --- Fetch Equipment List ---
+    async function fetchEquipmentList() {
+        try {
+            const response = await fetch(EQUIPMENT_API_URL);
+            if (!response.ok) throw new Error('Failed to fetch equipment list');
+            equipmentList = await response.json();
+
+            const select = document.getElementById(EQUIPMENT_SELECT_ID);
+            select.innerHTML = '<option value="">All Equipment</option>';
+
+            equipmentList.forEach(eq => {
+                const opt = new Option(eq.equipmentName, eq.equipmentCode);
+                select.appendChild(opt);
+            });
+        } catch (err) {
+            console.error('Error loading equipment list:', err);
+        }
+    }
+
+    // --- Update Chart ---
+    function updateWorkReportChart(mode, from = null, to = null, year = null) {
+        const ctx = document.getElementById(CHART_CANVAS_ID).getContext('2d');
+        if (workReportChart) workReportChart.destroy();
+
+        let url = '';
+        let labels = [];
+        let isMonthly = false;
+
+        const equipmentCode = document.getElementById(EQUIPMENT_SELECT_ID).value;
+
+        if (mode === 'yearly') {
+            url = `${MONTHLY_API_URL}?year=${year}`;
+            if (equipmentCode) url += `&equipmentCode=${encodeURIComponent(equipmentCode)}`;
+            isMonthly = true;
+        } else {
+            url = `${DAILY_API_URL}?from=${from}&to=${to}`;
+            if (equipmentCode) url += `&equipmentCode=${encodeURIComponent(equipmentCode)}`;
+        }
+
+        fetch(url)
+            .then(r => r.json())
+            .then(data => {
+                if (!Array.isArray(data)) return;
+
+                if (isMonthly) {
+                    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                    labels = months;
+                } else {
+                    labels = data.map(d => d.date);
+                }
+
+                const correctiveData = Array(labels.length).fill(0);
+                const preventiveData = Array(labels.length).fill(0);
+                const breakdownData = Array(labels.length).fill(0);
+                const otherData = Array(labels.length).fill(0);
+
+                data.forEach(d => {
+                    let idx;
+                    if (isMonthly) {
+                        idx = d.month - 1;
+                    } else {
+                        idx = labels.indexOf(d.date);
+                    }
+                    if (idx >= 0 && idx < labels.length) {
+                        correctiveData[idx] = d.correctiveMaintenanceCount || 0;
+                        preventiveData[idx] = d.preventiveMaintenanceCount || 0;
+                        breakdownData[idx] = d.breakdownCount || 0;
+                        otherData[idx] = d.otherCount || 0;
+                    }
+                });
+
+                workReportChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: "Corrective Maintenance",
+                                borderColor: "#e74c3c",
+                                pointBorderColor: "#FFF",
+                                pointBackgroundColor: "#e74c3c",
+                                pointBorderWidth: 2,
+                                pointHoverRadius: 4,
+                                pointRadius: 4,
+                                backgroundColor: 'transparent',
+                                fill: false,
+                                borderWidth: 2,
+                                data: correctiveData
+                            },
+                            {
+                                label: "Preventive Maintenance",
+                                borderColor: "#3498db",
+                                pointBorderColor: "#FFF",
+                                pointBackgroundColor: "#3498db",
+                                pointBorderWidth: 2,
+                                pointHoverRadius: 4,
+                                pointRadius: 4,
+                                backgroundColor: 'transparent',
+                                fill: false,
+                                borderWidth: 2,
+                                data: preventiveData
+                            },
+                            {
+                                label: "Breakdown",
+                                borderColor: "#f39c12",
+                                pointBorderColor: "#FFF",
+                                pointBackgroundColor: "#f39c12",
+                                pointBorderWidth: 2,
+                                pointHoverRadius: 4,
+                                pointRadius: 4,
+                                backgroundColor: 'transparent',
+                                fill: false,
+                                borderWidth: 2,
+                                data: breakdownData
+                            },
+                            {
+                                label: "Other",
+                                borderColor: "#95a5a6",
+                                pointBorderColor: "#FFF",
+                                pointBackgroundColor: "#95a5a6",
+                                pointBorderWidth: 2,
+                                pointHoverRadius: 4,
+                                pointRadius: 4,
+                                backgroundColor: 'transparent',
+                                fill: false,
+                                borderWidth: 2,
+                                data: otherData
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        legend: {
+                            position: 'bottom',
+                            labels: { fontColor: '#333', padding: 15 }
+                        },
+                        tooltips: {
+                            mode: "nearest",
+                            intersect: false,
+                            callbacks: {
+                                label: function(tooltipItem, data) {
+                                    const dataset = data.datasets[tooltipItem.datasetIndex];
+                                    const value = dataset.data[tooltipItem.index];
+                                    const label = dataset.label;
+                                    return `${label}: ${value} reports`;
+                                }
+                            }
+                        },
+                        scales: {
+                            x: { stacked: false },
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1,
+                                    callback: function(value) {
+                                        return Number.isInteger(value) ? value : null;
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Number of Reports'
+                                }
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(err => console.error('Error loading work report data:', err));
+    }
+
+    // --- Initialize Form ---
+    function initWorkReportChartForm() {
+        const now = new Date();
+        const from = new Date(now);
+        from.setDate(now.getDate() - 6);
+
+        document.getElementById(FROM_INPUT_ID).value = formatDate(from);
+        document.getElementById(TO_INPUT_ID).value = formatDate(now);
+
+        populateYearSelector(YEAR_SELECT_ID, now.getFullYear());
+
+        // Quick buttons
+        document.querySelectorAll(`#${CHART_FORM_ID} .btn[data-range]`).forEach(btn => {
+            btn.addEventListener('click', () => {
+                const range = btn.getAttribute('data-range');
+                const now = new Date();
+
+                if (range === 'weekly') {
+                    document.getElementById(YEAR_SELECTOR_DIV).style.display = 'none';
+                    const from = new Date(now);
+                    from.setDate(now.getDate() - 6);
+                    document.getElementById(FROM_INPUT_ID).value = formatDate(from);
+                    document.getElementById(TO_INPUT_ID).value = formatDate(now);
+                    updateWorkReportChart('daily', formatDate(from), formatDate(now));
+                } else if (range === 'monthly') {
+                    document.getElementById(YEAR_SELECTOR_DIV).style.display = 'none';
+                    const from = new Date(now.getFullYear(), now.getMonth(), 1);
+                    document.getElementById(FROM_INPUT_ID).value = formatDate(from);
+                    document.getElementById(TO_INPUT_ID).value = formatDate(now);
+                    updateWorkReportChart('daily', formatDate(from), formatDate(now));
+                } else if (range === 'yearly') {
+                    document.getElementById(YEAR_SELECTOR_DIV).style.display = 'inline-block';
+                    const year = document.getElementById(YEAR_SELECT_ID).value;
+                    updateWorkReportChart('yearly', null, null, year);
+                }
+            });
+        });
+
+        // Year change
+        document.getElementById(YEAR_SELECT_ID).addEventListener('change', () => {
+            const year = document.getElementById(YEAR_SELECT_ID).value;
+            updateWorkReportChart('yearly', null, null, year);
+        });
+
+        // Apply button
+        document.getElementById(CHART_FORM_ID).addEventListener('submit', e => {
+            e.preventDefault();
+            const from = document.getElementById(FROM_INPUT_ID).value;
+            const to = document.getElementById(TO_INPUT_ID).value;
+            document.getElementById(YEAR_SELECTOR_DIV).style.display = 'none';
+            updateWorkReportChart('daily', from, to);
+        });
+
+        // Equipment change
+        document.getElementById(EQUIPMENT_SELECT_ID).addEventListener('change', () => {
+            const from = document.getElementById(FROM_INPUT_ID).value;
+            const to = document.getElementById(TO_INPUT_ID).value;
+            const year = document.getElementById(YEAR_SELECT_ID).value;
+
+            if (document.getElementById(YEAR_SELECTOR_DIV).style.display === 'inline-block') {
+                updateWorkReportChart('yearly', null, null, year);
+            } else {
+                updateWorkReportChart('daily', from, to);
+            }
+        });
+
+        // Initial load
+        updateWorkReportChart('daily', formatDate(from), formatDate(now));
+    }
+
+    // --- On Load ---
+    window.addEventListener('DOMContentLoaded', () => {
+        fetchEquipmentList().then(() => {
+            initWorkReportChartForm();
+        });
+    });
+})();
+</script>
 
 			<script>
 				window.addEventListener('DOMContentLoaded', () => {
 					initComplaintChartForm();
 					initBreakdownChartForm();
+					initWorkReportChartForm();
 				});
 			</script>
 
@@ -661,8 +1521,304 @@
 		<!-- <script th:src="@{/js/document-modal.js}"></script> -->
 
 		<script>
-			// Set default dates: today
-			function setDefaultDates() {
+(() => {
+    // Unique identifiers
+    const CHART_FORM_ID = 'wr-chart-form';
+    const FROM_INPUT_ID = 'wr-from';
+    const TO_INPUT_ID = 'wr-to';
+    const EQUIPMENT_SELECT_ID = 'wr-equipment';
+    const YEAR_SELECT_ID = 'wr-year-select';
+    const YEAR_SELECTOR_DIV = 'wr-year-selector';
+    const CHART_CANVAS_ID = 'wr-equipment-line-chart';
+
+    const DAILY_API_URL = `${baseUrl}/api/dashboards/daily-work-report`;
+    const MONTHLY_API_URL = `${baseUrl}/api/dashboards/monthly-work-report`;
+    const EQUIPMENT_API_URL = `${baseUrl}/api/dashboards/equipment-complaint-count`;
+
+    let workReportChart = null;
+    let equipmentList = [];
+
+    // --- Helper: Format Date to YYYY-MM-DD ---
+    function formatDate(date) {
+        return date.toISOString().split('T')[0];
+    }
+
+    // --- Helper: Populate Year Selector ---
+    function populateYearSelector(selectId, selectedYear) {
+        const select = document.getElementById(selectId);
+        const currentYear = new Date().getFullYear();
+        select.innerHTML = '';
+        for (let y = currentYear - 10; y <= currentYear + 1; y++) {
+            const opt = new Option(y, y);
+            if (y === selectedYear) opt.selected = true;
+            select.appendChild(opt);
+        }
+    }
+
+    // --- Fetch Equipment List ---
+    async function fetchEquipmentList() {
+        try {
+            const response = await fetch(EQUIPMENT_API_URL);
+            if (!response.ok) throw new Error('Failed to fetch equipment list');
+            equipmentList = await response.json();
+
+            const select = document.getElementById(EQUIPMENT_SELECT_ID);
+            select.innerHTML = '<option value="">All Equipment</option>';
+
+            equipmentList.forEach(eq => {
+                const opt = new Option(eq.equipmentName, eq.equipmentCode);
+                select.appendChild(opt);
+            });
+        } catch (err) {
+            console.error('Error loading equipment list:', err);
+        }
+    }
+
+    // --- Update Chart ---
+    function updateWorkReportChart(mode, from = null, to = null, year = null) {
+        const ctx = document.getElementById(CHART_CANVAS_ID).getContext('2d');
+        if (workReportChart) workReportChart.destroy();
+
+        let url = '';
+        let labels = [];
+        let isMonthly = false;
+
+        const equipmentCode = document.getElementById(EQUIPMENT_SELECT_ID).value;
+
+        if (mode === 'yearly') {
+            url = `${MONTHLY_API_URL}?year=${year}`;
+            if (equipmentCode) url += `&equipmentCode=${encodeURIComponent(equipmentCode)}`;
+            isMonthly = true;
+        } else {
+            url = `${DAILY_API_URL}?from=${from}&to=${to}`;
+            if (equipmentCode) url += `&equipmentCode=${encodeURIComponent(equipmentCode)}`;
+        }
+
+        fetch(url)
+            .then(r => r.json())
+            .then(data => {
+                if (!Array.isArray(data)) return;
+
+                if (isMonthly) {
+                    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                    labels = months;
+                } else {
+                    labels = data.map(d => d.date);
+                }
+
+                const correctiveData = Array(labels.length).fill(0);
+                const preventiveData = Array(labels.length).fill(0);
+                const breakdownData = Array(labels.length).fill(0);
+                const otherData = Array(labels.length).fill(0);
+
+                data.forEach(d => {
+                    let idx;
+                    if (isMonthly) {
+                        idx = d.month - 1;
+                    } else {
+                        idx = labels.indexOf(d.date);
+                    }
+                    if (idx >= 0 && idx < labels.length) {
+                        correctiveData[idx] = d.correctiveMaintenanceCount || 0;
+                        preventiveData[idx] = d.preventiveMaintenanceCount || 0;
+                        breakdownData[idx] = d.breakdownCount || 0;
+                        otherData[idx] = d.otherCount || 0;
+                    }
+                });
+
+                workReportChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: "Corrective Maintenance",
+                                borderColor: "#e74c3c",
+                                pointBorderColor: "#FFF",
+                                pointBackgroundColor: "#e74c3c",
+                                pointBorderWidth: 2,
+                                pointHoverRadius: 4,
+                                pointRadius: 4,
+                                backgroundColor: 'transparent',
+                                fill: false,
+                                borderWidth: 2,
+                                data: correctiveData
+                            },
+                            {
+                                label: "Preventive Maintenance",
+                                borderColor: "#3498db",
+                                pointBorderColor: "#FFF",
+                                pointBackgroundColor: "#3498db",
+                                pointBorderWidth: 2,
+                                pointHoverRadius: 4,
+                                pointRadius: 4,
+                                backgroundColor: 'transparent',
+                                fill: false,
+                                borderWidth: 2,
+                                data: preventiveData
+                            },
+                            {
+                                label: "Breakdown",
+                                borderColor: "#f39c12",
+                                pointBorderColor: "#FFF",
+                                pointBackgroundColor: "#f39c12",
+                                pointBorderWidth: 2,
+                                pointHoverRadius: 4,
+                                pointRadius: 4,
+                                backgroundColor: 'transparent',
+                                fill: false,
+                                borderWidth: 2,
+                                data: breakdownData
+                            },
+                            {
+                                label: "Other",
+                                borderColor: "#95a5a6",
+                                pointBorderColor: "#FFF",
+                                pointBackgroundColor: "#95a5a6",
+                                pointBorderWidth: 2,
+                                pointHoverRadius: 4,
+                                pointRadius: 4,
+                                backgroundColor: 'transparent',
+                                fill: false,
+                                borderWidth: 2,
+                                data: otherData
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        legend: {
+                            position: 'bottom',
+                            labels: { fontColor: '#333', padding: 15 }
+                        },
+                        tooltips: {
+                            mode: "nearest",
+                            intersect: false,
+                            callbacks: {
+                                label: function(tooltipItem, data) {
+                                    const dataset = data.datasets[tooltipItem.datasetIndex];
+                                    const value = dataset.data[tooltipItem.index];
+                                    const label = dataset.label;
+                                    return `${label}: ${value} reports`;
+                                }
+                            }
+                        },
+                        scales: {
+                            x: { stacked: false },
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1,
+                                    callback: function(value) {
+                                        return Number.isInteger(value) ? value : null;
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Number of Reports'
+                                }
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(err => console.error('Error loading work report data:', err));
+    }
+
+    // --- Initialize Form ---
+    function initWorkReportChartForm() {
+        const now = new Date();
+        const from = new Date(now);
+        from.setDate(now.getDate() - 6);
+
+        document.getElementById(FROM_INPUT_ID).value = formatDate(from);
+        document.getElementById(TO_INPUT_ID).value = formatDate(now);
+
+        populateYearSelector(YEAR_SELECT_ID, now.getFullYear());
+
+        // Quick buttons
+        document.querySelectorAll(`#${CHART_FORM_ID} .btn[data-range]`).forEach(btn => {
+            btn.addEventListener('click', () => {
+                const range = btn.getAttribute('data-range');
+                const now = new Date();
+
+                if (range === 'weekly') {
+                    document.getElementById(YEAR_SELECTOR_DIV).style.display = 'none';
+                    const from = new Date(now);
+                    from.setDate(now.getDate() - 6);
+                    document.getElementById(FROM_INPUT_ID).value = formatDate(from);
+                    document.getElementById(TO_INPUT_ID).value = formatDate(now);
+                    updateWorkReportChart('daily', formatDate(from), formatDate(now));
+                } else if (range === 'monthly') {
+                    document.getElementById(YEAR_SELECTOR_DIV).style.display = 'none';
+                    const from = new Date(now.getFullYear(), now.getMonth(), 1);
+                    document.getElementById(FROM_INPUT_ID).value = formatDate(from);
+                    document.getElementById(TO_INPUT_ID).value = formatDate(now);
+                    updateWorkReportChart('daily', formatDate(from), formatDate(now));
+                } else if (range === 'yearly') {
+                    document.getElementById(YEAR_SELECTOR_DIV).style.display = 'inline-block';
+                    const year = document.getElementById(YEAR_SELECT_ID).value;
+                    updateWorkReportChart('yearly', null, null, year);
+                }
+            });
+        });
+
+        // Year change
+        document.getElementById(YEAR_SELECT_ID).addEventListener('change', () => {
+            const year = document.getElementById(YEAR_SELECT_ID).value;
+            updateWorkReportChart('yearly', null, null, year);
+        });
+
+        // Apply button
+        document.getElementById(CHART_FORM_ID).addEventListener('submit', e => {
+            e.preventDefault();
+            const from = document.getElementById(FROM_INPUT_ID).value;
+            const to = document.getElementById(TO_INPUT_ID).value;
+            document.getElementById(YEAR_SELECTOR_DIV).style.display = 'none';
+            updateWorkReportChart('daily', from, to);
+        });
+
+        // Equipment change
+        document.getElementById(EQUIPMENT_SELECT_ID).addEventListener('change', () => {
+            const from = document.getElementById(FROM_INPUT_ID).value;
+            const to = document.getElementById(TO_INPUT_ID).value;
+            const year = document.getElementById(YEAR_SELECT_ID).value;
+
+            if (document.getElementById(YEAR_SELECTOR_DIV).style.display === 'inline-block') {
+                updateWorkReportChart('yearly', null, null, year);
+            } else {
+                updateWorkReportChart('daily', from, to);
+            }
+        });
+
+        // Initial load
+        updateWorkReportChart('daily', formatDate(from), formatDate(now));
+    }
+
+    // --- On Load ---
+    window.addEventListener('DOMContentLoaded', () => {
+        fetchEquipmentList().then(() => {
+            initWorkReportChartForm();
+        });
+    });
+})();
+</script>
+		<script>
+			// Helper: format date for datetime-local input (safe, no timezone shift)
+			function toDateTimeLocal(date) {
+				const pad = (n) => n.toString().padStart(2, '0');
+				const year = date.getFullYear();
+				const month = pad(date.getMonth() + 1); // 0-indexed
+				const day = pad(date.getDate());
+				const hours = pad(date.getHours());
+				const minutes = pad(date.getMinutes());
+				return `${year}-${month}-${day}T${hours}:${minutes}`;
+			}
+
+			// Set default dates: today (start and end of day)
+			function setComplaintStatsDefaults() {
 				const now = new Date();
 				const startOfDay = new Date(now);
 				startOfDay.setHours(0, 0, 0, 0);
@@ -670,23 +1826,17 @@
 				const endOfDay = new Date(now);
 				endOfDay.setHours(23, 59, 59, 999);
 
-				document.getElementById('from').value = toDateTimeLocal(startOfDay);
-				document.getElementById('to').value = toDateTimeLocal(endOfDay);
-			}
+				const fromInput = document.getElementById('complaint-stats-from');
+				const toInput = document.getElementById('complaint-stats-to');
 
-			// Helper: format date for datetime-local input
-			function toDateTimeLocal(date) {
-				const pad = (n) => n.toString().padStart(2, '0');
-				const year = date.getFullYear();
-				const month = pad(date.getMonth() + 1);
-				const day = pad(date.getDate());
-				const hours = pad(date.getHours());
-				const minutes = pad(date.getMinutes());
-				return `${year}-${month}-${day}T${hours}:${minutes}`;
+				if (fromInput && toInput) {
+					fromInput.value = toDateTimeLocal(startOfDay);
+					toInput.value = toDateTimeLocal(endOfDay);
+				}
 			}
 
 			// Fetch dashboard data
-			function fetchDashboardData(from, to) {
+			function fetchComplaintStats(from, to) {
 				let url = `${baseUrl}/api/dashboards/status-count`;
 				const params = new URLSearchParams();
 
@@ -704,10 +1854,10 @@
 					})
 					.then(data => {
 						// Update card values
-						document.getElementById('totalAllComplaints').textContent = data.totalAllComplaints || 0;
-						document.getElementById('totalOpen').textContent = data.totalOpen || 0;
-						document.getElementById('totalClosed').textContent = data.totalClosed || 0;
-						document.getElementById('totalPending').textContent = data.totalPending || 0;
+						document.getElementById('complaint-stats-total').textContent = data.totalAllComplaints || 0;
+						document.getElementById('complaint-stats-open').textContent = data.totalOpen || 0;
+						document.getElementById('complaint-stats-closed').textContent = data.totalClosed || 0;
+						document.getElementById('complaint-stats-pending').textContent = data.totalPending || 0;
 					})
 					.catch(err => {
 						console.error('Fetch error:', err);
@@ -715,20 +1865,231 @@
 			}
 
 			// Form submit
-			document.getElementById('dateRangeForm1').addEventListener('submit', function (e) {
+			document.getElementById('complaint-stats-form').addEventListener('submit', function (e) {
 				e.preventDefault();
-				const from = document.getElementById('from1').value;
-				const to = document.getElementById('to1').value;
-				fetchDashboardData(from, to);
+				const from = document.getElementById('complaint-stats-from').value;
+				const to = document.getElementById('complaint-stats-to').value;
+				fetchComplaintStats(from, to);
 			});
 
 			// On page load: set defaults and load data
 			window.addEventListener('DOMContentLoaded', function () {
-				setDefaultDates();
-				const from = document.getElementById('from1').value;
-				const to = document.getElementById('to1').value;
-				fetchDashboardData(from, to);
+				setComplaintStatsDefaults();
+
+				const from = document.getElementById('complaint-stats-from').value;
+				const to = document.getElementById('complaint-stats-to').value;
+
+				fetchComplaintStats(from, to);
 			});
+		</script>
+		<script>
+			// Wrap in IIFE to avoid global conflicts
+			(() => {
+				// --- Configuration (Unique IDs) ---
+				const EQUIPMENT_WORK_API_URL = `${baseUrl}/api/dashboards/equipment-work-report`;
+				const CONTAINER_ID = 'equipment-work-list-container';
+				const PREV_BTN_ID = 'equipment-work-prev-btn';
+				const NEXT_BTN_ID = 'equipment-work-next-btn';
+				const REFRESH_BTN_ID = 'equipment-work-refresh-btn';
+
+				// --- State Variables ---
+				let wrCurrentPage = 1;
+				const wrPageSize = 7;
+				let wrAllData = [];
+
+				// --- Utility Functions ---
+				function formatNumber(num) {
+					return num.toLocaleString();
+				}
+
+				function formatMinutes(minutes) {
+					return `${formatNumber(minutes)} min`;
+				}
+
+				// --- Fetch Data ---
+				async function fetchEquipmentWorkData() {
+					const container = document.getElementById(CONTAINER_ID);
+					if (!container) {
+						console.error('❌ Container not found:', CONTAINER_ID);
+						return;
+					}
+
+					container.innerHTML = '<div class="text-center py-3">Loading...</div>';
+
+					try {
+						const response = await fetch(EQUIPMENT_WORK_API_URL);
+						if (!response.ok) {
+							throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+						}
+
+						wrAllData = await response.json();
+						console.log('✅ API Response:', wrAllData);
+
+						// Sort by totalWorkReports descending
+						wrAllData.sort((a, b) => (b.totalWorkReports || 0) - (a.totalWorkReports || 0));
+
+						renderPage(wrCurrentPage);
+					} catch (err) {
+						console.error('🚨 Error loading equipment work data:', err);
+						document.getElementById(CONTAINER_ID).innerHTML = `
+                <div class="text-center text-muted py-3">
+                    Failed to load data: ${err.message}
+                </div>
+            `;
+					}
+				}
+
+				// --- Render Current Page ---
+				function renderPage(page) {
+					const container = document.getElementById(CONTAINER_ID);
+					if (!container) return;
+
+					const start = (page - 1) * wrPageSize;
+					const end = start + wrPageSize;
+					const pageData = wrAllData.slice(start, end);
+
+					container.innerHTML = ''; // Clear
+
+					if (pageData.length === 0) {
+						container.innerHTML = '<div class="text-center text-muted py-3">No data</div>';
+						return;
+					}
+
+					pageData.forEach((item, index) => {
+						const rank = start + index + 1;
+						const div = document.createElement('div');
+						div.className = 'd-flex align-items-center';
+						div.style.minHeight = '50px';
+
+						div.innerHTML = `
+                <div class="mr-3 d-flex align-items-center" style="min-width: 28px;">
+                    <span class="fw-bold" style="
+                        font-size: 0.95rem; 
+                        color: #555; 
+                        font-family: 'Segoe UI', sans-serif;">
+                        ${rank}
+                    </span>
+                </div>
+                <div class="flex-1 ml-2 pt-1">
+                    <h6 class="fw-bold mb-1">
+                        ${item.equipmentCode}
+                        <span class="text-muted pl-3">(${item.totalWorkReports} reports)</span>
+                    </h6>
+                    <small class="text-muted">${item.equipmentName}</small>
+                </div>
+                <div class="d-flex ml-auto align-items-center">
+                    <small class="text-muted">${formatMinutes(item.totalResolutionTime)}</small>
+                </div>
+            `;
+						container.appendChild(div);
+
+						// Add separator
+						const sep = document.createElement('div');
+						sep.className = 'separator-dashed';
+						container.appendChild(sep);
+					});
+				}
+
+				// --- Button Setup ---
+				function setupButtons() {
+					const prevBtn = document.getElementById(PREV_BTN_ID);
+					const nextBtn = document.getElementById(NEXT_BTN_ID);
+					const refreshBtn = document.getElementById(REFRESH_BTN_ID);
+
+					if (prevBtn) {
+						prevBtn.addEventListener('click', () => {
+							if (wrCurrentPage > 1) {
+								wrCurrentPage--;
+								renderPage(wrCurrentPage);
+							}
+						});
+					} else {
+						console.warn('⚠️ Prev button not found:', PREV_BTN_ID);
+					}
+
+					if (nextBtn) {
+						nextBtn.addEventListener('click', () => {
+							if (wrAllData.length > wrCurrentPage * wrPageSize) {
+								wrCurrentPage++;
+								renderPage(wrCurrentPage);
+							}
+						});
+					} else {
+						console.warn('⚠️ Next button not found:', NEXT_BTN_ID);
+					}
+
+					if (refreshBtn) {
+						refreshBtn.addEventListener('click', () => {
+							wrCurrentPage = 1;
+							fetchEquipmentWorkData();
+						});
+					} else {
+						console.warn('⚠️ Refresh button not found:', REFRESH_BTN_ID);
+					}
+				}
+
+				// --- Enable Scroll Navigation ---
+				// --- Enable Scroll Navigation (Flipped: Scroll Down = Next Page) ---
+				function enableScrollNavigation() {
+					const container = document.getElementById(CONTAINER_ID);
+					if (!container) return;
+
+					let isScrolling = false;
+
+					container.addEventListener('wheel', (e) => {
+						if (isScrolling) return; // Prevent rapid triggers
+						e.preventDefault();
+
+						isScrolling = true;
+						setTimeout(() => { isScrolling = false; }, 300);
+
+						const delta = e.deltaY;
+
+						if (delta > 0) {
+							// ✅ Scroll down → go to NEXT page (newer data)
+							if (wrAllData.length > wrCurrentPage * wrPageSize) {
+								wrCurrentPage++;
+								renderPage(wrCurrentPage);
+							}
+						} else if (delta < 0) {
+							// ✅ Scroll up → go to PREVIOUS page (older data)
+							if (wrCurrentPage > 1) {
+								wrCurrentPage--;
+								renderPage(wrCurrentPage);
+							}
+						}
+					});
+
+					// Optional: Add subtle visual hint
+					container.style.cursor = 'grab';
+					container.setAttribute('title', 'Scroll to navigate pages');
+
+					// Visual feedback on hover
+					container.addEventListener('mouseenter', () => {
+						container.style.cursor = 'grab';
+					});
+					container.addEventListener('mousedown', () => {
+						container.style.cursor = 'grabbing';
+					});
+					container.addEventListener('mouseup', () => {
+						container.style.cursor = 'grab';
+					});
+				}
+
+				// --- On DOM Ready ---
+				if (document.readyState === 'loading') {
+					document.addEventListener('DOMContentLoaded', () => {
+						setupButtons();
+						enableScrollNavigation();
+						fetchEquipmentWorkData();
+					});
+				} else {
+					// Already loaded
+					setupButtons();
+					enableScrollNavigation();
+					fetchEquipmentWorkData();
+				}
+			})();
 		</script>
 		<!-- <script>
 			let myMultipleBarChart = null; // Hold chart instance

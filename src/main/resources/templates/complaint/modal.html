@@ -132,7 +132,14 @@
 
                         <!-- Priority & Category -->
                         <div class="form-row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Report Date</label>
+                                    <input type="datetime-local" class="form-control"
+                                        th:field="*{reportDate}">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="priority">Priority <span class="text-danger">*</span></label>
                                     <select class="form-control" th:field="*{priority}" required>
@@ -147,7 +154,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="category">Category <span class="text-danger">*</span></label>
                                     <select class="form-control" th:field="*{category}" required>

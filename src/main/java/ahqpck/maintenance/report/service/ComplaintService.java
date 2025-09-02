@@ -508,6 +508,7 @@ public class ComplaintService {
         dto.setDescription(part.getDescription());
         return dto;
     }
+}
 
     // ================== VALIDATION ==================
     // private void validateDTO(ComplaintDTO dto) {
@@ -519,7 +520,6 @@ public class ComplaintService {
     // throw new IllegalArgumentException("Validation failed: " + errorMsg);
     // }
     // }
-}
 
 // package ahqpck.maintenance.report.service;
 
