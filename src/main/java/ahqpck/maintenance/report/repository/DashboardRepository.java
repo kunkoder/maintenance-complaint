@@ -12,11 +12,13 @@ import org.springframework.stereotype.Repository;
 import ahqpck.maintenance.report.dto.DailyBreakdownDTO;
 import ahqpck.maintenance.report.dto.DailyComplaintDTO;
 import ahqpck.maintenance.report.dto.DailyWorkReportDTO;
+import ahqpck.maintenance.report.dto.DailyWorkReportEquipmentDTO;
 import ahqpck.maintenance.report.dto.EquipmentComplaintCountDTO;
 import ahqpck.maintenance.report.dto.EquipmentWorkReportDTO;
 import ahqpck.maintenance.report.dto.MonthlyBreakdownDTO;
 import ahqpck.maintenance.report.dto.MonthlyComplaintDTO;
 import ahqpck.maintenance.report.dto.MonthlyWorkReportDTO;
+import ahqpck.maintenance.report.dto.MonthlyWorkReportEquipmentDTO;
 import ahqpck.maintenance.report.dto.StatusCountDTO;
 import ahqpck.maintenance.report.entity.Complaint;
 
@@ -326,35 +328,36 @@ public interface DashboardRepository extends JpaRepository<Complaint, String> {
     List<MonthlyWorkReportDTO> getMonthlyWorkReport(@Param("year") Integer year);
 
     @Query(value = """
-            SELECT
-                d.day AS date,
-                COALESCE(SUM(CASE WHEN wr.category = 'CORRECTIVE_MAINTENANCE' THEN 1 ELSE 0 END), 0) AS correctiveMaintenanceCount,
-                COALESCE(SUM(CASE WHEN wr.category = 'PREVENTIVE_MAINTENANCE' THEN 1 ELSE 0 END), 0) AS preventiveMaintenanceCount,
-                COALESCE(SUM(CASE WHEN wr.category = 'BREAKDOWN' THEN 1 ELSE 0 END), 0) AS breakdownCount,
-                COALESCE(SUM(CASE WHEN wr.category = 'OTHER' THEN 1 ELSE 0 END), 0) AS otherCount
-            FROM (
-                SELECT DATE_SUB(:to, INTERVAL (units.a + tens.a * 10) DAY) AS day
-                FROM
-                    (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
-                     UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
-                     UNION ALL SELECT 8 UNION ALL SELECT 9) units
-                    CROSS JOIN
-                    (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
-                     UNION ALL SELECT 4 UNION ALL SELECT 5) tens
-            ) d
-            LEFT JOIN work_reports wr ON wr.report_date = d.day
-                AND (:equipmentCode IS NULL OR wr.equipment_code = :equipmentCode)
-            WHERE
-                d.day >= :from
-                AND d.day <= :to
-                AND d.day <= CURRENT_DATE()
-            GROUP BY d.day
-            ORDER BY d.day
-            """, nativeQuery = true)
-    List<DailyWorkReportDTO> getDailyWorkReportEquipment(
-            @Param("from") LocalDate from,
-            @Param("to") LocalDate to,
-            @Param("equipmentCode") String equipmentCode);
+    SELECT
+        d.day AS date,
+        COALESCE(SUM(CASE WHEN wr.category = 'CORRECTIVE_MAINTENANCE' THEN 1 ELSE 0 END), 0) AS correctiveMaintenanceCount,
+        COALESCE(SUM(CASE WHEN wr.category = 'PREVENTIVE_MAINTENANCE' THEN 1 ELSE 0 END), 0) AS preventiveMaintenanceCount,
+        COALESCE(SUM(CASE WHEN wr.category = 'BREAKDOWN' THEN 1 ELSE 0 END), 0) AS breakdownCount,
+        COALESCE(SUM(CASE WHEN wr.category = 'OTHER' THEN 1 ELSE 0 END), 0) AS otherCount
+    FROM (
+        SELECT DATE_SUB(:to, INTERVAL (units.a + tens.a * 10) DAY) AS day
+        FROM
+            (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+             UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+             UNION ALL SELECT 8 UNION ALL SELECT 9) units
+            CROSS JOIN
+            (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+             UNION ALL SELECT 4 UNION ALL SELECT 5) tens
+    ) d
+    LEFT JOIN work_reports wr 
+        ON wr.report_date = d.day
+        AND (:equipmentCode IS NULL OR TRIM(wr.equipment_code) = :equipmentCode)
+    WHERE
+        d.day >= :from
+        AND d.day <= :to
+        AND d.day <= CURRENT_DATE()
+    GROUP BY d.day
+    ORDER BY d.day
+    """, nativeQuery = true)
+List<DailyWorkReportEquipmentDTO> getDailyWorkReportEquipment(
+        @Param("from") LocalDate from,
+        @Param("to") LocalDate to,
+        @Param("equipmentCode") String equipmentCode);
 
     @Query(value = """
             SELECT
@@ -386,7 +389,7 @@ public interface DashboardRepository extends JpaRepository<Complaint, String> {
             GROUP BY YEAR(d.month_start), MONTH(d.month_start)
             ORDER BY YEAR(d.month_start), MONTH(d.month_start)
             """, nativeQuery = true)
-    List<MonthlyWorkReportDTO> getMonthlyWorkReportEquipment(
+    List<MonthlyWorkReportEquipmentDTO> getMonthlyWorkReportEquipment(
             @Param("year") Integer year,
             @Param("equipmentCode") String equipmentCode);
 }

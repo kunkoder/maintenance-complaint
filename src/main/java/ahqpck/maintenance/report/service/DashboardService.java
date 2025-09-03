@@ -5,11 +5,13 @@ import ahqpck.maintenance.report.dto.AssigneeDailyStatusDetailDTO;
 import ahqpck.maintenance.report.dto.DailyBreakdownDTO;
 import ahqpck.maintenance.report.dto.DailyComplaintDTO;
 import ahqpck.maintenance.report.dto.DailyWorkReportDTO;
+import ahqpck.maintenance.report.dto.DailyWorkReportEquipmentDTO;
 import ahqpck.maintenance.report.dto.EquipmentComplaintCountDTO;
 import ahqpck.maintenance.report.dto.EquipmentWorkReportDTO;
 import ahqpck.maintenance.report.dto.MonthlyBreakdownDTO;
 import ahqpck.maintenance.report.dto.MonthlyComplaintDTO;
 import ahqpck.maintenance.report.dto.MonthlyWorkReportDTO;
+import ahqpck.maintenance.report.dto.MonthlyWorkReportEquipmentDTO;
 import ahqpck.maintenance.report.dto.StatusCountDTO;
 import ahqpck.maintenance.report.repository.DashboardRepository;
 import lombok.RequiredArgsConstructor;
@@ -181,39 +183,22 @@ public class DashboardService {
         return dashboardRepository.getMonthlyWorkReport(effectiveYear);
     }
 
-    public List<DailyWorkReportDTO> getDailyWorkReportEquipment(
-        LocalDate from, 
-        LocalDate to, 
-        String equipmentCode) {
+    public List<DailyWorkReportEquipmentDTO> getDailyWorkReportEquipment(LocalDate from, LocalDate to, String equipmentCode) {
+        LocalDate defaultTo = LocalDate.now();
+        LocalDate defaultFrom = defaultTo.minusDays(6); // Last 7 days
 
-    // Default: last 7 days
-    LocalDate defaultTo = LocalDate.now();
-    LocalDate defaultFrom = defaultTo.minusDays(6);
+        LocalDate effectiveFrom = from != null ? from : defaultFrom;
+        LocalDate effectiveTo = to != null ? to : defaultTo;
 
-    LocalDate effectiveFrom = from != null ? from : defaultFrom;
-    LocalDate effectiveTo = to != null ? to : defaultTo;
+        String effectiveEquipmentCode = (equipmentCode != null && !equipmentCode.trim().isEmpty())
+                ? equipmentCode.trim()
+                : null;
 
-    // Default equipment code
-    String effectiveEquipmentCode = equipmentCode != null && !equipmentCode.trim().isEmpty()
-        ? equipmentCode.trim()
-        : "AQPCK-1008";
+        return dashboardRepository.getDailyWorkReportEquipment(effectiveFrom, effectiveTo, effectiveEquipmentCode);
+    }
 
-    return dashboardRepository.getDailyWorkReportEquipment(effectiveFrom, effectiveTo, effectiveEquipmentCode);
-}
-
-    // === Monthly Work Report Count ===
-    public List<MonthlyWorkReportDTO> getMonthlyWorkReportEquipment(
-        Integer year, 
-        String equipmentCode) {
-
-    // Default year
-    Integer effectiveYear = (year != null && year > 1900) ? year : LocalDate.now().getYear();
-
-    // Default equipment code
-    String effectiveEquipmentCode = equipmentCode != null && !equipmentCode.trim().isEmpty()
-        ? equipmentCode.trim()
-        : "AQPCK-1008";
-
-    return dashboardRepository.getMonthlyWorkReportEquipment(effectiveYear, effectiveEquipmentCode);
-}
+    public List<MonthlyWorkReportEquipmentDTO> getMonthlyWorkReportEquipment(Integer year, String equipmentCode) {
+        Integer effectiveYear = (year != null && year > 1900) ? year : LocalDate.now().getYear();
+        return dashboardRepository.getMonthlyWorkReportEquipment(effectiveYear, equipmentCode);
+    }
 }

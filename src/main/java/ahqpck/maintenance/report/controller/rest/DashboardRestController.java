@@ -19,11 +19,13 @@ import ahqpck.maintenance.report.dto.AssigneeDailyStatusDTO;
 import ahqpck.maintenance.report.dto.DailyBreakdownDTO;
 import ahqpck.maintenance.report.dto.DailyComplaintDTO;
 import ahqpck.maintenance.report.dto.DailyWorkReportDTO;
+import ahqpck.maintenance.report.dto.DailyWorkReportEquipmentDTO;
 import ahqpck.maintenance.report.dto.EquipmentComplaintCountDTO;
 import ahqpck.maintenance.report.dto.EquipmentWorkReportDTO;
 import ahqpck.maintenance.report.dto.MonthlyBreakdownDTO;
 import ahqpck.maintenance.report.dto.MonthlyComplaintDTO;
 import ahqpck.maintenance.report.dto.MonthlyWorkReportDTO;
+import ahqpck.maintenance.report.dto.MonthlyWorkReportEquipmentDTO;
 import ahqpck.maintenance.report.dto.StatusCountDTO;
 import ahqpck.maintenance.report.service.DashboardService;
 import ahqpck.maintenance.report.util.EmailUtil;
@@ -121,21 +123,21 @@ public class DashboardRestController {
     }
 
     @GetMapping("/daily-work-report-equipment")
-    public ResponseEntity<List<DailyWorkReportDTO>> getDailyWorkReportEquipment(
+    public ResponseEntity<List<DailyWorkReportEquipmentDTO>> getDailyWorkReportEquipment(
             @RequestParam(name = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(name = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @RequestParam(name = "equipmentCode", required = false) String equipmentCode) {
 
-        List<DailyWorkReportDTO> result = dashboardService.getDailyWorkReportEquipment(from, to, equipmentCode);
+        List<DailyWorkReportEquipmentDTO> result = dashboardService.getDailyWorkReportEquipment(from, to, equipmentCode);
         return ResponseEntity.ok(result);
     }
 
     @GetMapping("/monthly-work-report-equipment")
-    public ResponseEntity<List<MonthlyWorkReportDTO>> getMonthlyWorkReportEquipment(
+    public ResponseEntity<List<MonthlyWorkReportEquipmentDTO>> getMonthlyWorkReportEquipment(
             @RequestParam(name = "year", required = false) Integer year,
             @RequestParam(name = "equipmentCode", required = false) String equipmentCode) {
 
-        List<MonthlyWorkReportDTO> result = dashboardService.getMonthlyWorkReportEquipment(year, equipmentCode);
+        List<MonthlyWorkReportEquipmentDTO> result = dashboardService.getMonthlyWorkReportEquipment(year, equipmentCode);
         return ResponseEntity.ok(result);
     }
 
