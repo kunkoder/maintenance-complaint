@@ -184,6 +184,3 @@ public class WorkReport {
         }
     }
 }
-// @ManyToOne(fetch = FetchType.LAZY)
-// @JoinColumn(name = "technician", referencedColumnName = "employee_id", nullable = false)
-// private User technician;

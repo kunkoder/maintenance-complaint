@@ -21,6 +21,7 @@ import ahqpck.maintenance.report.dto.DailyComplaintDTO;
 import ahqpck.maintenance.report.dto.DailyWorkReportDTO;
 import ahqpck.maintenance.report.dto.DailyWorkReportEquipmentDTO;
 import ahqpck.maintenance.report.dto.EquipmentComplaintCountDTO;
+import ahqpck.maintenance.report.dto.EquipmentCountDTO;
 import ahqpck.maintenance.report.dto.EquipmentWorkReportDTO;
 import ahqpck.maintenance.report.dto.MonthlyBreakdownDTO;
 import ahqpck.maintenance.report.dto.MonthlyComplaintDTO;
@@ -139,6 +140,12 @@ public class DashboardRestController {
 
         List<MonthlyWorkReportEquipmentDTO> result = dashboardService.getMonthlyWorkReportEquipment(year, equipmentCode);
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/equipment-count")
+    public ResponseEntity<List<EquipmentCountDTO>> getEquipmentCount() {
+        List<EquipmentCountDTO> data = dashboardService.getEquipmentCount();
+        return ResponseEntity.ok(data);
     }
 
     // private final EmailUtil emailUtil;

@@ -7,6 +7,7 @@ import ahqpck.maintenance.report.dto.DailyComplaintDTO;
 import ahqpck.maintenance.report.dto.DailyWorkReportDTO;
 import ahqpck.maintenance.report.dto.DailyWorkReportEquipmentDTO;
 import ahqpck.maintenance.report.dto.EquipmentComplaintCountDTO;
+import ahqpck.maintenance.report.dto.EquipmentCountDTO;
 import ahqpck.maintenance.report.dto.EquipmentWorkReportDTO;
 import ahqpck.maintenance.report.dto.MonthlyBreakdownDTO;
 import ahqpck.maintenance.report.dto.MonthlyComplaintDTO;
@@ -200,5 +201,9 @@ public class DashboardService {
     public List<MonthlyWorkReportEquipmentDTO> getMonthlyWorkReportEquipment(Integer year, String equipmentCode) {
         Integer effectiveYear = (year != null && year > 1900) ? year : LocalDate.now().getYear();
         return dashboardRepository.getMonthlyWorkReportEquipment(effectiveYear, equipmentCode);
+    }
+
+     public List<EquipmentCountDTO> getEquipmentCount() {
+        return dashboardRepository.getEquipmentCount();
     }
 }

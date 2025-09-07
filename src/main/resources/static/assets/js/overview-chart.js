@@ -442,85 +442,105 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // Equipment Complained
-const API_URL = `${baseUrl}/api/dashboards/equipment-complaint-count`;
+document.addEventListener('DOMContentLoaded', function () {
+    const API_URL = `${baseUrl}/api/dashboards/equipment-complaint-count`;
 
-let currentPage = 1; // 1 = first page (1-7), 2 = second page (8-14)
-const pageSize = 7;
-let allData = [];
+    let currentPage = 1;
+    const pageSize = 7;
+    let allData = [];
 
-async function fetchEquipmentData() {
-    console.log("Fetching equipment data...");
-    try {
-        const response = await fetch(API_URL);
-        if (!response.ok) throw new Error('Failed to fetch data');
-        allData = await response.json();
-        console.log("equipment", allData);
-        renderPage(currentPage);
-    } catch (err) {
-        console.error('Error loading equipment data:', err);
-        document.getElementById('equipmentListContainer').innerHTML = `
-						<div class="text-center text-muted">Failed to load data</div>
-					`;
-    }
-}
-
-function renderPage(page) {
-    const container = document.getElementById('equipmentListContainer');
-    container.innerHTML = '';
-
-    const start = (page - 1) * pageSize;
-    const end = start + pageSize;
-    const pageData = allData.slice(start, end);
-
-    if (pageData.length === 0) {
-        container.innerHTML = `<div class="text-center text-muted">No data</div>`;
-        return;
+    async function fetchEquipmentData() {
+        console.log("Fetching equipment data...");
+        try {
+            const response = await fetch(API_URL);
+            if (!response.ok) throw new Error('Failed to fetch data');
+            allData = await response.json();
+            console.log("equipment", allData);
+            renderPage(currentPage);
+        } catch (err) {
+            console.error('Error loading equipment data:', err);
+            const container = document.getElementById('equipmentListContainer');
+            if (container) {
+                container.innerHTML = `
+                    <div class="text-center text-muted">Failed to load data</div>
+                `;
+            }
+        }
     }
 
-    pageData.forEach((item, index) => {
-        const rank = start + index + 1;
-        const div = document.createElement('div');
-        div.className = 'd-flex';
-        div.innerHTML = `
-  <div class="mr-3 d-flex align-items-center" style="min-width: 28px;">
-    <span class="fw-bold" style="font-size: 0.95rem; color: #555; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-      ${rank}
-    </span>
-  </div>
-  <div class="flex-1 pt-1 ml-2">
-    <h6 class="fw-bold mb-1">${item.equipmentCode}</h6>
-    <small class="text-muted">${item.equipmentName}</small>
-  </div>
-  <div class="d-flex ml-auto align-items-center">
-    <h3 class="text-info fw-bold">${item.totalComplaints}</h3>
-  </div>
-`;
-        container.appendChild(div);
+    function renderPage(page) {
+        const container = document.getElementById('equipmentListContainer');
+        if (!container) return; // Guard clause if element not found
+        container.innerHTML = '';
 
-        // Add separator after each item (including before last)
-        const sep = document.createElement('div');
-        sep.className = 'separator-dashed';
-        container.appendChild(sep);
-    });
-}
+        const start = (page - 1) * pageSize;
+        const end = start + pageSize;
+        const pageData = allData.slice(start, end);
 
-document.getElementById('nextEquipmentBtn').addEventListener('click', () => {
-    if (allData.length > currentPage * pageSize) {
-        currentPage++;
-        renderPage(currentPage);
+        if (pageData.length === 0) {
+            container.innerHTML = `<div class="text-center text-muted">No data</div>`;
+            return;
+        }
+
+        pageData.forEach((item, index) => {
+            const rank = start + index + 1;
+            const div = document.createElement('div');
+            div.className = 'd-flex';
+            div.innerHTML = `
+                <div class="mr-3 d-flex align-items-center" style="min-width: 28px;">
+                    <span class="fw-bold" style="font-size: 0.95rem; color: #555; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                        ${rank}
+                    </span>
+                </div>
+                <div class="flex-1 pt-1 ml-2">
+                    <h6 class="fw-bold mb-1">${item.equipmentCode}</h6>
+                    <small class="text-muted">${item.equipmentName}</small>
+                </div>
+                <div class="d-flex ml-auto align-items-center">
+                    <h3 class="text-info fw-bold">${item.totalComplaints}</h3>
+                </div>
+            `;
+            container.appendChild(div);
+
+            // Add separator
+            const sep = document.createElement('div');
+            sep.className = 'separator-dashed';
+            container.appendChild(sep);
+        });
     }
-});
 
-document.getElementById('prevEquipmentBtn').addEventListener('click', () => {
-    if (currentPage > 1) {
-        currentPage--;
-        renderPage(currentPage);
+    // Initialize buttons only after DOM is ready
+    const nextBtn = document.getElementById('nextEquipmentBtn');
+    const prevBtn = document.getElementById('prevEquipmentBtn');
+    const refreshBtn = document.getElementById('refreshEquipmentBtn');
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            if (allData.length > currentPage * pageSize) {
+                currentPage++;
+                renderPage(currentPage);
+            }
+        });
     }
-});
 
-document.getElementById('refreshEquipmentBtn').addEventListener('click', () => {
-    currentPage = 1;
-    renderPage(currentPage);
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+            }
+        });
+    }
+
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => {
+            currentPage = 1;
+            fetchEquipmentData(); // Re-fetch latest data
+        });
+    }
+
+    // Initial data load
+    fetchEquipmentData();
 });
 
 // Work Report Chart
@@ -1241,8 +1261,6 @@ function setupButtons() {
     }
 }
 
-// --- Enable Scroll Navigation ---
-// --- Enable Scroll Navigation (Flipped: Scroll Down = Next Page) ---
 function enableScrollNavigation() {
     const container = document.getElementById(CONTAINER_ID);
     if (!container) return;
