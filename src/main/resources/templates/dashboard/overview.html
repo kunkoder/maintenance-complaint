@@ -532,7 +532,7 @@
 		 <script th:src="@{/assets/js/equipment-list.js}"></script> -->
 		<script th:src="@{/assets/js/generate-report.js}"></script>
 
-		<script>
+		<!-- <script>
 			let wrChart = null;
 
 			// === Update Chart Function ===
@@ -825,6 +825,329 @@
 				});
 
 				// Now initialize your chart form
+				initWrChartForm();
+			});
+		</script> -->
+
+		<script>
+			let wrChart = null;
+
+			// === Helper: Format Date to YYYY-MM-DD ===
+			function formatDate(date) {
+				return date.toISOString().split('T')[0];
+			}
+
+			// === Helper: Convert to API datetime format (T00:00 or T23:59)
+			function toApiDateTime(dateStr, isEnd) {
+				const d = new Date(dateStr);
+				if (isEnd) {
+					d.setHours(23, 59, 59, 999);
+				} else {
+					d.setHours(0, 0, 0, 0);
+				}
+				return d.toISOString().slice(0, 16); // "YYYY-MM-DDTHH:mm"
+			}
+
+			// === Helper: Populate Year Selector ===
+			function populateYearSelector(selectId, selectedYear) {
+				const select = document.getElementById(selectId);
+				const currentYear = new Date().getFullYear();
+				select.innerHTML = '';
+				for (let y = currentYear - 10; y <= currentYear + 1; y++) {
+					const opt = new Option(y, y);
+					if (y === selectedYear) opt.selected = true;
+					select.appendChild(opt);
+				}
+			}
+
+			// === Render Chart ===
+			function renderWrChart(labels, corrective, preventive, breakdown, other, title) {
+				const ctx = document.getElementById('wr-equipment-line-chart').getContext('2d');
+				if (wrChart) wrChart.destroy();
+
+				// Calculate stacked totals for dynamic y-axis
+				const stackedValues = labels.map((_, i) =>
+					(corrective[i] || 0) +
+					(preventive[i] || 0) +
+					(breakdown[i] || 0) +
+					(other[i] || 0)
+				);
+				const totalMax = Math.max(...stackedValues, 0);
+
+				let stepSize;
+				if (totalMax <= 20) {
+					stepSize = 5;
+				} else if (totalMax <= 50) {
+					stepSize = 10;
+				} else if (totalMax <= 100) {
+					stepSize = 20;
+				} else if (totalMax <= 200) {
+					stepSize = 25;
+				} else if (totalMax <= 500) {
+					stepSize = 50;
+				} else {
+					stepSize = Math.ceil(totalMax / 10 / 10) * 10;
+				}
+
+				const yAxisMax = Math.ceil(totalMax / stepSize) * stepSize;
+
+				wrChart = new Chart(ctx, {
+					type: 'bar',
+					data: {
+						labels: labels,
+						datasets: [
+							{
+								label: "Corrective Maintenance",
+								backgroundColor: '#d9534f',
+								data: corrective
+							},
+							{
+								label: "Preventive Maintenance",
+								backgroundColor: '#59d05d',
+								data: preventive
+							},
+							{
+								label: "Breakdown",
+								backgroundColor: '#fdaf4b',
+								data: breakdown
+							},
+							{
+								label: "Other",
+								backgroundColor: '#95a5a6',
+								data: other
+							}
+						]
+					},
+					options: {
+						responsive: true,
+						maintainAspectRatio: false,
+						plugins: {
+							title: {
+								display: true,
+								text: title,
+								font: {
+									size: 16
+								}
+							},
+							tooltip: {
+								mode: 'index',
+								intersect: false,
+								callbacks: {
+									label: function (context) {
+										return `${context.dataset.label}: ${context.parsed.y}`;
+									}
+								}
+							},
+							legend: {
+								position: 'bottom',
+								labels: {
+									color: '#333', // Chart.js v3 uses 'color'
+									padding: 15
+								}
+							}
+						},
+						scales: {
+							x: {
+								stacked: true
+							},
+							y: {
+								stacked: true,
+								beginAtZero: true,
+								max: yAxisMax,
+								ticks: {
+									stepSize: stepSize,
+									callback: function (value) {
+										return Number.isInteger(value) ? value : null;
+									}
+								},
+								title: {
+									display: true,
+									text: 'Number of Reports'
+								}
+							}
+						}
+					}
+				});
+			}
+
+			// === Update Chart Function ===
+			function updateWrChart(mode, from = null, to = null, year = null, equipmentCode = null) {
+				let url = '';
+				if (mode === 'yearly') {
+					url = `/api/dashboards/monthly-work-report-equipment?year=${year}`;
+					if (equipmentCode) url += `&equipmentCode=${encodeURIComponent(equipmentCode)}`;
+				} else {
+					const fromApi = toApiDateTime(from, false);
+					const toApi = toApiDateTime(to, true);
+					url = `/api/dashboards/daily-work-report-equipment?from=${from}&to=${to}`;
+					if (equipmentCode) url += `&equipmentCode=${encodeURIComponent(equipmentCode)}`;
+				}
+
+				console.log("Fetching:", url);
+
+				fetch(url)
+					.then(r => {
+						if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
+						return r.json();
+					})
+					.then(data => {
+						if (!Array.isArray(data)) {
+							console.warn("Expected array, got:", data);
+							return;
+						}
+
+						let labels, correctiveData, preventiveData, breakdownData, otherData;
+
+						if (mode === 'yearly') {
+							const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+								"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+							labels = Array(12).fill('');
+							correctiveData = Array(12).fill(0);
+							preventiveData = Array(12).fill(0);
+							breakdownData = Array(12).fill(0);
+							otherData = Array(12).fill(0);
+
+							data.forEach(d => {
+								const i = d.month - 1;
+								if (i >= 0 && i < 12) {
+									labels[i] = months[i];
+									correctiveData[i] = d.correctiveMaintenanceCount || 0;
+									preventiveData[i] = d.preventiveMaintenanceCount || 0;
+									breakdownData[i] = d.breakdownCount || 0;
+									otherData[i] = d.otherCount || 0;
+								}
+							});
+
+							// Fill in any missing months
+							for (let i = 0; i < 12; i++) {
+								if (!labels[i]) labels[i] = months[i];
+							}
+
+							renderWrChart(labels, correctiveData, preventiveData, breakdownData, otherData, 'Monthly Work Report');
+						} else {
+							labels = data.map(d => d.date);
+							correctiveData = data.map(d => d.correctiveMaintenanceCount || 0);
+							preventiveData = data.map(d => d.preventiveMaintenanceCount || 0);
+							breakdownData = data.map(d => d.breakdownCount || 0);
+							otherData = data.map(d => d.otherCount || 0);
+
+							renderWrChart(labels, correctiveData, preventiveData, breakdownData, otherData, 'Daily Work Report');
+						}
+					})
+					.catch(err => {
+						console.error("Error loading chart data:", err);
+						const ctx = document.getElementById('wr-equipment-line-chart').getContext('2d');
+						ctx.save();
+						ctx.textAlign = 'center';
+						ctx.textBaseline = 'middle';
+						ctx.font = "16px Arial";
+						ctx.fillText("Failed to load data", ctx.canvas.width / 2, ctx.canvas.height / 2);
+						ctx.restore();
+					});
+			}
+
+			// === Initialize Form and Equipment Dropdown ===
+			function initWrChartForm() {
+				const now = new Date();
+				const from = new Date(now);
+				from.setDate(now.getDate() - 6);
+
+				// Set default date range
+				document.getElementById('wr-from').value = formatDate(from);
+				document.getElementById('wr-to').value = formatDate(now);
+
+				// Populate year selector
+				populateYearSelector('wr-year-select', now.getFullYear());
+
+				// === Load Equipment List ===
+				fetch('/api/dashboards/equipment-complaint-count')
+					.then(r => r.json())
+					.then(equipmentList => {
+						const select = document.getElementById('wr-equipment');
+						equipmentList
+							.sort((a, b) => a.equipmentName.localeCompare(b.equipmentName))
+							.forEach(item => {
+								const opt = new Option(item.equipmentName, item.equipmentCode);
+								select.appendChild(opt);
+							});
+
+						const initialEquipment = document.getElementById('wr-equipment').value;
+						updateWrChart('daily', formatDate(from), formatDate(now), null, initialEquipment);
+					})
+					.catch(err => {
+						console.warn("Failed to load equipment list:", err);
+						const initialEquipment = document.getElementById('wr-equipment').value;
+						updateWrChart('daily', formatDate(from), formatDate(now), null, initialEquipment);
+					});
+
+				// === Quick Range Buttons ===
+				document.querySelectorAll('.dropdown-menu .btn[data-range]').forEach(btn => {
+					btn.addEventListener('click', () => {
+						const range = btn.getAttribute('data-range');
+						const now = new Date();
+						const equipmentCode = document.getElementById('wr-equipment').value;
+
+						if (range === 'weekly') {
+							document.getElementById('wr-year-selector').style.display = 'none';
+							const from = new Date(now);
+							from.setDate(now.getDate() - 6);
+							document.getElementById('wr-from').value = formatDate(from);
+							document.getElementById('wr-to').value = formatDate(now);
+							updateWrChart('daily', formatDate(from), formatDate(now), null, equipmentCode);
+						} else if (range === 'monthly') {
+							document.getElementById('wr-year-selector').style.display = 'none';
+							const from = new Date(now.getFullYear(), now.getMonth(), 1);
+							document.getElementById('wr-from').value = formatDate(from);
+							document.getElementById('wr-to').value = formatDate(now);
+							updateWrChart('daily', formatDate(from), formatDate(now), null, equipmentCode);
+						} else if (range === 'yearly') {
+							document.getElementById('wr-year-selector').style.display = 'block';
+							const year = document.getElementById('wr-year-select').value;
+							updateWrChart('yearly', null, null, year, equipmentCode);
+						}
+					});
+				});
+
+				// === Year Selector Change ===
+				document.getElementById('wr-year-select').addEventListener('change', () => {
+					const year = document.getElementById('wr-year-select').value;
+					const equipmentCode = document.getElementById('wr-equipment').value;
+					updateWrChart('yearly', null, null, year, equipmentCode);
+				});
+
+				// === Apply Button Click ===
+				document.getElementById('apply-filters-btn').addEventListener('click', () => {
+					const from = document.getElementById('wr-from').value;
+					const to = document.getElementById('wr-to').value;
+					const equipmentCode = document.getElementById('wr-equipment').value;
+					const year = document.getElementById('wr-year-select').value;
+
+					if (document.getElementById('wr-year-selector').style.display === 'block') {
+						updateWrChart('yearly', null, null, year, equipmentCode);
+					} else {
+						document.getElementById('wr-year-selector').style.display = 'none';
+						updateWrChart('daily', from, to, null, equipmentCode);
+					}
+				});
+			}
+
+			// === Initialize on DOM Load ===
+			document.addEventListener('DOMContentLoaded', () => {
+				const equipmentSelect = document.getElementById('wr-equipment');
+
+				if (!equipmentSelect) {
+					console.error("Element #wr-equipment not found");
+					return;
+				}
+
+				// Prevent dropdown from closing when interacting with form elements
+				['mousedown', 'click', 'focusin'].forEach(eventType => {
+					equipmentSelect.addEventListener(eventType, (e) => {
+						e.stopPropagation();
+					});
+				});
+
+				// Initialize chart and form
 				initWrChartForm();
 			});
 		</script>

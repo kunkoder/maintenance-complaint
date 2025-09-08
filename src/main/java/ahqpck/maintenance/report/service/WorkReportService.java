@@ -89,7 +89,7 @@ public class WorkReportService {
                 System.out.println("code success");
             }
 
-            validateNoDuplicateReport(dto);
+            validateNoDuplicateBreakdown(dto);
             mapToEntity(workReport, dto);
             System.out.println("entity success" + dto.getTechnicianEmpIds());
 
@@ -368,41 +368,39 @@ public class WorkReportService {
 
     // ================== PRIVATE HELPERS ==================
 
-    private void validateNoDuplicateReport(WorkReportDTO dto) {
-        // Only check if problem and equipment are provided
-        if (dto.getProblem() == null || dto.getProblem().trim().isEmpty()) {
-            return; // Nothing to compare
-        }
-
-        if (dto.getEquipment() == null || dto.getEquipment().getCode() == null) {
-            return; // Equipment needed
-        }
-
-        String problem = dto.getProblem().trim();
-        String solution = dto.getSolution() != null ? dto.getSolution().trim() : null;
-        String equipmentCode = dto.getEquipment().getCode().trim();
-        LocalDateTime startTime = dto.getStartTime();
-        LocalDate reportDate = dto.getReportDate();
-
-        if (reportDate == null) {
+    private void validateNoDuplicateBreakdown(WorkReportDTO dto) {
+        // Skip if not BREAKDOWN
+        if (dto.getCategory() != WorkReport.Category.BREAKDOWN) {
             return;
         }
 
-        // Define time window: e.g., same day ± 1 hour
-       
+        // Equipment is required for breakdown validation
+        if (dto.getEquipment() == null || dto.getEquipment().getCode() == null) {
+            return; // Let other validations handle this
+        }
 
-        // Query: Is there an existing report with same equipment, problem, and
-        // overlapping time?
-        // boolean exists = workReportRepository.existsByEquipmentCodeAndProblemAndReportDateBetween(
-        //         equipmentCode, problem, start, end);
+        // Time fields are required
+        if (dto.getStartTime() == null || dto.getStopTime() == null) {
+            return; // Let other validations handle this
+        }
 
-        boolean exists = workReportRepository.hasSimilarReportOnDate(
-                equipmentCode, problem, solution, startTime);
+        String equipmentCode = dto.getEquipment().getCode().trim();
+        LocalDateTime start = dto.getStartTime();
+        LocalDateTime stop = dto.getStopTime();
+
+        // Ensure start <= stop
+        if (start.isAfter(stop)) {
+            throw new IllegalArgumentException("Start time cannot be after stop time.");
+        }
+
+        // Check for overlapping breakdown reports on same equipment
+        boolean exists = workReportRepository.hasOverlappingBreakdownReport(
+                equipmentCode, start, stop);
 
         if (exists) {
             throw new IllegalArgumentException(
-                    "A similar report already exists for '" + equipmentCode +
-                            "' with the same problem around this time. Preventing duplicate.");
+                    "A breakdown report already exists for equipment '" + equipmentCode +
+                            "' during this time period. Overlapping breakdowns are not allowed.");
         }
     }
 

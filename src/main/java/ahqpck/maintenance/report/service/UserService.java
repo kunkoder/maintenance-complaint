@@ -102,16 +102,16 @@ public class UserService {
                         .collect(Collectors.toSet());
 
         user.getRoles().addAll(roles);
-        // userRepository.save(user);
+        userRepository.save(user);
 
-        try {
-            emailUtil.sendAccountActivationEmail(user.getEmail(), token);
-            userRepository.save(user);
-        } catch (Exception e) {
-            // Optional: delete user if email fails?
-            // Or mark as "email_failed" and retry later
-            throw new RuntimeException("Failed to send activation email to " + user.getEmail(), e);
-        }
+        // try {
+        //     emailUtil.sendAccountActivationEmail(user.getEmail(), token);
+        //     userRepository.save(user);
+        // } catch (Exception e) {
+        //     // Optional: delete user if email fails?
+        //     // Or mark as "email_failed" and retry later
+        //     throw new RuntimeException("Failed to send activation email to " + user.getEmail(), e);
+        // }
     }
 
     // === UPDATE USER ===

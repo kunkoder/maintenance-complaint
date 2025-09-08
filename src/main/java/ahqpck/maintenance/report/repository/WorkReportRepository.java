@@ -43,6 +43,20 @@ public interface WorkReportRepository extends JpaRepository<WorkReport, String>,
      */
     List<WorkReport> findByTechnicians(User technician);
 
+    @Query("""
+        SELECT EXISTS (
+            SELECT 1 FROM WorkReport wr
+            WHERE wr.equipment.code = :equipmentCode
+              AND wr.category = 'BREAKDOWN'
+              AND wr.startTime < :stopTime
+              AND wr.stopTime > :startTime
+        )
+    """)
+    boolean hasOverlappingBreakdownReport(
+        @Param("equipmentCode") String equipmentCode,
+        @Param("startTime") LocalDateTime startTime,
+        @Param("stopTime") LocalDateTime stopTime);
+
     /**
      * Optional: find by supervisor
      */

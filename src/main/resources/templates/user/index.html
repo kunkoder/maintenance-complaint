@@ -26,9 +26,24 @@
                         <a th:text="${title}"></a>
                     </li>
                 </ul>
-                <button class="btn btn-primary ml-auto mt-2" data-toggle="modal" data-target="#addRowModal">
-                    <i class="fa fa-plus-circle mr-2"></i> Add
-                </button>
+                <div class="header-action-group d-flex align-items-center ml-auto">
+                    <button class="btn btn-primary dropdown-toggle mt-2 mr-2" type="button" id="exportDropdown"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-upload mr-1"></i> Export
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="exportDropdown">
+                        <a class="dropdown-item" href="#" id="exportExcel">
+                            <i class="fa fa-file-excel mr-2 text-success"></i> Excel
+                        </a>
+                        <a class="dropdown-item" href="#" id="exportPdf">
+                            <i class="fa fa-file-pdf mr-2 text-danger"></i> PDF
+                        </a>
+                    </div>
+                    <div th:replace="~{complaint/import-modal :: import-modal}"></div>
+                    <button class="btn btn-primary ml-auto mt-2" data-toggle="modal" data-target="#addRowModal">
+                        <i class="fa fa-plus-circle mr-2"></i> Add
+                    </button>
+                </div>
             </div>
             <div class="row">
                 <div class="col-md-12">
@@ -415,6 +430,206 @@
             });
 
         </script>
+        <script>
+document.addEventListener("DOMContentLoaded", function () {
+    // ========================
+    // Export to Excel
+    // ========================
+    document.getElementById('exportExcel').addEventListener('click', function (e) {
+        e.preventDefault();
+
+        const headers = [
+            "Full Name",
+            "Employee ID",
+            "Email",
+            "Designation",
+            "Role(s)",
+            "Nationality",
+            "Join Date",
+            "Phone Number",
+            "Status",
+            "Created At",
+            "Activated At"
+        ];
+
+        const data = [];
+        document.querySelectorAll('#user-table tbody tr').forEach(tr => {
+            if (tr.style.display === 'none') return; // Skip filtered rows
+
+            const tds = tr.querySelectorAll('td');
+            let colIndex = 0;
+            const row = [];
+
+            // Skip Image (index 0)
+            colIndex++;
+
+            // Full Name
+            row.push(tds[colIndex++].textContent.trim());
+
+            // Employee ID
+            row.push(tds[colIndex++].textContent.trim());
+
+            // Email
+            row.push(tds[colIndex++].textContent.trim());
+
+            // Designation
+            row.push(tds[colIndex++].textContent.trim());
+
+            // Role(s) - extract from badges
+            const roleCell = tds[colIndex++];
+            const roles = Array.from(roleCell.querySelectorAll('.badge'))
+                .map(b => b.textContent.trim())
+                .join(", ");
+            row.push(roles || '-');
+
+            // Nationality
+            row.push(tds[colIndex++].textContent.trim());
+
+            // Join Date
+            row.push(tds[colIndex++].textContent.trim());
+
+            // Phone Number
+            row.push(tds[colIndex++].textContent.trim());
+
+            // Status
+            row.push(tds[colIndex++].textContent.trim());
+
+            // Created At
+            row.push(tds[colIndex++].textContent.trim());
+
+            // Activated At
+            row.push(tds[colIndex++].textContent.trim());
+
+            // Skip Action column (last one)
+
+            data.push(row);
+        });
+
+        // Create worksheet and workbook
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Users");
+
+        // Generate filename
+        const dateStr = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(wb, `User_Data_${dateStr}.xlsx`);
+    });
+
+    // ========================
+    // Export to PDF
+    // ========================
+    document.getElementById('exportPdf').addEventListener('click', function (e) {
+        e.preventDefault();
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+            orientation: 'landscape',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        // Define headers (excluding Image and Action)
+        const headers = [
+            "Full Name",
+            "Employee ID",
+            "Email",
+            "Designation",
+            "Role(s)",
+            "Nationality",
+            "Join Date",
+            "Phone Number",
+            "Status",
+            "Created At",
+            "Activated At"
+        ];
+
+        // Extract data
+        const data = [];
+        document.querySelectorAll('#user-table tbody tr').forEach(tr => {
+            if (tr.style.display === 'none') return;
+
+            const tds = tr.querySelectorAll('td');
+            let colIndex = 0;
+            const row = [];
+
+            // Skip Image (index 0)
+            colIndex++;
+
+            // Full Name
+            row.push(tds[colIndex++].textContent.trim());
+
+            // Employee ID
+            row.push(tds[colIndex++].textContent.trim());
+
+            // Email
+            row.push(tds[colIndex++].textContent.trim());
+
+            // Designation
+            row.push(tds[colIndex++].textContent.trim());
+
+            // Role(s)
+            const roleCell = tds[colIndex++];
+            const roles = Array.from(roleCell.querySelectorAll('.badge'))
+                .map(b => b.textContent.trim())
+                .join(", ");
+            row.push(roles || '-');
+
+            // Nationality
+            row.push(tds[colIndex++].textContent.trim());
+
+            // Join Date
+            row.push(tds[colIndex++].textContent.trim());
+
+            // Phone Number
+            row.push(tds[colIndex++].textContent.trim());
+
+            // Status
+            row.push(tds[colIndex++].textContent.trim());
+
+            // Created At
+            row.push(tds[colIndex++].textContent.trim());
+
+            // Activated At
+            row.push(tds[colIndex++].textContent.trim());
+
+            // Skip Action
+
+            data.push(row);
+        });
+
+        // Add title
+        doc.setFontSize(16);
+        doc.text("User Data Export", 14, 15);
+
+        // Generate table
+        doc.autoTable({
+            head: [headers],
+            body: data,
+            startY: 25,
+            theme: 'grid',
+            styles: { fontSize: 8, cellPadding: 2 },
+            headStyles: { fillColor: [51, 122, 183] }, // Bootstrap primary blue
+            columnStyles: {
+                0: { cellWidth: 30 },   // Full Name
+                1: { cellWidth: 25 },   // Employee ID
+                2: { cellWidth: 35 },   // Email
+                3: { cellWidth: 25 },   // Designation
+                4: { cellWidth: 25 },   // Roles
+                5: { cellWidth: 20 },   // Nationality
+                6: { cellWidth: 20 },   // Join Date
+                7: { cellWidth: 25 },   // Phone
+                8: { cellWidth: 15 },   // Status
+                9: { cellWidth: 25 },   // Created At
+                10: { cellWidth: 25 }   // Activated At
+            }
+        });
+
+        // Save
+        const dateStr = new Date().toISOString().slice(0, 10);
+        doc.save(`User_Data_${dateStr}.pdf`);
+    });
+});
+</script>
     </th:block>
 
 </body>
