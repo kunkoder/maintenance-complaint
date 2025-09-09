@@ -1,0 +1,1617 @@
+<!-- <div class="row">
+				<div class="col-md-6">
+					<div class="card">
+						<div class="card-header">
+							<div class="card-head-row card-tools-still-right">
+								<h4 class="card-title">Equipment</h4>
+								<div class="card-tools">
+									<button class="btn btn-icon btn-link btn-primary btn-xs"
+										id="equipment-work-prev-btn" title="Previous">
+										<i class="fas fa-chevron-up"></i>
+									</button>
+									<button class="btn btn-icon btn-link btn-primary btn-xs"
+										id="equipment-work-next-btn" title="Next">
+										<i class="fas fa-chevron-down"></i>
+									</button>
+									<button class="btn btn-icon btn-link btn-primary btn-xs"
+										id="equipment-work-refresh-btn" title="Refresh">
+										<i class="fa fa-sync-alt"></i>
+									</button>
+								</div>
+							</div>
+							<p class="card-category">Top Equipment by Resolution Time</p>
+						</div>
+						<div class="card-body pb-0" id="equipment-work-list-container">
+						</div>
+					</div>
+				</div>
+			</div> -->
+
+            <!-- <script>
+			let wrChart = null;
+
+			// === Update Chart Function ===
+			function updateWrChart(mode, from = null, to = null, year = null, equipmentCode = null) {
+				const ctx = document.getElementById('wr-equipment-line-chart').getContext('2d');
+				if (wrChart) wrChart.destroy();
+
+				let url = '';
+				if (mode === 'yearly') {
+					url = `/api/dashboards/monthly-work-report-equipment?year=${year}`;
+					if (equipmentCode) url += `&equipmentCode=${encodeURIComponent(equipmentCode)}`;
+				} else {
+					url = `/api/dashboards/daily-work-report-equipment?from=${from}&to=${to}`;
+					if (equipmentCode) url += `&equipmentCode=${encodeURIComponent(equipmentCode)}`;
+				}
+
+				console.log("Fetching:", url);
+
+				fetch(url)
+					.then(r => {
+						if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
+						return r.json();
+					})
+					.then(data => {
+						if (!Array.isArray(data)) {
+							console.warn("Expected array, got:", data);
+							return;
+						}
+
+						let labels, correctiveData, preventiveData, breakdownData, otherData;
+
+						if (mode === 'yearly') {
+							const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+								"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+							labels = months;
+							correctiveData = Array(12).fill(0);
+							preventiveData = Array(12).fill(0);
+							breakdownData = Array(12).fill(0);
+							otherData = Array(12).fill(0);
+
+							data.forEach(d => {
+								const i = d.month - 1;
+								if (i >= 0 && i < 12) {
+									correctiveData[i] = d.correctiveMaintenanceCount || 0;
+									preventiveData[i] = d.preventiveMaintenanceCount || 0;
+									breakdownData[i] = d.breakdownCount || 0;
+									otherData[i] = d.otherCount || 0;
+								}
+							});
+						} else {
+							labels = data.map(d => d.date);
+							correctiveData = data.map(d => d.correctiveMaintenanceCount || 0);
+							preventiveData = data.map(d => d.preventiveMaintenanceCount || 0);
+							breakdownData = data.map(d => d.breakdownCount || 0);
+							otherData = data.map(d => d.otherCount || 0);
+						}
+
+						wrChart = new Chart(ctx, {
+							type: 'line',
+							data: {
+								labels: labels,
+								datasets: [
+									{
+										label: "Corrective Maintenance",
+										borderColor: "#e74c3c",
+										pointBorderColor: "#FFF",
+										pointBackgroundColor: "#e74c3c",
+										pointBorderWidth: 2,
+										pointHoverRadius: 4,
+										pointRadius: 4,
+										backgroundColor: 'transparent',
+										fill: false,
+										borderWidth: 2,
+										data: correctiveData
+									},
+									{
+										label: "Preventive Maintenance",
+										borderColor: "#3498db",
+										pointBorderColor: "#FFF",
+										pointBackgroundColor: "#3498db",
+										pointBorderWidth: 2,
+										pointHoverRadius: 4,
+										pointRadius: 4,
+										backgroundColor: 'transparent',
+										fill: false,
+										borderWidth: 2,
+										data: preventiveData
+									},
+									{
+										label: "Breakdown",
+										borderColor: "#f39c12",
+										pointBorderColor: "#FFF",
+										pointBackgroundColor: "#f39c12",
+										pointBorderWidth: 2,
+										pointHoverRadius: 4,
+										pointRadius: 4,
+										backgroundColor: 'transparent',
+										fill: false,
+										borderWidth: 2,
+										data: breakdownData
+									},
+									{
+										label: "Other",
+										borderColor: "#95a5a6",
+										pointBorderColor: "#FFF",
+										pointBackgroundColor: "#95a5a6",
+										pointBorderWidth: 2,
+										pointHoverRadius: 4,
+										pointRadius: 4,
+										backgroundColor: 'transparent',
+										fill: false,
+										borderWidth: 2,
+										data: otherData
+									}
+								]
+							},
+							options: {
+								responsive: true,
+								maintainAspectRatio: false,
+								legend: {
+									position: 'bottom',
+									labels: { fontColor: '#333', padding: 15 }
+								},
+								tooltips: {
+									mode: "nearest",
+									intersect: false,
+									callbacks: {
+										label: function (tooltipItem, data) {
+											const dataset = data.datasets[tooltipItem.datasetIndex];
+											const value = dataset.data[tooltipItem.index];
+											const label = dataset.label;
+											return `${label}: ${value} reports`;
+										}
+									}
+								},
+								scales: {
+									x: { stacked: false },
+									y: {
+										beginAtZero: true,
+										ticks: {
+											stepSize: 1,
+											callback: function (value) {
+												return Number.isInteger(value) ? value : null;
+											}
+										},
+										title: {
+											display: true,
+											text: 'Number of Reports'
+										}
+									}
+								}
+							}
+						});
+					})
+					.catch(err => {
+						console.error("Error loading chart data:", err);
+						if (wrChart) wrChart.clear();
+						const ctx = document.getElementById('wr-equipment-line-chart').getContext('2d');
+						ctx.save();
+						ctx.textAlign = 'center';
+						ctx.textBaseline = 'middle';
+						ctx.font = "16px Arial";
+						ctx.fillText("Failed to load data", ctx.canvas.width / 2, ctx.canvas.height / 2);
+						ctx.restore();
+					});
+			}
+
+			// === Helper: Format Date to YYYY-MM-DD ===
+			function formatDate(date) {
+				return date.toISOString().split('T')[0];
+			}
+
+			// === Populate Year Selector ===
+			function populateYearSelector(selectId, selectedYear) {
+				const select = document.getElementById(selectId);
+				const currentYear = new Date().getFullYear();
+				select.innerHTML = '';
+				for (let y = currentYear - 10; y <= currentYear + 1; y++) {
+					const opt = new Option(y, y);
+					if (y === selectedYear) opt.selected = true;
+					select.appendChild(opt);
+				}
+			}
+
+			// === Initialize Form and Equipment Dropdown ===
+			function initWrChartForm() {
+				const now = new Date();
+				const from = new Date(now);
+				from.setDate(now.getDate() - 6);
+
+				// Set default date range
+				document.getElementById('wr-from').value = formatDate(from);
+				document.getElementById('wr-to').value = formatDate(now);
+
+				// Populate year selector
+				populateYearSelector('wr-year-select', now.getFullYear());
+
+				// === Load Equipment List ===
+				fetch('/api/dashboards/equipment-complaint-count')
+					.then(r => r.json())
+					.then(equipmentList => {
+						const select = document.getElementById('wr-equipment');
+						equipmentList
+							.sort((a, b) => a.equipmentName.localeCompare(b.equipmentName))
+							.forEach(item => {
+								const opt = new Option(item.equipmentName, item.equipmentCode);
+								select.appendChild(opt);
+							});
+
+						const initialEquipment = document.getElementById('wr-equipment').value;
+						updateWrChart('daily', formatDate(from), formatDate(now), null, initialEquipment);
+					})
+					.catch(err => {
+						console.warn("Failed to load equipment list:", err);
+						const initialEquipment = document.getElementById('wr-equipment').value;
+						updateWrChart('daily', formatDate(from), formatDate(now), null, initialEquipment);
+					});
+
+				// === Quick Range Buttons ===
+				document.querySelectorAll('.dropdown-menu .btn[data-range]').forEach(btn => {
+					btn.addEventListener('click', () => {
+						const range = btn.getAttribute('data-range');
+						const now = new Date();
+						const equipmentCode = document.getElementById('wr-equipment').value;
+
+						if (range === 'weekly') {
+							document.getElementById('wr-year-selector').style.display = 'none';
+							const from = new Date(now);
+							from.setDate(now.getDate() - 6);
+							document.getElementById('wr-from').value = formatDate(from);
+							document.getElementById('wr-to').value = formatDate(now);
+						} else if (range === 'monthly') {
+							document.getElementById('wr-year-selector').style.display = 'none';
+							const from = new Date(now.getFullYear(), now.getMonth(), 1);
+							document.getElementById('wr-from').value = formatDate(from);
+							document.getElementById('wr-to').value = formatDate(now);
+						} else if (range === 'yearly') {
+							document.getElementById('wr-year-selector').style.display = 'block';
+							const year = document.getElementById('wr-year-select').value;
+							updateWrChart('yearly', null, null, year, equipmentCode);
+							return; // Don't apply daily
+						}
+
+						// Update daily chart
+						const fromVal = document.getElementById('wr-from').value;
+						const toVal = document.getElementById('wr-to').value;
+						updateWrChart('daily', fromVal, toVal, null, equipmentCode);
+					});
+				});
+
+				// === Year Selector Change ===
+				document.getElementById('wr-year-select').addEventListener('change', () => {
+					const year = document.getElementById('wr-year-select').value;
+					const equipmentCode = document.getElementById('wr-equipment').value;
+					updateWrChart('yearly', null, null, year, equipmentCode);
+				});
+
+				// === Apply Button Click ===
+				document.getElementById('apply-filters-btn').addEventListener('click', () => {
+					const from = document.getElementById('wr-from').value;
+					const to = document.getElementById('wr-to').value;
+					const equipmentCode = document.getElementById('wr-equipment').value;
+					const year = document.getElementById('wr-year-select').value;
+
+					if (document.getElementById('wr-year-selector').style.display === 'block') {
+						updateWrChart('yearly', null, null, year, equipmentCode);
+					} else {
+						document.getElementById('wr-year-selector').style.display = 'none';
+						updateWrChart('daily', from, to, null, equipmentCode);
+					}
+
+					// Optional: Close dropdown after apply
+					// $('.dropdown').dropdown('toggle'); // if using jQuery
+				});
+			}
+
+			document.addEventListener('DOMContentLoaded', () => {
+				const equipmentSelect = document.getElementById('wr-equipment');
+
+				if (!equipmentSelect) {
+					console.error("Element #wr-equipment not found");
+					return;
+				}
+
+				// Only prevent dropdown close on #wr-equipment
+				['mousedown', 'click', 'focusin'].forEach(eventType => {
+					equipmentSelect.addEventListener(eventType, (e) => {
+						e.stopPropagation();
+					});
+				});
+
+				// Now initialize your chart form
+				initWrChartForm();
+			});
+		</script> -->
+
+        <!-- Work Report -->
+<!-- <script>
+				let workReportChart = null;
+
+				function updateWorkReportChart(mode, from = null, to = null, year = null) {
+					const ctx = document.getElementById('work-report-line-chart').getContext('2d');
+					if (workReportChart) workReportChart.destroy();
+
+					if (mode === 'yearly') {
+						fetch(`/api/dashboards/monthly-work-report?year=${year}`)
+							.then(r => r.json())
+							.then(data => {
+								if (!Array.isArray(data)) return;
+
+								const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+									"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+								const labels = months;
+
+								// Initialize datasets
+								const correctiveData = Array(12).fill(0);
+								const preventiveData = Array(12).fill(0);
+								const breakdownData = Array(12).fill(0);
+								const otherData = Array(12).fill(0);
+
+								data.forEach(d => {
+									const i = d.month - 1;
+									if (i >= 0 && i < 12) {
+										correctiveData[i] = d.correctiveMaintenanceCount || 0;
+										preventiveData[i] = d.preventiveMaintenanceCount || 0;
+										breakdownData[i] = d.breakdownCount || 0;
+										otherData[i] = d.otherCount || 0;
+									}
+								});
+
+								workReportChart = new Chart(ctx, {
+									type: 'line',
+									data: {
+										labels: labels,
+										datasets: [
+											{
+												label: "Corrective Maintenance",
+												borderColor: "#e74c3c",
+												pointBorderColor: "#FFF",
+												pointBackgroundColor: "#e74c3c",
+												pointBorderWidth: 2,
+												pointHoverRadius: 4,
+												pointRadius: 4,
+												backgroundColor: 'transparent',
+												fill: false,
+												borderWidth: 2,
+												data: correctiveData,
+												counts: correctiveData
+											},
+											{
+												label: "Preventive Maintenance",
+												borderColor: "#3498db",
+												pointBorderColor: "#FFF",
+												pointBackgroundColor: "#3498db",
+												pointBorderWidth: 2,
+												pointHoverRadius: 4,
+												pointRadius: 4,
+												backgroundColor: 'transparent',
+												fill: false,
+												borderWidth: 2,
+												data: preventiveData,
+												counts: preventiveData
+											},
+											{
+												label: "Breakdown",
+												borderColor: "#f39c12",
+												pointBorderColor: "#FFF",
+												pointBackgroundColor: "#f39c12",
+												pointBorderWidth: 2,
+												pointHoverRadius: 4,
+												pointRadius: 4,
+												backgroundColor: 'transparent',
+												fill: false,
+												borderWidth: 2,
+												data: breakdownData,
+												counts: breakdownData
+											},
+											{
+												label: "Other",
+												borderColor: "#95a5a6",
+												pointBorderColor: "#FFF",
+												pointBackgroundColor: "#95a5a6",
+												pointBorderWidth: 2,
+												pointHoverRadius: 4,
+												pointRadius: 4,
+												backgroundColor: 'transparent',
+												fill: false,
+												borderWidth: 2,
+												data: otherData,
+												counts: otherData
+											}
+										]
+									},
+									options: {
+										responsive: true,
+										maintainAspectRatio: false,
+										legend: {
+											position: 'bottom',
+											labels: { fontColor: '#333', padding: 15 }
+										},
+										tooltips: {
+											mode: "nearest",
+											intersect: false,
+											callbacks: {
+												label: function (tooltipItem, data) {
+													const dataset = data.datasets[tooltipItem.datasetIndex];
+													const value = dataset.data[tooltipItem.index];
+													const label = dataset.label;
+													return `${label}: ${value} reports`;
+												}
+											}
+										},
+										scales: {
+											x: { stacked: false },
+											y: {
+												beginAtZero: true,
+												ticks: {
+													stepSize: 1,
+													callback: function (value) {
+														return Number.isInteger(value) ? value : null;
+													}
+												},
+												title: {
+													display: true,
+													text: 'Number of Reports'
+												}
+											}
+										}
+									}
+								});
+							});
+
+					} else {
+						fetch(`/api/dashboards/daily-work-report?from=${from}&to=${to}`)
+							.then(r => r.json())
+							.then(data => {
+								if (!Array.isArray(data)) return;
+
+								const labels = data.map(d => d.date);
+								const correctiveData = data.map(d => d.correctiveMaintenanceCount || 0);
+								const preventiveData = data.map(d => d.preventiveMaintenanceCount || 0);
+								const breakdownData = data.map(d => d.breakdownCount || 0);
+								const otherData = data.map(d => d.otherCount || 0);
+
+								workReportChart = new Chart(ctx, {
+									type: 'line',
+									data: {
+										labels: labels,
+										datasets: [
+											{
+												label: "Corrective Maintenance",
+												borderColor: "#e74c3c",
+												pointBorderColor: "#FFF",
+												pointBackgroundColor: "#e74c3c",
+												pointBorderWidth: 2,
+												pointHoverRadius: 4,
+												pointRadius: 4,
+												backgroundColor: 'transparent',
+												fill: false,
+												borderWidth: 2,
+												data: correctiveData,
+												counts: correctiveData
+											},
+											{
+												label: "Preventive Maintenance",
+												borderColor: "#3498db",
+												pointBorderColor: "#FFF",
+												pointBackgroundColor: "#3498db",
+												pointBorderWidth: 2,
+												pointHoverRadius: 4,
+												pointRadius: 4,
+												backgroundColor: 'transparent',
+												fill: false,
+												borderWidth: 2,
+												data: preventiveData,
+												counts: preventiveData
+											},
+											{
+												label: "Breakdown",
+												borderColor: "#f39c12",
+												pointBorderColor: "#FFF",
+												pointBackgroundColor: "#f39c12",
+												pointBorderWidth: 2,
+												pointHoverRadius: 4,
+												pointRadius: 4,
+												backgroundColor: 'transparent',
+												fill: false,
+												borderWidth: 2,
+												data: breakdownData,
+												counts: breakdownData
+											},
+											{
+												label: "Other",
+												borderColor: "#95a5a6",
+												pointBorderColor: "#FFF",
+												pointBackgroundColor: "#95a5a6",
+												pointBorderWidth: 2,
+												pointHoverRadius: 4,
+												pointRadius: 4,
+												backgroundColor: 'transparent',
+												fill: false,
+												borderWidth: 2,
+												data: otherData,
+												counts: otherData
+											}
+										]
+									},
+									options: {
+										responsive: true,
+										maintainAspectRatio: false,
+										legend: {
+											position: 'bottom',
+											labels: { fontColor: '#333', padding: 15 }
+										},
+										tooltips: {
+											mode: "nearest",
+											intersect: false,
+											callbacks: {
+												label: function (tooltipItem, data) {
+													const dataset = data.datasets[tooltipItem.datasetIndex];
+													const value = dataset.data[tooltipItem.index];
+													const label = dataset.label;
+													return `${label}: ${value} reports`;
+												}
+											}
+										},
+										scales: {
+											x: { stacked: false },
+											y: {
+												beginAtZero: true,
+												ticks: {
+													stepSize: 1,
+													callback: function (value) {
+														return Number.isInteger(value) ? value : null;
+													}
+												},
+												title: {
+													display: true,
+													text: 'Number of Reports'
+												}
+											}
+										}
+									}
+								});
+							});
+					}
+				}
+
+				function initWorkReportChartForm() {
+					const now = new Date();
+					const from = new Date(now);
+					from.setDate(now.getDate() - 6);
+
+					document.getElementById('work-report-from').value = formatDate(from);
+					document.getElementById('work-report-to').value = formatDate(now);
+
+					// Populate year selector
+					populateYearSelector('work-report-year-select', now.getFullYear());
+
+					// Quick buttons
+					document.querySelectorAll('#work-report-chart-form .btn[data-range]').forEach(btn => {
+						btn.addEventListener('click', () => {
+							const range = btn.getAttribute('data-range');
+							const now = new Date();
+							if (range === 'weekly') {
+								document.getElementById('work-report-year-selector').style.display = 'none';
+								const from = new Date(now);
+								from.setDate(now.getDate() - 6);
+								document.getElementById('work-report-from').value = formatDate(from);
+								document.getElementById('work-report-to').value = formatDate(now);
+								updateWorkReportChart('daily', formatDate(from), formatDate(now));
+							} else if (range === 'monthly') {
+								document.getElementById('work-report-year-selector').style.display = 'none';
+								const from = new Date(now.getFullYear(), now.getMonth(), 1);
+								document.getElementById('work-report-from').value = formatDate(from);
+								document.getElementById('work-report-to').value = formatDate(now);
+								updateWorkReportChart('daily', formatDate(from), formatDate(now));
+							} else if (range === 'yearly') {
+								document.getElementById('work-report-year-selector').style.display = 'inline-block';
+								const year = document.getElementById('work-report-year-select').value;
+								updateWorkReportChart('yearly', null, null, year);
+							}
+						});
+					});
+
+					// Year change
+					document.getElementById('work-report-year-select').addEventListener('change', () => {
+						const year = document.getElementById('work-report-year-select').value;
+						updateWorkReportChart('yearly', null, null, year);
+					});
+
+					// Apply button
+					document.getElementById('work-report-chart-form').addEventListener('submit', e => {
+						e.preventDefault();
+						const from = document.getElementById('work-report-from').value;
+						const to = document.getElementById('work-report-to').value;
+						document.getElementById('work-report-year-selector').style.display = 'none';
+						updateWorkReportChart('daily', from, to);
+					});
+
+					// Initial load
+					updateWorkReportChart('daily', formatDate(from), formatDate(now));
+				}
+
+				// Helper: format date to YYYY-MM-DD
+				function formatDate(date) {
+					return date.toISOString().split('T')[0];
+				}
+
+				// Helper: populate year selector
+				function populateYearSelector(selectId, selectedYear) {
+					const select = document.getElementById(selectId);
+					const currentYear = new Date().getFullYear();
+					select.innerHTML = '';
+					for (let y = currentYear - 10; y <= currentYear + 1; y++) {
+						const opt = new Option(y, y);
+						if (y === selectedYear) opt.selected = true;
+						select.appendChild(opt);
+					}
+				}
+			</script> -->
+<!-- Work Report Equipment -->
+<!-- <script>
+			(() => {
+				// Unique identifiers
+				const CHART_FORM_ID = 'wr-chart-form';
+				const FROM_INPUT_ID = 'wr-from';
+				const TO_INPUT_ID = 'wr-to';
+				const EQUIPMENT_SELECT_ID = 'wr-equipment';
+				const YEAR_SELECT_ID = 'wr-year-select';
+				const YEAR_SELECTOR_DIV = 'wr-year-selector';
+				const CHART_CANVAS_ID = 'wr-equipment-line-chart';
+
+				const DAILY_API_URL = `${baseUrl}/api/dashboards/daily-work-report`;
+				const MONTHLY_API_URL = `${baseUrl}/api/dashboards/monthly-work-report`;
+				const EQUIPMENT_API_URL = `${baseUrl}/api/dashboards/equipment-complaint-count`;
+
+				let workReportChart = null;
+				let equipmentList = [];
+
+				// --- Helper: Format Date to YYYY-MM-DD ---
+				function formatDate(date) {
+					return date.toISOString().split('T')[0];
+				}
+
+				// --- Helper: Populate Year Selector ---
+				function populateYearSelector(selectId, selectedYear) {
+					const select = document.getElementById(selectId);
+					const currentYear = new Date().getFullYear();
+					select.innerHTML = '';
+					for (let y = currentYear - 10; y <= currentYear + 1; y++) {
+						const opt = new Option(y, y);
+						if (y === selectedYear) opt.selected = true;
+						select.appendChild(opt);
+					}
+				}
+
+				// --- Fetch Equipment List ---
+				async function fetchEquipmentList() {
+					try {
+						const response = await fetch(EQUIPMENT_API_URL);
+						if (!response.ok) throw new Error('Failed to fetch equipment list');
+						equipmentList = await response.json();
+
+						const select = document.getElementById(EQUIPMENT_SELECT_ID);
+						select.innerHTML = '<option value="">All Equipment</option>';
+
+						equipmentList.forEach(eq => {
+							const opt = new Option(eq.equipmentName, eq.equipmentCode);
+							select.appendChild(opt);
+						});
+					} catch (err) {
+						console.error('Error loading equipment list:', err);
+					}
+				}
+
+				// --- Update Chart ---
+				function updateWorkReportChart(mode, from = null, to = null, year = null) {
+					const ctx = document.getElementById(CHART_CANVAS_ID).getContext('2d');
+					if (workReportChart) workReportChart.destroy();
+
+					let url = '';
+					let labels = [];
+					let isMonthly = false;
+
+					const equipmentCode = document.getElementById(EQUIPMENT_SELECT_ID).value;
+
+					if (mode === 'yearly') {
+						url = `${MONTHLY_API_URL}?year=${year}`;
+						if (equipmentCode) url += `&equipmentCode=${encodeURIComponent(equipmentCode)}`;
+						isMonthly = true;
+					} else {
+						url = `${DAILY_API_URL}?from=${from}&to=${to}`;
+						if (equipmentCode) url += `&equipmentCode=${encodeURIComponent(equipmentCode)}`;
+					}
+
+					fetch(url)
+						.then(r => r.json())
+						.then(data => {
+							if (!Array.isArray(data)) return;
+
+							if (isMonthly) {
+								const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+									"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+								labels = months;
+							} else {
+								labels = data.map(d => d.date);
+							}
+
+							const correctiveData = Array(labels.length).fill(0);
+							const preventiveData = Array(labels.length).fill(0);
+							const breakdownData = Array(labels.length).fill(0);
+							const otherData = Array(labels.length).fill(0);
+
+							data.forEach(d => {
+								let idx;
+								if (isMonthly) {
+									idx = d.month - 1;
+								} else {
+									idx = labels.indexOf(d.date);
+								}
+								if (idx >= 0 && idx < labels.length) {
+									correctiveData[idx] = d.correctiveMaintenanceCount || 0;
+									preventiveData[idx] = d.preventiveMaintenanceCount || 0;
+									breakdownData[idx] = d.breakdownCount || 0;
+									otherData[idx] = d.otherCount || 0;
+								}
+							});
+
+							workReportChart = new Chart(ctx, {
+								type: 'line',
+								data: {
+									labels: labels,
+									datasets: [
+										{
+											label: "Corrective Maintenance",
+											borderColor: "#e74c3c",
+											pointBorderColor: "#FFF",
+											pointBackgroundColor: "#e74c3c",
+											pointBorderWidth: 2,
+											pointHoverRadius: 4,
+											pointRadius: 4,
+											backgroundColor: 'transparent',
+											fill: false,
+											borderWidth: 2,
+											data: correctiveData
+										},
+										{
+											label: "Preventive Maintenance",
+											borderColor: "#3498db",
+											pointBorderColor: "#FFF",
+											pointBackgroundColor: "#3498db",
+											pointBorderWidth: 2,
+											pointHoverRadius: 4,
+											pointRadius: 4,
+											backgroundColor: 'transparent',
+											fill: false,
+											borderWidth: 2,
+											data: preventiveData
+										},
+										{
+											label: "Breakdown",
+											borderColor: "#f39c12",
+											pointBorderColor: "#FFF",
+											pointBackgroundColor: "#f39c12",
+											pointBorderWidth: 2,
+											pointHoverRadius: 4,
+											pointRadius: 4,
+											backgroundColor: 'transparent',
+											fill: false,
+											borderWidth: 2,
+											data: breakdownData
+										},
+										{
+											label: "Other",
+											borderColor: "#95a5a6",
+											pointBorderColor: "#FFF",
+											pointBackgroundColor: "#95a5a6",
+											pointBorderWidth: 2,
+											pointHoverRadius: 4,
+											pointRadius: 4,
+											backgroundColor: 'transparent',
+											fill: false,
+											borderWidth: 2,
+											data: otherData
+										}
+									]
+								},
+								options: {
+									responsive: true,
+									maintainAspectRatio: false,
+									legend: {
+										position: 'bottom',
+										labels: { fontColor: '#333', padding: 15 }
+									},
+									tooltips: {
+										mode: "nearest",
+										intersect: false,
+										callbacks: {
+											label: function (tooltipItem, data) {
+												const dataset = data.datasets[tooltipItem.datasetIndex];
+												const value = dataset.data[tooltipItem.index];
+												const label = dataset.label;
+												return `${label}: ${value} reports`;
+											}
+										}
+									},
+									scales: {
+										x: { stacked: false },
+										y: {
+											beginAtZero: true,
+											ticks: {
+												stepSize: 1,
+												callback: function (value) {
+													return Number.isInteger(value) ? value : null;
+												}
+											},
+											title: {
+												display: true,
+												text: 'Number of Reports'
+											}
+										}
+									}
+								}
+							});
+						})
+						.catch(err => console.error('Error loading work report data:', err));
+				}
+
+				// --- Initialize Form ---
+				function initWorkReportChartForm() {
+					const now = new Date();
+					const from = new Date(now);
+					from.setDate(now.getDate() - 6);
+
+					document.getElementById(FROM_INPUT_ID).value = formatDate(from);
+					document.getElementById(TO_INPUT_ID).value = formatDate(now);
+
+					populateYearSelector(YEAR_SELECT_ID, now.getFullYear());
+
+					// Quick buttons
+					document.querySelectorAll(`#${CHART_FORM_ID} .btn[data-range]`).forEach(btn => {
+						btn.addEventListener('click', () => {
+							const range = btn.getAttribute('data-range');
+							const now = new Date();
+
+							if (range === 'weekly') {
+								document.getElementById(YEAR_SELECTOR_DIV).style.display = 'none';
+								const from = new Date(now);
+								from.setDate(now.getDate() - 6);
+								document.getElementById(FROM_INPUT_ID).value = formatDate(from);
+								document.getElementById(TO_INPUT_ID).value = formatDate(now);
+								updateWorkReportChart('daily', formatDate(from), formatDate(now));
+							} else if (range === 'monthly') {
+								document.getElementById(YEAR_SELECTOR_DIV).style.display = 'none';
+								const from = new Date(now.getFullYear(), now.getMonth(), 1);
+								document.getElementById(FROM_INPUT_ID).value = formatDate(from);
+								document.getElementById(TO_INPUT_ID).value = formatDate(now);
+								updateWorkReportChart('daily', formatDate(from), formatDate(now));
+							} else if (range === 'yearly') {
+								document.getElementById(YEAR_SELECTOR_DIV).style.display = 'inline-block';
+								const year = document.getElementById(YEAR_SELECT_ID).value;
+								updateWorkReportChart('yearly', null, null, year);
+							}
+						});
+					});
+
+					// Year change
+					document.getElementById(YEAR_SELECT_ID).addEventListener('change', () => {
+						const year = document.getElementById(YEAR_SELECT_ID).value;
+						updateWorkReportChart('yearly', null, null, year);
+					});
+
+					// Apply button
+					document.getElementById(CHART_FORM_ID).addEventListener('submit', e => {
+						e.preventDefault();
+						const from = document.getElementById(FROM_INPUT_ID).value;
+						const to = document.getElementById(TO_INPUT_ID).value;
+						document.getElementById(YEAR_SELECTOR_DIV).style.display = 'none';
+						updateWorkReportChart('daily', from, to);
+					});
+
+					// Equipment change
+					document.getElementById(EQUIPMENT_SELECT_ID).addEventListener('change', () => {
+						const from = document.getElementById(FROM_INPUT_ID).value;
+						const to = document.getElementById(TO_INPUT_ID).value;
+						const year = document.getElementById(YEAR_SELECT_ID).value;
+
+						if (document.getElementById(YEAR_SELECTOR_DIV).style.display === 'inline-block') {
+							updateWorkReportChart('yearly', null, null, year);
+						} else {
+							updateWorkReportChart('daily', from, to);
+						}
+					});
+
+					// Initial load
+					updateWorkReportChart('daily', formatDate(from), formatDate(now));
+				}
+
+				// --- On Load ---
+				window.addEventListener('DOMContentLoaded', () => {
+					fetchEquipmentList().then(() => {
+						initWorkReportChartForm();
+					});
+				});
+			})();
+		</script> -->
+
+
+
+
+
+<!-- <div class="row">
+				<div class="col-md-12">
+					<div class="card">
+						<div class="card-header">
+							<div class="card-head-row">
+								<div class="card-title">Equipment Statistics</div>
+								<div class="card-tools">
+									<a href="#" class="btn btn-info btn-border btn-round btn-sm mr-2">
+										<span class="btn-label">
+											<i class="fa fa-pencil"></i>
+										</span>
+										Export
+									</a>
+									<a href="#" class="btn btn-info btn-border btn-round btn-sm">
+										<span class="btn-label">
+											<i class="fa fa-print"></i>
+										</span>
+										Print
+									</a>
+								</div>
+							</div>
+						</div>
+						<div class="card-body">
+							<div class="chart-container" style="min-height: 375px">
+								<canvas id="statisticsChart"></canvas>
+							</div>
+							<div id="myChartLegend"></div>
+						</div>
+					</div>
+				</div>
+			</div> -->
+
+
+<!-- <div class="row mt--2">
+				<div class="col-md-4">
+					<div class="row">
+						<div class="col-sm-6 col-md-12 mb-3">
+							<div class="card card-stats card-round">
+								<div class="card-body">
+									<div class="row align-items-center h-100 pt-3">
+										<div class="col-icon">
+											<div class="icon-big text-center icon-info bubble-shadow-small">
+												<i class="fas fa-folder-open text-white"></i>
+											</div>
+										</div>
+										<div class="col col-stats ml-3 ml-sm-0">
+											<div class="numbers">
+												<p class="card-category">Open Tickets</p>
+												<h4 class="card-title">124</h4>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="col-sm-6 col-md-12 mb-3">
+							<div class="card card-stats card-round">
+								<div class="card-body">
+									<div class="row align-items-center h-100 pt-3">
+										<div class="col-icon">
+											<div class="icon-big text-center icon-success bubble-shadow-small">
+												<i class="fas fa-check-circle text-white"></i>
+											</div>
+										</div>
+										<div class="col col-stats ml-3 ml-sm-0">
+											<div class="numbers">
+												<p class="card-category">Closed Tickets</p>
+												<h4 class="card-title">843</h4>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="col-sm-6 col-md-12 mb-3">
+							<div class="card card-stats card-round">
+								<div class="card-body">
+									<div class="row align-items-center h-100 pt-3">
+										<div class="col-icon">
+											<div class="icon-big text-center icon-warning bubble-shadow-small">
+												<i class="fas fa-clock text-white"></i>
+											</div>
+										</div>
+										<div class="col col-stats ml-3 ml-sm-0">
+											<div class="numbers">
+												<p class="card-category">Pending Tickets</p>
+												<h4 class="card-title">124</h4>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-md-8">
+					<div class="card full-height">
+						<div class="card-header">
+							<div class="card-title">Multiple Bar Chart</div>
+						</div>
+						<div class="card-body d-flex flex-column">
+							<div class="chart-container flex-grow-1">
+								<canvas id="multipleBarChart"></canvas>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div> -->
+<!-- <div class="row">
+				<div class="col-md-4">
+					<div class="card full-height">
+						<div class="card-header">
+							<div class="card-head-row card-tools-still-right">
+								<h4 class="card-title">Overall Statistics</h4>
+								<div class="card-tools">
+									<button class="btn btn-icon btn-link btn-primary btn-xs btn-refresh-card"><span
+											class="fa fa-sync-alt"></span></button>
+								</div>
+							</div>
+							<p class="card-category">
+								Daily information about complaint status</p>
+						</div>
+						<div class="card-body">
+							<div class="d-flex flex-wrap justify-content-around pb-2 pt-5">
+								<div class="px-2 pb-2 pb-md-0 text-center">
+									<div id="circles-1"></div>
+									<h6 class="fw-bold mt-1 mb-3">Closed</h6>
+								</div>
+								<div class="px-2 pb-2 pb-md-0 text-center">
+									<div id="circles-2"></div>
+									<h6 class="fw-bold mt-1 mb-3">Open</h6>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-8">
+					<div class="card full-height">
+						<div class="card-body">
+							<div class="card-title">Complaints of The Week</div>
+							<div class="row py-3">
+
+								<div class="col-md-12">
+									<div id="chart-container">
+										<canvas id="totalIncomeChart" style="height: 300px;"></canvas>
+									</div>
+								</div>
+								<div class="col-md-12 d-flex flex-row justify-content-around mt-3">
+									<div class="text-center">
+										<h6 class="fw-bold text-uppercase text-success op-8">Closed</h6>
+										<h3 class="fw-bold">15</h3>
+									</div>
+									<div class="text-center">
+										<h6 class="fw-bold text-uppercase text-danger op-8">Open</h6>
+										<h3 class="fw-bold">48</h3>
+									</div>
+									<div class="text-center">
+										<h6 class="fw-bold text-uppercase text-success op-8">In Progress</h6>
+										<h3 class="fw-bold">15</h3>
+									</div>
+									<div class="text-center">
+										<h6 class="fw-bold text-uppercase text-danger op-8">Pending</h6>
+										<h3 class="fw-bold">48</h3>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div> -->
+
+            <!-- <div class="col-md-4">
+					<div class="card">
+						<div class="card-header">
+							<div class="card-head-row card-tools-still-right">
+								<h4 class="card-title">Equipment</h4>
+								<div class="card-tools">
+									<button class="btn btn-icon btn-link btn-primary btn-xs" id="prevEquipmentBtn"
+										title="Previous">
+										<i class="fas fa-chevron-up"></i>
+									</button>
+									<button class="btn btn-icon btn-link btn-primary btn-xs" id="nextEquipmentBtn"
+										title="Next">
+										<i class="fas fa-chevron-down"></i>
+									</button>
+									<button class="btn btn-icon btn-link btn-primary btn-xs" id="refreshEquipmentBtn"
+										title="Refresh">
+										<i class="fa fa-sync-alt"></i>
+									</button>
+								</div>
+							</div>
+							<p class="card-category">Most equipment complained</p>
+						</div>
+						<div class="card-body pb-0" id="equipmentListContainer">
+						</div>
+					</div>
+				</div> -->
+				
+<!-- <div class="row">
+				<div class="col-md-12">
+					<div class="card full-height">
+						<div class="card-header">
+							<div class="d-flex justify-content-between align-items-center">
+								<h4 class="card-title">Work Report Chart</h4>
+								<form id="work-report-chart-form" class="form-inline">
+									<div class="input-group input-daterange mr-2">
+										<input type="date" class="form-control form-control-sm" id="work-report-from"
+											required>
+										<div class="input-group-prepend input-group-append">
+											<span class="input-group-text">to</span>
+										</div>
+										<input type="date" class="form-control form-control-sm" id="work-report-to"
+											required>
+										<div class="input-group-append">
+											<button type="submit" class="btn btn-sm btn-primary ml-2">Apply</button>
+										</div>
+									</div>
+									<div class="btn-group btn-group-sm" role="group">
+										<button type="button" class="btn btn-outline-primary"
+											data-range="weekly">Weekly</button>
+										<button type="button" class="btn btn-outline-primary"
+											data-range="monthly">Monthly</button>
+										<button type="button" class="btn btn-outline-primary"
+											data-range="yearly">Yearly</button>
+									</div>
+									<div class="ml-2" id="work-report-year-selector" style="display: none;">
+										<select id="work-report-year-select"
+											class="form-control form-control-sm"></select>
+									</div>
+								</form>
+							</div>
+						</div>
+						<div class="card-body d-flex flex-column">
+							<div class="chart-container flex-grow-1">
+								<canvas id="work-report-line-chart"></canvas>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div> -->
+
+
+<!-- <script>
+    // Equipment Complained
+document.addEventListener('DOMContentLoaded', function () {
+    const API_URL = `${baseUrl}/api/dashboards/equipment-complaint-count`;
+
+    let currentPage = 1;
+    const pageSize = 7;
+    let allData = [];
+
+    async function fetchEquipmentData() {
+        console.log("Fetching equipment data...");
+        try {
+            const response = await fetch(API_URL);
+            if (!response.ok) throw new Error('Failed to fetch data');
+            allData = await response.json();
+            console.log("equipment", allData);
+            renderPage(currentPage);
+        } catch (err) {
+            console.error('Error loading equipment data:', err);
+            const container = document.getElementById('equipmentListContainer');
+            if (container) {
+                container.innerHTML = `
+                    <div class="text-center text-muted">Failed to load data</div>
+                `;
+            }
+        }
+    }
+
+    function renderPage(page) {
+        const container = document.getElementById('equipmentListContainer');
+        if (!container) return; // Guard clause if element not found
+        container.innerHTML = '';
+
+        const start = (page - 1) * pageSize;
+        const end = start + pageSize;
+        const pageData = allData.slice(start, end);
+
+        if (pageData.length === 0) {
+            container.innerHTML = `<div class="text-center text-muted">No data</div>`;
+            return;
+        }
+
+        pageData.forEach((item, index) => {
+            const rank = start + index + 1;
+            const div = document.createElement('div');
+            div.className = 'd-flex';
+            div.innerHTML = `
+                <div class="mr-3 d-flex align-items-center" style="min-width: 28px;">
+                    <span class="fw-bold" style="font-size: 0.95rem; color: #555; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                        ${rank}
+                    </span>
+                </div>
+                <div class="flex-1 pt-1 ml-2">
+                    <h6 class="fw-bold mb-1">${item.equipmentCode}</h6>
+                    <small class="text-muted">${item.equipmentName}</small>
+                </div>
+                <div class="d-flex ml-auto align-items-center">
+                    <h3 class="text-info fw-bold">${item.totalComplaints}</h3>
+                </div>
+            `;
+            container.appendChild(div);
+
+            // Add separator
+            const sep = document.createElement('div');
+            sep.className = 'separator-dashed';
+            container.appendChild(sep);
+        });
+    }
+
+    // Initialize buttons only after DOM is ready
+    const nextBtn = document.getElementById('nextEquipmentBtn');
+    const prevBtn = document.getElementById('prevEquipmentBtn');
+    const refreshBtn = document.getElementById('refreshEquipmentBtn');
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            if (allData.length > currentPage * pageSize) {
+                currentPage++;
+                renderPage(currentPage);
+            }
+        });
+    }
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+            }
+        });
+    }
+
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => {
+            currentPage = 1;
+            fetchEquipmentData(); // Re-fetch latest data
+        });
+    }
+
+    // Initial data load
+    fetchEquipmentData();
+});
+</script> -->
+
+
+<!-- <script>
+    // Work Report Chart
+    let workReportChart = null;
+
+function updateWorkReportChart(mode, from = null, to = null, year = null) {
+    const ctx = document.getElementById('work-report-line-chart').getContext('2d');
+    if (workReportChart) workReportChart.destroy();
+
+    if (mode === 'yearly') {
+        fetch(`/api/dashboards/monthly-work-report?year=${year}`)
+            .then(r => r.json())
+            .then(data => {
+                if (!Array.isArray(data)) return;
+
+                const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                const labels = months;
+
+                // Initialize datasets
+                const correctiveData = Array(12).fill(0);
+                const preventiveData = Array(12).fill(0);
+                const breakdownData = Array(12).fill(0);
+                const otherData = Array(12).fill(0);
+
+                data.forEach(d => {
+                    const i = d.month - 1;
+                    if (i >= 0 && i < 12) {
+                        correctiveData[i] = d.correctiveMaintenanceCount || 0;
+                        preventiveData[i] = d.preventiveMaintenanceCount || 0;
+                        breakdownData[i] = d.breakdownCount || 0;
+                        otherData[i] = d.otherCount || 0;
+                    }
+                });
+
+                workReportChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: "Corrective Maintenance",
+                                borderColor: "#e74c3c",
+                                pointBorderColor: "#FFF",
+                                pointBackgroundColor: "#e74c3c",
+                                pointBorderWidth: 2,
+                                pointHoverRadius: 4,
+                                pointRadius: 4,
+                                backgroundColor: 'transparent',
+                                fill: false,
+                                borderWidth: 2,
+                                data: correctiveData,
+                                counts: correctiveData
+                            },
+                            {
+                                label: "Preventive Maintenance",
+                                borderColor: "#3498db",
+                                pointBorderColor: "#FFF",
+                                pointBackgroundColor: "#3498db",
+                                pointBorderWidth: 2,
+                                pointHoverRadius: 4,
+                                pointRadius: 4,
+                                backgroundColor: 'transparent',
+                                fill: false,
+                                borderWidth: 2,
+                                data: preventiveData,
+                                counts: preventiveData
+                            },
+                            {
+                                label: "Breakdown",
+                                borderColor: "#f39c12",
+                                pointBorderColor: "#FFF",
+                                pointBackgroundColor: "#f39c12",
+                                pointBorderWidth: 2,
+                                pointHoverRadius: 4,
+                                pointRadius: 4,
+                                backgroundColor: 'transparent',
+                                fill: false,
+                                borderWidth: 2,
+                                data: breakdownData,
+                                counts: breakdownData
+                            },
+                            {
+                                label: "Other",
+                                borderColor: "#95a5a6",
+                                pointBorderColor: "#FFF",
+                                pointBackgroundColor: "#95a5a6",
+                                pointBorderWidth: 2,
+                                pointHoverRadius: 4,
+                                pointRadius: 4,
+                                backgroundColor: 'transparent',
+                                fill: false,
+                                borderWidth: 2,
+                                data: otherData,
+                                counts: otherData
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        legend: {
+                            position: 'bottom',
+                            labels: { fontColor: '#333', padding: 15 }
+                        },
+                        tooltips: {
+                            mode: "nearest",
+                            intersect: false,
+                            callbacks: {
+                                label: function (tooltipItem, data) {
+                                    const dataset = data.datasets[tooltipItem.datasetIndex];
+                                    const value = dataset.data[tooltipItem.index];
+                                    const label = dataset.label;
+                                    return `${label}: ${value} reports`;
+                                }
+                            }
+                        },
+                        scales: {
+                            x: { stacked: false },
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1,
+                                    callback: function (value) {
+                                        return Number.isInteger(value) ? value : null;
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Number of Reports'
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+
+    } else {
+        fetch(`/api/dashboards/daily-work-report?from=${from}&to=${to}`)
+            .then(r => r.json())
+            .then(data => {
+                if (!Array.isArray(data)) return;
+
+                const labels = data.map(d => d.date);
+                const correctiveData = data.map(d => d.correctiveMaintenanceCount || 0);
+                const preventiveData = data.map(d => d.preventiveMaintenanceCount || 0);
+                const breakdownData = data.map(d => d.breakdownCount || 0);
+                const otherData = data.map(d => d.otherCount || 0);
+
+                workReportChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: "Corrective Maintenance",
+                                borderColor: "#e74c3c",
+                                pointBorderColor: "#FFF",
+                                pointBackgroundColor: "#e74c3c",
+                                pointBorderWidth: 2,
+                                pointHoverRadius: 4,
+                                pointRadius: 4,
+                                backgroundColor: 'transparent',
+                                fill: false,
+                                borderWidth: 2,
+                                data: correctiveData,
+                                counts: correctiveData
+                            },
+                            {
+                                label: "Preventive Maintenance",
+                                borderColor: "#3498db",
+                                pointBorderColor: "#FFF",
+                                pointBackgroundColor: "#3498db",
+                                pointBorderWidth: 2,
+                                pointHoverRadius: 4,
+                                pointRadius: 4,
+                                backgroundColor: 'transparent',
+                                fill: false,
+                                borderWidth: 2,
+                                data: preventiveData,
+                                counts: preventiveData
+                            },
+                            {
+                                label: "Breakdown",
+                                borderColor: "#f39c12",
+                                pointBorderColor: "#FFF",
+                                pointBackgroundColor: "#f39c12",
+                                pointBorderWidth: 2,
+                                pointHoverRadius: 4,
+                                pointRadius: 4,
+                                backgroundColor: 'transparent',
+                                fill: false,
+                                borderWidth: 2,
+                                data: breakdownData,
+                                counts: breakdownData
+                            },
+                            {
+                                label: "Other",
+                                borderColor: "#95a5a6",
+                                pointBorderColor: "#FFF",
+                                pointBackgroundColor: "#95a5a6",
+                                pointBorderWidth: 2,
+                                pointHoverRadius: 4,
+                                pointRadius: 4,
+                                backgroundColor: 'transparent',
+                                fill: false,
+                                borderWidth: 2,
+                                data: otherData,
+                                counts: otherData
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        legend: {
+                            position: 'bottom',
+                            labels: { fontColor: '#333', padding: 15 }
+                        },
+                        tooltips: {
+                            mode: "nearest",
+                            intersect: false,
+                            callbacks: {
+                                label: function (tooltipItem, data) {
+                                    const dataset = data.datasets[tooltipItem.datasetIndex];
+                                    const value = dataset.data[tooltipItem.index];
+                                    const label = dataset.label;
+                                    return `${label}: ${value} reports`;
+                                }
+                            }
+                        },
+                        scales: {
+                            x: { stacked: false },
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1,
+                                    callback: function (value) {
+                                        return Number.isInteger(value) ? value : null;
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Number of Reports'
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+    }
+}
+
+function initWorkReportChartForm() {
+    const now = new Date();
+    const from = new Date(now);
+    from.setDate(now.getDate() - 6);
+
+    document.getElementById('work-report-from').value = formatDate(from);
+    document.getElementById('work-report-to').value = formatDate(now);
+
+    // Populate year selector
+    populateYearSelector('work-report-year-select', now.getFullYear());
+
+    // Quick buttons
+    document.querySelectorAll('#work-report-chart-form .btn[data-range]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const range = btn.getAttribute('data-range');
+            const now = new Date();
+            if (range === 'weekly') {
+                document.getElementById('work-report-year-selector').style.display = 'none';
+                const from = new Date(now);
+                from.setDate(now.getDate() - 6);
+                document.getElementById('work-report-from').value = formatDate(from);
+                document.getElementById('work-report-to').value = formatDate(now);
+                updateWorkReportChart('daily', formatDate(from), formatDate(now));
+            } else if (range === 'monthly') {
+                document.getElementById('work-report-year-selector').style.display = 'none';
+                const from = new Date(now.getFullYear(), now.getMonth(), 1);
+                document.getElementById('work-report-from').value = formatDate(from);
+                document.getElementById('work-report-to').value = formatDate(now);
+                updateWorkReportChart('daily', formatDate(from), formatDate(now));
+            } else if (range === 'yearly') {
+                document.getElementById('work-report-year-selector').style.display = 'inline-block';
+                const year = document.getElementById('work-report-year-select').value;
+                updateWorkReportChart('yearly', null, null, year);
+            }
+        });
+    });
+
+    // Year change
+    document.getElementById('work-report-year-select').addEventListener('change', () => {
+        const year = document.getElementById('work-report-year-select').value;
+        updateWorkReportChart('yearly', null, null, year);
+    });
+
+    // Apply button
+    document.getElementById('work-report-chart-form').addEventListener('submit', e => {
+        e.preventDefault();
+        const from = document.getElementById('work-report-from').value;
+        const to = document.getElementById('work-report-to').value;
+        document.getElementById('work-report-year-selector').style.display = 'none';
+        updateWorkReportChart('daily', from, to);
+    });
+
+    // Initial load
+    updateWorkReportChart('daily', formatDate(from), formatDate(now));
+}
+
+// Helper: format date to YYYY-MM-DD
+function formatDate(date) {
+    return date.toISOString().split('T')[0];
+}
+
+// Helper: populate year selector
+function populateYearSelector(selectId, selectedYear) {
+    const select = document.getElementById(selectId);
+    const currentYear = new Date().getFullYear();
+    select.innerHTML = '';
+    for (let y = currentYear - 10; y <= currentYear + 1; y++) {
+        const opt = new Option(y, y);
+        if (y === selectedYear) opt.selected = true;
+        select.appendChild(opt);
+    }
+}
+</script> -->

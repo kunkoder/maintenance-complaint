@@ -65,11 +65,12 @@ public class ComplaintService {
 
     // ================== GET ALL WITH PAGINATION & SEARCH ==================
     // @Transactional(readOnly = true)
-    public Page<ComplaintDTO> getAllComplaints(String keyword, int page, int size, String sortBy, boolean asc) {
+    public Page<ComplaintDTO> getAllComplaints(String keyword, LocalDateTime reportDateFrom, LocalDateTime reportDateTo, int page, int size, String sortBy, boolean asc) {
         Sort sort = asc ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Specification<Complaint> spec = ComplaintSpecification.search(keyword);
+        Specification<Complaint> spec = ComplaintSpecification.search(keyword)
+                .and(ComplaintSpecification.withReportDateRange(reportDateFrom, reportDateTo));
         Page<Complaint> complaintPage = complaintRepository.findAll(spec, pageable);
 
         return complaintPage.map(this::toDTO);
@@ -202,10 +203,10 @@ public class ComplaintService {
                 }
                 // Else keep null (default behavior)
 
-                dto.setActionTaken(importUtil.toString(row.get("action taken")));
-                System.out.println("action taken " + row.get("action taken"));
-                dto.setReportDate(importUtil.toLocalDateTime(row.get("report date")));
-                System.out.println("date report " + importUtil.toLocalDateTime(row.get("report date")));
+                dto.setActionTaken(importUtil.toString(row.get("actionTaken")));
+                System.out.println("action taken " + row.get("actionTaken"));
+                dto.setReportDate(importUtil.toLocalDateTime(row.get("reportDate")));
+                System.out.println("date report " + importUtil.toLocalDateTime(row.get("reportDate")));
                 dto.setCloseTime(importUtil.toLocalDateTime(row.get("close time")));
                 dto.setTotalResolutionTimeMinutes(importUtil.toDurationInMinutes(row.get("total time")));
 

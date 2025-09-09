@@ -29,7 +29,6 @@ import ahqpck.maintenance.report.dto.MonthlyWorkReportDTO;
 import ahqpck.maintenance.report.dto.MonthlyWorkReportEquipmentDTO;
 import ahqpck.maintenance.report.dto.StatusCountDTO;
 import ahqpck.maintenance.report.service.DashboardService;
-import ahqpck.maintenance.report.util.EmailUtil;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -129,7 +128,8 @@ public class DashboardRestController {
             @RequestParam(name = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @RequestParam(name = "equipmentCode", required = false) String equipmentCode) {
 
-        List<DailyWorkReportEquipmentDTO> result = dashboardService.getDailyWorkReportEquipment(from, to, equipmentCode);
+        List<DailyWorkReportEquipmentDTO> result = dashboardService.getDailyWorkReportEquipment(from, to,
+                equipmentCode);
         return ResponseEntity.ok(result);
     }
 
@@ -138,7 +138,8 @@ public class DashboardRestController {
             @RequestParam(name = "year", required = false) Integer year,
             @RequestParam(name = "equipmentCode", required = false) String equipmentCode) {
 
-        List<MonthlyWorkReportEquipmentDTO> result = dashboardService.getMonthlyWorkReportEquipment(year, equipmentCode);
+        List<MonthlyWorkReportEquipmentDTO> result = dashboardService.getMonthlyWorkReportEquipment(year,
+                equipmentCode);
         return ResponseEntity.ok(result);
     }
 
@@ -147,17 +148,4 @@ public class DashboardRestController {
         List<EquipmentCountDTO> data = dashboardService.getEquipmentCount();
         return ResponseEntity.ok(data);
     }
-
-    // private final EmailUtil emailUtil;
-
-    // @GetMapping("/test-email")
-    // public String testEmail() {
-    // try {
-    // emailUtil.sendAccountActivationEmail("laught.coffin@gmail.com",
-    // "test-token-12345");;
-    // return "Email sent!";
-    // } catch (Exception e) {
-    // return "Failed: " + e.getMessage();
-    // }
-    // }
 }

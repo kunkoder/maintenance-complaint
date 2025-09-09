@@ -662,10 +662,10 @@
                 // === 7. Dynamic Options for Status ===
                 function getStatusOptions(currentStatus) {
                     switch (currentStatus) {
-                        case 'OPEN': return ['OPEN', 'IN_PROGRESS'];
-                        case 'IN_PROGRESS': return ['IN_PROGRESS', 'PENDING', 'CLOSED'];
-                        case 'PENDING': return ['PENDING', 'IN_PROGRESS', 'CLOSED'];
-                        case 'CLOSED': return ['CLOSED', 'IN_PROGRESS'];
+                        case 'OPEN': return ['IN_PROGRESS', 'PENDING', 'CLOSED'];
+                        case 'IN_PROGRESS': return ['OPEN', 'PENDING', 'CLOSED'];
+                        case 'PENDING': return ['OPEN', 'IN_PROGRESS', 'CLOSED'];
+                        case 'CLOSED': return ['OPEN', 'IN_PROGRESS', 'PENDING'];
                         default: return [];
                     }
                 }

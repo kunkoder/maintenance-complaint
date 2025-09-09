@@ -1,5 +1,4 @@
 // Helper Functions
-
 function formatDate(date) {
     return date.toISOString().split('T')[0]; // YYYY-MM-DD
 }
@@ -15,7 +14,6 @@ function toApiDateTime(dateStr, isEnd = false) {
     return date.toISOString().slice(0, 16); // "2025-08-01T00:00"
 }
 
-// Populate year selector
 function populateYearSelector(selectId, selectedYear = null) {
     const select = document.getElementById(selectId);
     const currentYear = new Date().getFullYear();
@@ -29,7 +27,6 @@ function populateYearSelector(selectId, selectedYear = null) {
     }
 }
 
-// Overall Complaint
 function toDateTimeLocal(date) {
     const pad = (n) => n.toString().padStart(2, '0');
     const year = date.getFullYear();
@@ -40,6 +37,7 @@ function toDateTimeLocal(date) {
     return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
+// Overall Complaint
 function setComplaintStatsDefaults() {
     const now = new Date();
     const startOfDay = new Date(now);
@@ -74,7 +72,6 @@ function fetchComplaintStats(from, to) {
             return response.json();
         })
         .then(data => {
-            // Update card values
             document.getElementById('complaint-stats-total').textContent = data.totalAllComplaints || 0;
             document.getElementById('complaint-stats-open').textContent = data.totalOpen || 0;
             document.getElementById('complaint-stats-closed').textContent = data.totalClosed || 0;
@@ -92,47 +89,18 @@ document.getElementById('complaint-stats-form').addEventListener('submit', funct
     fetchComplaintStats(from, to);
 });
 
-window.addEventListener('DOMContentLoaded', function () {
+function initComplaintStatsForm() {
     setComplaintStatsDefaults();
 
     const from = document.getElementById('complaint-stats-from').value;
     const to = document.getElementById('complaint-stats-to').value;
 
     fetchComplaintStats(from, to);
-});
+}
 
 // Complaint Chart
 let complaintChart = null;
 
-// Helper: Format Date to YYYY-MM-DD
-function formatDate(date) {
-    return date.toISOString().split('T')[0];
-}
-
-// Helper: Convert to API datetime format (T00:00 or T23:59)
-function toApiDateTime(dateStr, isEnd) {
-    const d = new Date(dateStr);
-    if (isEnd) {
-        d.setHours(23, 59, 59, 999);
-    } else {
-        d.setHours(0, 0, 0, 0);
-    }
-    return d.toISOString().slice(0, 16); // "YYYY-MM-DDTHH:mm"
-}
-
-// Helper: Populate Year Selector
-function populateYearSelector(selectId, selectedYear) {
-    const select = document.getElementById(selectId);
-    const currentYear = new Date().getFullYear();
-    select.innerHTML = '';
-    for (let y = currentYear - 10; y <= currentYear + 1; y++) {
-        const opt = new Option(y, y);
-        if (y === selectedYear) opt.selected = true;
-        select.appendChild(opt);
-    }
-}
-
-// === Update Chart Function ===
 function updateComplaintChart(mode, from = null, to = null, year = null) {
     if (mode === 'yearly') {
         const url = `/api/dashboards/monthly-complaint${year ? '?year=' + year : ''}`;
@@ -187,7 +155,6 @@ function updateComplaintChart(mode, from = null, to = null, year = null) {
     }
 }
 
-// === Render Chart ===
 function renderComplaintChart(labels, open, closed, pending, title) {
     const ctx = document.getElementById('complaint-bar-chart').getContext('2d');
     if (complaintChart) complaintChart.destroy();
@@ -251,27 +218,22 @@ function renderComplaintChart(labels, open, closed, pending, title) {
     });
 }
 
-// === Initialize Filter Form ===
 function initComplaintChartForm() {
     const now = new Date();
     const from = new Date(now);
     from.setDate(now.getDate() - 6);
 
-    // Set default dates
     document.getElementById('complaint-from').value = formatDate(from);
     document.getElementById('complaint-to').value = formatDate(now);
 
-    // Populate year selector
     populateYearSelector('complaint-year-select', now.getFullYear());
 
-    // === Prevent dropdown from closing on interaction ===
     document.querySelector('.dropdown-menu').addEventListener('click', function (e) {
         if (e.target.closest('select, input, .btn, .input-group')) {
             e.stopPropagation(); // 🔑 Keep dropdown open
         }
     });
 
-    // === Quick Range Buttons ===
     document.querySelectorAll('.dropdown-menu .btn[data-range]').forEach(btn => {
         btn.addEventListener('click', () => {
             const range = btn.getAttribute('data-range');
@@ -298,13 +260,11 @@ function initComplaintChartForm() {
         });
     });
 
-    // === Year Change ===
     document.getElementById('complaint-year-select').addEventListener('change', () => {
         const year = document.getElementById('complaint-year-select').value;
         updateComplaintChart('yearly', null, null, year);
     });
 
-    // === Apply Button ===
     document.getElementById('apply-complaint-filters').addEventListener('click', () => {
         const from = document.getElementById('complaint-from').value;
         const to = document.getElementById('complaint-to').value;
@@ -318,30 +278,13 @@ function initComplaintChartForm() {
         }
     });
 
-    // === Initial Load ===
     updateComplaintChart('daily', formatDate(from), formatDate(now));
 }
-
-// === Initialize on DOM Load ===
-document.addEventListener('DOMContentLoaded', () => {
-    initComplaintChartForm();
-});
 
 // Engineers Responsibility
 let currentFrom = null;
 let currentTo = null;
 
-function toDateTimeLocal(date) {
-    const pad = (n) => n.toString().padStart(2, '0');
-    const year = date.getFullYear();
-    const month = pad(date.getMonth() + 1);
-    const day = pad(date.getDate());
-    const hours = pad(date.getHours());
-    const minutes = pad(date.getMinutes());
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-}
-
-// Format date for display: "Aug 10"
 function formatShort(dateStr) {
     const d = new Date(dateStr);
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -437,138 +380,158 @@ document.getElementById('refreshEngineerBtn').addEventListener('click', () => {
     fetchEngineerData();
 });
 
-window.addEventListener('DOMContentLoaded', () => {
-    fetchEngineerData();
-});
-
-// Equipment Complained
-document.addEventListener('DOMContentLoaded', function () {
-    const API_URL = `${baseUrl}/api/dashboards/equipment-complaint-count`;
-
-    let currentPage = 1;
-    const pageSize = 7;
-    let allData = [];
-
-    async function fetchEquipmentData() {
-        console.log("Fetching equipment data...");
-        try {
-            const response = await fetch(API_URL);
-            if (!response.ok) throw new Error('Failed to fetch data');
-            allData = await response.json();
-            console.log("equipment", allData);
-            renderPage(currentPage);
-        } catch (err) {
-            console.error('Error loading equipment data:', err);
-            const container = document.getElementById('equipmentListContainer');
-            if (container) {
-                container.innerHTML = `
-                    <div class="text-center text-muted">Failed to load data</div>
-                `;
-            }
-        }
-    }
-
-    function renderPage(page) {
-        const container = document.getElementById('equipmentListContainer');
-        if (!container) return; // Guard clause if element not found
-        container.innerHTML = '';
-
-        const start = (page - 1) * pageSize;
-        const end = start + pageSize;
-        const pageData = allData.slice(start, end);
-
-        if (pageData.length === 0) {
-            container.innerHTML = `<div class="text-center text-muted">No data</div>`;
-            return;
-        }
-
-        pageData.forEach((item, index) => {
-            const rank = start + index + 1;
-            const div = document.createElement('div');
-            div.className = 'd-flex';
-            div.innerHTML = `
-                <div class="mr-3 d-flex align-items-center" style="min-width: 28px;">
-                    <span class="fw-bold" style="font-size: 0.95rem; color: #555; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-                        ${rank}
-                    </span>
-                </div>
-                <div class="flex-1 pt-1 ml-2">
-                    <h6 class="fw-bold mb-1">${item.equipmentCode}</h6>
-                    <small class="text-muted">${item.equipmentName}</small>
-                </div>
-                <div class="d-flex ml-auto align-items-center">
-                    <h3 class="text-info fw-bold">${item.totalComplaints}</h3>
-                </div>
-            `;
-            container.appendChild(div);
-
-            // Add separator
-            const sep = document.createElement('div');
-            sep.className = 'separator-dashed';
-            container.appendChild(sep);
-        });
-    }
-
-    // Initialize buttons only after DOM is ready
-    const nextBtn = document.getElementById('nextEquipmentBtn');
-    const prevBtn = document.getElementById('prevEquipmentBtn');
-    const refreshBtn = document.getElementById('refreshEquipmentBtn');
-
-    if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-            if (allData.length > currentPage * pageSize) {
-                currentPage++;
-                renderPage(currentPage);
-            }
-        });
-    }
-
-    if (prevBtn) {
-        prevBtn.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                renderPage(currentPage);
-            }
-        });
-    }
-
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', () => {
-            currentPage = 1;
-            fetchEquipmentData(); // Re-fetch latest data
-        });
-    }
-
-    // Initial data load
-    fetchEquipmentData();
-});
-
 // Work Report Chart
-let workReportChart = null;
+let wrChart = null;
 
-function updateWorkReportChart(mode, from = null, to = null, year = null) {
-    const ctx = document.getElementById('work-report-line-chart').getContext('2d');
-    if (workReportChart) workReportChart.destroy();
+function renderWrChart(labels, corrective, preventive, breakdown, other, title) {
+    const ctx = document.getElementById('wr-equipment-line-chart').getContext('2d');
+    if (wrChart) wrChart.destroy();
 
+    // Calculate stacked totals for dynamic y-axis
+    const stackedValues = labels.map((_, i) =>
+        (corrective[i] || 0) +
+        (preventive[i] || 0) +
+        (breakdown[i] || 0) +
+        (other[i] || 0)
+    );
+    const totalMax = Math.max(...stackedValues, 0);
+
+    let stepSize;
+    if (totalMax <= 20) {
+        stepSize = 5;
+    } else if (totalMax <= 50) {
+        stepSize = 10;
+    } else if (totalMax <= 100) {
+        stepSize = 20;
+    } else if (totalMax <= 200) {
+        stepSize = 25;
+    } else if (totalMax <= 500) {
+        stepSize = 50;
+    } else {
+        stepSize = Math.ceil(totalMax / 10 / 10) * 10;
+    }
+
+    const yAxisMax = Math.ceil(totalMax / stepSize) * stepSize;
+
+    wrChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: "Corrective Maintenance",
+                    backgroundColor: '#d9534f',
+                    data: corrective
+                },
+                {
+                    label: "Preventive Maintenance",
+                    backgroundColor: '#59d05d',
+                    data: preventive
+                },
+                {
+                    label: "Breakdown",
+                    backgroundColor: '#fdaf4b',
+                    data: breakdown
+                },
+                {
+                    label: "Other",
+                    backgroundColor: '#95a5a6',
+                    data: other
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: title,
+                    font: {
+                        size: 16
+                    }
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    callbacks: {
+                        label: function (context) {
+                            return `${context.dataset.label}: ${context.parsed.y}`;
+                        }
+                    }
+                },
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#333', // Chart.js v3 uses 'color'
+                        padding: 15
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    stacked: true
+                },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    max: yAxisMax,
+                    ticks: {
+                        stepSize: stepSize,
+                        callback: function (value) {
+                            return Number.isInteger(value) ? value : null;
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Number of Reports'
+                    }
+                }
+            }
+        }
+    });
+}
+
+function updateWrChart(mode, from = null, to = null, year = null, equipmentCode = null) {
+    let url = '';
     if (mode === 'yearly') {
-        fetch(`/api/dashboards/monthly-work-report?year=${year}`)
-            .then(r => r.json())
-            .then(data => {
-                if (!Array.isArray(data)) return;
+        url = `/api/dashboards/monthly-work-report-equipment?year=${year}`;
+        if (equipmentCode) url += `&equipmentCode=${encodeURIComponent(equipmentCode)}`;
+    } else {
+        const fromApi = toApiDateTime(from, false);
+        const toApi = toApiDateTime(to, true);
+        url = `/api/dashboards/daily-work-report-equipment?from=${from}&to=${to}`;
+        if (equipmentCode) url += `&equipmentCode=${encodeURIComponent(equipmentCode)}`;
+    }
 
+    console.log("Fetching:", url);
+
+    fetch(url)
+        .then(r => {
+            if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
+            return r.json();
+        })
+        .then(data => {
+            if (!Array.isArray(data)) {
+                console.warn("Expected array, got:", data);
+                return;
+            }
+
+            let labels, correctiveData, preventiveData, breakdownData, otherData;
+
+            if (mode === 'yearly') {
                 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                const labels = months;
-
-                // Initialize datasets
-                const correctiveData = Array(12).fill(0);
-                const preventiveData = Array(12).fill(0);
-                const breakdownData = Array(12).fill(0);
-                const otherData = Array(12).fill(0);
+                labels = Array(12).fill('');
+                correctiveData = Array(12).fill(0);
+                preventiveData = Array(12).fill(0);
+                breakdownData = Array(12).fill(0);
+                otherData = Array(12).fill(0);
 
                 data.forEach(d => {
                     const i = d.month - 1;
                     if (i >= 0 && i < 12) {
+                        labels[i] = months[i];
                         correctiveData[i] = d.correctiveMaintenanceCount || 0;
                         preventiveData[i] = d.preventiveMaintenanceCount || 0;
                         breakdownData[i] = d.breakdownCount || 0;
@@ -576,318 +539,131 @@ function updateWorkReportChart(mode, from = null, to = null, year = null) {
                     }
                 });
 
-                workReportChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [
-                            {
-                                label: "Corrective Maintenance",
-                                borderColor: "#e74c3c",
-                                pointBorderColor: "#FFF",
-                                pointBackgroundColor: "#e74c3c",
-                                pointBorderWidth: 2,
-                                pointHoverRadius: 4,
-                                pointRadius: 4,
-                                backgroundColor: 'transparent',
-                                fill: false,
-                                borderWidth: 2,
-                                data: correctiveData,
-                                counts: correctiveData
-                            },
-                            {
-                                label: "Preventive Maintenance",
-                                borderColor: "#3498db",
-                                pointBorderColor: "#FFF",
-                                pointBackgroundColor: "#3498db",
-                                pointBorderWidth: 2,
-                                pointHoverRadius: 4,
-                                pointRadius: 4,
-                                backgroundColor: 'transparent',
-                                fill: false,
-                                borderWidth: 2,
-                                data: preventiveData,
-                                counts: preventiveData
-                            },
-                            {
-                                label: "Breakdown",
-                                borderColor: "#f39c12",
-                                pointBorderColor: "#FFF",
-                                pointBackgroundColor: "#f39c12",
-                                pointBorderWidth: 2,
-                                pointHoverRadius: 4,
-                                pointRadius: 4,
-                                backgroundColor: 'transparent',
-                                fill: false,
-                                borderWidth: 2,
-                                data: breakdownData,
-                                counts: breakdownData
-                            },
-                            {
-                                label: "Other",
-                                borderColor: "#95a5a6",
-                                pointBorderColor: "#FFF",
-                                pointBackgroundColor: "#95a5a6",
-                                pointBorderWidth: 2,
-                                pointHoverRadius: 4,
-                                pointRadius: 4,
-                                backgroundColor: 'transparent',
-                                fill: false,
-                                borderWidth: 2,
-                                data: otherData,
-                                counts: otherData
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        legend: {
-                            position: 'bottom',
-                            labels: { fontColor: '#333', padding: 15 }
-                        },
-                        tooltips: {
-                            mode: "nearest",
-                            intersect: false,
-                            callbacks: {
-                                label: function (tooltipItem, data) {
-                                    const dataset = data.datasets[tooltipItem.datasetIndex];
-                                    const value = dataset.data[tooltipItem.index];
-                                    const label = dataset.label;
-                                    return `${label}: ${value} reports`;
-                                }
-                            }
-                        },
-                        scales: {
-                            x: { stacked: false },
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    stepSize: 1,
-                                    callback: function (value) {
-                                        return Number.isInteger(value) ? value : null;
-                                    }
-                                },
-                                title: {
-                                    display: true,
-                                    text: 'Number of Reports'
-                                }
-                            }
-                        }
-                    }
-                });
-            });
+                // Fill in any missing months
+                for (let i = 0; i < 12; i++) {
+                    if (!labels[i]) labels[i] = months[i];
+                }
 
-    } else {
-        fetch(`/api/dashboards/daily-work-report?from=${from}&to=${to}`)
-            .then(r => r.json())
-            .then(data => {
-                if (!Array.isArray(data)) return;
+                renderWrChart(labels, correctiveData, preventiveData, breakdownData, otherData, 'Monthly Work Report');
+            } else {
+                labels = data.map(d => d.date);
+                correctiveData = data.map(d => d.correctiveMaintenanceCount || 0);
+                preventiveData = data.map(d => d.preventiveMaintenanceCount || 0);
+                breakdownData = data.map(d => d.breakdownCount || 0);
+                otherData = data.map(d => d.otherCount || 0);
 
-                const labels = data.map(d => d.date);
-                const correctiveData = data.map(d => d.correctiveMaintenanceCount || 0);
-                const preventiveData = data.map(d => d.preventiveMaintenanceCount || 0);
-                const breakdownData = data.map(d => d.breakdownCount || 0);
-                const otherData = data.map(d => d.otherCount || 0);
-
-                workReportChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [
-                            {
-                                label: "Corrective Maintenance",
-                                borderColor: "#e74c3c",
-                                pointBorderColor: "#FFF",
-                                pointBackgroundColor: "#e74c3c",
-                                pointBorderWidth: 2,
-                                pointHoverRadius: 4,
-                                pointRadius: 4,
-                                backgroundColor: 'transparent',
-                                fill: false,
-                                borderWidth: 2,
-                                data: correctiveData,
-                                counts: correctiveData
-                            },
-                            {
-                                label: "Preventive Maintenance",
-                                borderColor: "#3498db",
-                                pointBorderColor: "#FFF",
-                                pointBackgroundColor: "#3498db",
-                                pointBorderWidth: 2,
-                                pointHoverRadius: 4,
-                                pointRadius: 4,
-                                backgroundColor: 'transparent',
-                                fill: false,
-                                borderWidth: 2,
-                                data: preventiveData,
-                                counts: preventiveData
-                            },
-                            {
-                                label: "Breakdown",
-                                borderColor: "#f39c12",
-                                pointBorderColor: "#FFF",
-                                pointBackgroundColor: "#f39c12",
-                                pointBorderWidth: 2,
-                                pointHoverRadius: 4,
-                                pointRadius: 4,
-                                backgroundColor: 'transparent',
-                                fill: false,
-                                borderWidth: 2,
-                                data: breakdownData,
-                                counts: breakdownData
-                            },
-                            {
-                                label: "Other",
-                                borderColor: "#95a5a6",
-                                pointBorderColor: "#FFF",
-                                pointBackgroundColor: "#95a5a6",
-                                pointBorderWidth: 2,
-                                pointHoverRadius: 4,
-                                pointRadius: 4,
-                                backgroundColor: 'transparent',
-                                fill: false,
-                                borderWidth: 2,
-                                data: otherData,
-                                counts: otherData
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        legend: {
-                            position: 'bottom',
-                            labels: { fontColor: '#333', padding: 15 }
-                        },
-                        tooltips: {
-                            mode: "nearest",
-                            intersect: false,
-                            callbacks: {
-                                label: function (tooltipItem, data) {
-                                    const dataset = data.datasets[tooltipItem.datasetIndex];
-                                    const value = dataset.data[tooltipItem.index];
-                                    const label = dataset.label;
-                                    return `${label}: ${value} reports`;
-                                }
-                            }
-                        },
-                        scales: {
-                            x: { stacked: false },
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    stepSize: 1,
-                                    callback: function (value) {
-                                        return Number.isInteger(value) ? value : null;
-                                    }
-                                },
-                                title: {
-                                    display: true,
-                                    text: 'Number of Reports'
-                                }
-                            }
-                        }
-                    }
-                });
-            });
-    }
+                renderWrChart(labels, correctiveData, preventiveData, breakdownData, otherData, 'Daily Work Report');
+            }
+        })
+        .catch(err => {
+            console.error("Error loading chart data:", err);
+            const ctx = document.getElementById('wr-equipment-line-chart').getContext('2d');
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.font = "16px Arial";
+            ctx.fillText("Failed to load data", ctx.canvas.width / 2, ctx.canvas.height / 2);
+            ctx.restore();
+        });
 }
 
-function initWorkReportChartForm() {
+function initWrChartForm() {
     const now = new Date();
     const from = new Date(now);
     from.setDate(now.getDate() - 6);
 
-    document.getElementById('work-report-from').value = formatDate(from);
-    document.getElementById('work-report-to').value = formatDate(now);
+    document.getElementById('wr-from').value = formatDate(from);
+    document.getElementById('wr-to').value = formatDate(now);
 
-    // Populate year selector
-    populateYearSelector('work-report-year-select', now.getFullYear());
+    populateYearSelector('wr-year-select', now.getFullYear());
 
-    // Quick buttons
-    document.querySelectorAll('#work-report-chart-form .btn[data-range]').forEach(btn => {
+    fetch('/api/dashboards/equipment-complaint-count')
+        .then(r => r.json())
+        .then(equipmentList => {
+            const select = document.getElementById('wr-equipment');
+            equipmentList
+                .sort((a, b) => a.equipmentName.localeCompare(b.equipmentName))
+                .forEach(item => {
+                    const opt = new Option(item.equipmentName, item.equipmentCode);
+                    select.appendChild(opt);
+                });
+
+            const initialEquipment = document.getElementById('wr-equipment').value;
+            updateWrChart('daily', formatDate(from), formatDate(now), null, initialEquipment);
+        })
+        .catch(err => {
+            console.warn("Failed to load equipment list:", err);
+            const initialEquipment = document.getElementById('wr-equipment').value;
+            updateWrChart('daily', formatDate(from), formatDate(now), null, initialEquipment);
+        });
+
+    document.querySelectorAll('.dropdown-menu .btn[data-range]').forEach(btn => {
         btn.addEventListener('click', () => {
             const range = btn.getAttribute('data-range');
             const now = new Date();
+            const equipmentCode = document.getElementById('wr-equipment').value;
+
             if (range === 'weekly') {
-                document.getElementById('work-report-year-selector').style.display = 'none';
+                document.getElementById('wr-year-selector').style.display = 'none';
                 const from = new Date(now);
                 from.setDate(now.getDate() - 6);
-                document.getElementById('work-report-from').value = formatDate(from);
-                document.getElementById('work-report-to').value = formatDate(now);
-                updateWorkReportChart('daily', formatDate(from), formatDate(now));
+                document.getElementById('wr-from').value = formatDate(from);
+                document.getElementById('wr-to').value = formatDate(now);
+                updateWrChart('daily', formatDate(from), formatDate(now), null, equipmentCode);
             } else if (range === 'monthly') {
-                document.getElementById('work-report-year-selector').style.display = 'none';
+                document.getElementById('wr-year-selector').style.display = 'none';
                 const from = new Date(now.getFullYear(), now.getMonth(), 1);
-                document.getElementById('work-report-from').value = formatDate(from);
-                document.getElementById('work-report-to').value = formatDate(now);
-                updateWorkReportChart('daily', formatDate(from), formatDate(now));
+                document.getElementById('wr-from').value = formatDate(from);
+                document.getElementById('wr-to').value = formatDate(now);
+                updateWrChart('daily', formatDate(from), formatDate(now), null, equipmentCode);
             } else if (range === 'yearly') {
-                document.getElementById('work-report-year-selector').style.display = 'inline-block';
-                const year = document.getElementById('work-report-year-select').value;
-                updateWorkReportChart('yearly', null, null, year);
+                document.getElementById('wr-year-selector').style.display = 'block';
+                const year = document.getElementById('wr-year-select').value;
+                updateWrChart('yearly', null, null, year, equipmentCode);
             }
         });
     });
 
-    // Year change
-    document.getElementById('work-report-year-select').addEventListener('change', () => {
-        const year = document.getElementById('work-report-year-select').value;
-        updateWorkReportChart('yearly', null, null, year);
+    document.getElementById('wr-year-select').addEventListener('change', () => {
+        const year = document.getElementById('wr-year-select').value;
+        const equipmentCode = document.getElementById('wr-equipment').value;
+        updateWrChart('yearly', null, null, year, equipmentCode);
     });
 
-    // Apply button
-    document.getElementById('work-report-chart-form').addEventListener('submit', e => {
-        e.preventDefault();
-        const from = document.getElementById('work-report-from').value;
-        const to = document.getElementById('work-report-to').value;
-        document.getElementById('work-report-year-selector').style.display = 'none';
-        updateWorkReportChart('daily', from, to);
+    document.getElementById('apply-filters-btn').addEventListener('click', () => {
+        const from = document.getElementById('wr-from').value;
+        const to = document.getElementById('wr-to').value;
+        const equipmentCode = document.getElementById('wr-equipment').value;
+        const year = document.getElementById('wr-year-select').value;
+
+        if (document.getElementById('wr-year-selector').style.display === 'block') {
+            updateWrChart('yearly', null, null, year, equipmentCode);
+        } else {
+            document.getElementById('wr-year-selector').style.display = 'none';
+            updateWrChart('daily', from, to, null, equipmentCode);
+        }
     });
-
-    // Initial load
-    updateWorkReportChart('daily', formatDate(from), formatDate(now));
 }
 
-// Helper: format date to YYYY-MM-DD
-function formatDate(date) {
-    return date.toISOString().split('T')[0];
-}
+document.addEventListener('DOMContentLoaded', () => {
+    const equipmentSelect = document.getElementById('wr-equipment');
 
-// Helper: populate year selector
-function populateYearSelector(selectId, selectedYear) {
-    const select = document.getElementById(selectId);
-    const currentYear = new Date().getFullYear();
-    select.innerHTML = '';
-    for (let y = currentYear - 10; y <= currentYear + 1; y++) {
-        const opt = new Option(y, y);
-        if (y === selectedYear) opt.selected = true;
-        select.appendChild(opt);
+    if (!equipmentSelect) {
+        console.error("Element #wr-equipment not found");
+        return;
     }
-}
+
+    ['mousedown', 'click', 'focusin'].forEach(eventType => {
+        equipmentSelect.addEventListener(eventType, (e) => {
+            e.stopPropagation();
+        });
+    });
+    initWrChartForm();
+});
 
 // Breakdown Chart
 let breakdownChart = null;
 
-// Helper: Format Date to YYYY-MM-DD
-function formatDate(date) {
-    return date.toISOString().split('T')[0];
-}
-
-// Helper: Populate Year Selector
-function populateYearSelector(selectId, selectedYear) {
-    const select = document.getElementById(selectId);
-    const currentYear = new Date().getFullYear();
-    select.innerHTML = '';
-    for (let y = currentYear - 10; y <= currentYear + 1; y++) {
-        const opt = new Option(y, y);
-        if (y === selectedYear) opt.selected = true;
-        select.appendChild(opt);
-    }
-}
-
-// === Update Breakdown Chart ===
 function updateBreakdownChart(mode, from = null, to = null, year = null) {
     const ctx = document.getElementById('breakdown-line-chart').getContext('2d');
     if (breakdownChart) breakdownChart.destroy();
@@ -1047,27 +823,22 @@ function updateBreakdownChart(mode, from = null, to = null, year = null) {
     }
 }
 
-// === Initialize Breakdown Chart Form ===
 function initBreakdownChartForm() {
     const now = new Date();
     const from = new Date(now);
     from.setDate(now.getDate() - 6);
 
-    // Set default dates
     document.getElementById('breakdown-from').value = formatDate(from);
     document.getElementById('breakdown-to').value = formatDate(now);
 
-    // Populate year selector
     populateYearSelector('breakdown-year-select', now.getFullYear());
 
-    // === Prevent dropdown from closing when interacting with form ===
     document.querySelector('.dropdown-menu').addEventListener('click', function (e) {
         if (e.target.closest('select, input, .btn, .input-group')) {
             e.stopPropagation(); // 🔑 Keep dropdown open
         }
     });
 
-    // === Quick Range Buttons ===
     document.querySelectorAll('.dropdown-menu .btn[data-range]').forEach(btn => {
         btn.addEventListener('click', () => {
             const range = btn.getAttribute('data-range');
@@ -1094,13 +865,11 @@ function initBreakdownChartForm() {
         });
     });
 
-    // === Year Selector Change ===
     document.getElementById('breakdown-year-select').addEventListener('change', () => {
         const year = document.getElementById('breakdown-year-select').value;
         updateBreakdownChart('yearly', null, null, year);
     });
 
-    // === Apply Button ===
     document.getElementById('apply-breakdown-filters').addEventListener('click', () => {
         const from = document.getElementById('breakdown-from').value;
         const to = document.getElementById('breakdown-to').value;
@@ -1114,23 +883,20 @@ function initBreakdownChartForm() {
         }
     });
 
-    // === Initial Load ===
     updateBreakdownChart('daily', formatDate(from), formatDate(now));
 }
 
 // Equipment Repaired
-const EQUIPMENT_WORK_API_URL = `${baseUrl}/api/dashboards/equipment-work-report`;
+const EQUIPMENT_WORK_API_URL = 'http://localhost:8000/api/dashboards/equipment-count';
 const CONTAINER_ID = 'equipment-work-list-container';
 const PREV_BTN_ID = 'equipment-work-prev-btn';
 const NEXT_BTN_ID = 'equipment-work-next-btn';
 const REFRESH_BTN_ID = 'equipment-work-refresh-btn';
 
-// --- State Variables ---
 let wrCurrentPage = 1;
-const wrPageSize = 7;
+const wrPageSize = 5;
 let wrAllData = [];
 
-// --- Utility Functions ---
 function formatNumber(num) {
     return num.toLocaleString();
 }
@@ -1139,7 +905,6 @@ function formatMinutes(minutes) {
     return `${formatNumber(minutes)} min`;
 }
 
-// --- Fetch Data ---
 async function fetchEquipmentWorkData() {
     const container = document.getElementById(CONTAINER_ID);
     if (!container) {
@@ -1158,21 +923,20 @@ async function fetchEquipmentWorkData() {
         wrAllData = await response.json();
         console.log('✅ API Response:', wrAllData);
 
-        // Sort by totalWorkReports descending
-        wrAllData.sort((a, b) => (b.totalWorkReports || 0) - (a.totalWorkReports || 0));
+        wrAllData.sort((a, b) => (b.totalResolutionTime || 0) - (a.totalResolutionTime || 0));
 
+        wrCurrentPage = 1; // Reset to first page on refresh
         renderPage(wrCurrentPage);
     } catch (err) {
         console.error('🚨 Error loading equipment work data:', err);
         document.getElementById(CONTAINER_ID).innerHTML = `
-                <div class="text-center text-muted py-3">
-                    Failed to load data: ${err.message}
-                </div>
-            `;
+            <div class="text-center text-muted py-3">
+                Failed to load data: ${err.message}
+            </div>
+        `;
     }
 }
 
-// --- Render Current Page ---
 function renderPage(page) {
     const container = document.getElementById(CONTAINER_ID);
     if (!container) return;
@@ -1190,40 +954,47 @@ function renderPage(page) {
 
     pageData.forEach((item, index) => {
         const rank = start + index + 1;
-        const div = document.createElement('div');
-        div.className = 'd-flex align-items-center';
-        div.style.minHeight = '50px';
 
-        div.innerHTML = `
-                <div class="mr-3 d-flex align-items-center" style="min-width: 28px;">
-                    <span class="fw-bold" style="
-                        font-size: 0.95rem; 
-                        color: #555; 
-                        font-family: 'Segoe UI', sans-serif;">
-                        ${rank}
-                    </span>
-                </div>
-                <div class="flex-1 ml-2 pt-1">
-                    <h6 class="fw-bold mb-1">
-                        ${item.equipmentCode}
-                        <span class="text-muted pl-3">(${item.totalWorkReports} reports)</span>
-                    </h6>
-                    <small class="text-muted">${item.equipmentName}</small>
-                </div>
-                <div class="d-flex ml-auto align-items-center">
-                    <small class="text-muted">${formatMinutes(item.totalResolutionTime)}</small>
-                </div>
-            `;
-        container.appendChild(div);
+        // Determine color classes based on rank
+        let avatarBgClass = rank <= 3 ? 'bg-primary' : 'bg-secondary';
+        let timeColorClass = '';
+        if (rank === 1) timeColorClass = 'text-danger';
+        else if (rank === 2) timeColorClass = 'text-warning';
+        else if (rank === 3) timeColorClass = 'text-info';
+        else timeColorClass = 'text-success';
 
-        // Add separator
+        // Create row div
+        const rowDiv = document.createElement('div');
+        rowDiv.className = `d-flex align-items-center ${index < pageData.length - 1 ? 'mb-3' : ''}`;
+
+        rowDiv.innerHTML = `
+            <div class="avatar ${avatarBgClass} text-white rounded-circle d-flex align-items-center justify-content-center"
+                 style="width: 40px; height: 40px; font-weight: bold;">
+                ${rank}
+            </div>
+            <div class="flex-1 pt-1 ml-3">
+                <h6 class="fw-bold mb-0">${item.equipmentName}</h6>
+                <small class="text-muted">Code: ${item.equipmentCode}</small>
+                <div class="mt-1">
+                    <span class="badge bg-info">Work Reports: ${item.totalWorkReports}</span>
+                    <span class="badge bg-warning ms-1">Complaints: ${item.totalComplaints}</span>
+                </div>
+            </div>
+            <div class="text-end ml-2">
+                <h5 class="fw-bold ${timeColorClass}">${formatMinutes(item.totalResolutionTime)}</h5>
+                <small class="text-muted d-block">Occurrences: <strong>${formatNumber(item.totalOccurrences)}</strong></small>
+            </div>
+        `;
+
+        container.appendChild(rowDiv);
+
+        // Add separator except after last item
         const sep = document.createElement('div');
         sep.className = 'separator-dashed';
         container.appendChild(sep);
     });
 }
 
-// --- Button Setup ---
 function setupButtons() {
     const prevBtn = document.getElementById(PREV_BTN_ID);
     const nextBtn = document.getElementById(NEXT_BTN_ID);
@@ -1253,7 +1024,6 @@ function setupButtons() {
 
     if (refreshBtn) {
         refreshBtn.addEventListener('click', () => {
-            wrCurrentPage = 1;
             fetchEquipmentWorkData();
         });
     } else {
@@ -1268,7 +1038,7 @@ function enableScrollNavigation() {
     let isScrolling = false;
 
     container.addEventListener('wheel', (e) => {
-        if (isScrolling) return; // Prevent rapid triggers
+        if (isScrolling) return;
         e.preventDefault();
 
         isScrolling = true;
@@ -1277,13 +1047,13 @@ function enableScrollNavigation() {
         const delta = e.deltaY;
 
         if (delta > 0) {
-            // ✅ Scroll down → go to NEXT page (newer data)
+            // Scroll down → next page
             if (wrAllData.length > wrCurrentPage * wrPageSize) {
                 wrCurrentPage++;
                 renderPage(wrCurrentPage);
             }
         } else if (delta < 0) {
-            // ✅ Scroll up → go to PREVIOUS page (older data)
+            // Scroll up → previous page
             if (wrCurrentPage > 1) {
                 wrCurrentPage--;
                 renderPage(wrCurrentPage);
@@ -1291,11 +1061,9 @@ function enableScrollNavigation() {
         }
     });
 
-    // Optional: Add subtle visual hint
     container.style.cursor = 'grab';
     container.setAttribute('title', 'Scroll to navigate pages');
 
-    // Visual feedback on hover
     container.addEventListener('mouseenter', () => {
         container.style.cursor = 'grab';
     });
@@ -1307,23 +1075,16 @@ function enableScrollNavigation() {
     });
 }
 
-// --- On DOM Ready ---
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        setupButtons();
-        enableScrollNavigation();
-        fetchEquipmentWorkData();
-    });
-} else {
-    // Already loaded
+function initEquipmentWorkList() {
     setupButtons();
     enableScrollNavigation();
     fetchEquipmentWorkData();
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+    initComplaintStatsForm();
     initComplaintChartForm();
+    fetchEngineerData();
+    initEquipmentWorkList();
     initBreakdownChartForm();
-    initWorkReportChartForm();
-    fetchEquipmentData();
 });

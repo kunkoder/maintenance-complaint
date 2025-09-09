@@ -285,4 +285,234 @@
             }
         }
     </script>
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // ================= EXPORT TO EXCEL =================
+    document.getElementById('exportExcel')?.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        const table = document.getElementById('document-table');
+        if (!table) {
+            alert("Table not found!");
+            return;
+        }
+
+        const headers = [
+            "Code",
+            "Report Date",
+            "Last Update",
+            "Reporter",
+            "Area",
+            "Equipment",
+            "Subject",
+            "Description",
+            "Action Taken",
+            "Assignee",
+            "Priority",
+            "Category",
+            "Status",
+            "Close Time",
+            "Total Time"
+        ];
+
+        const data = [];
+        const rows = table.querySelectorAll('tbody tr');
+
+        rows.forEach(tr => {
+            // Skip hidden/filtered rows
+            if (tr.style.display === 'none') return;
+
+            const tds = tr.querySelectorAll('td');
+            if (tds.length < 15) return;
+
+            let colIndex = 0;
+            const row = [];
+
+            // Code (linked text)
+            row.push(tds[colIndex++].querySelector('a')?.textContent.trim() || '-');
+
+            // Report Date
+            row.push(tds[colIndex++].textContent.trim() || '-');
+
+            // Last Update
+            row.push(tds[colIndex++].textContent.trim() || '-');
+
+            // Reporter
+            row.push(tds[colIndex++].textContent.trim() || '-');
+
+            // Area
+            row.push(tds[colIndex++].textContent.trim() || '-');
+
+            // Equipment
+            row.push(tds[colIndex++].textContent.trim() || '-');
+
+            // Subject
+            row.push(tds[colIndex++].textContent.trim() || '-');
+
+            // Description
+            row.push(tds[colIndex++].textContent.trim() || '-');
+
+            // Action Taken
+            row.push(tds[colIndex++].textContent.trim() || '-');
+
+            // Assignee
+            row.push(tds[colIndex++].textContent.trim() || '-');
+
+            // Priority (extract from badge text)
+            const priorityBadge = tds[colIndex++].querySelector('.badge');
+            row.push(priorityBadge?.textContent.trim() || '-');
+
+            // Category (extract from badge text)
+            const categoryBadge = tds[colIndex++].querySelector('.badge');
+            row.push(categoryBadge?.textContent.trim() || '-');
+
+            // Status (extract from badge text)
+            const statusBadge = tds[colIndex++].querySelector('.badge');
+            row.push(statusBadge?.textContent.trim() || '-');
+
+            // Close Time
+            row.push(tds[colIndex++].textContent.trim() || '-');
+
+            // Total Time
+            row.push(tds[colIndex++].textContent.trim() || '-');
+
+            data.push(row);
+        });
+
+        // Create worksheet and workbook
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Complaints");
+
+        // Generate filename
+        const dateStr = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(wb, `Complaints_Export_${dateStr}.xlsx`);
+    });
+
+    // ================= EXPORT TO PDF =================
+    document.getElementById('exportPdf')?.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+            orientation: 'landscape',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        const table = document.getElementById('document-table');
+        if (!table) {
+            alert("Table not found!");
+            return;
+        }
+
+        // Extract headers
+        const headers = [];
+        table.querySelectorAll('thead th').forEach(th => {
+            headers.push(th.textContent.trim());
+        });
+
+        // Extract data
+        const data = [];
+        const rows = table.querySelectorAll('tbody tr');
+
+        rows.forEach(tr => {
+            if (tr.style.display === 'none') return;
+
+            const tds = tr.querySelectorAll('td');
+            if (tds.length < 15) return;
+
+            let colIndex = 0;
+            const row = [];
+
+            // Code
+            row.push(tds[colIndex++].querySelector('a')?.textContent.trim() || '-');
+
+            // Report Date
+            row.push(tds[colIndex++].textContent.trim() || '-');
+
+            // Last Update
+            row.push(tds[colIndex++].textContent.trim() || '-');
+
+            // Reporter
+            row.push(tds[colIndex++].textContent.trim() || '-');
+
+            // Area
+            row.push(tds[colIndex++].textContent.trim() || '-');
+
+            // Equipment
+            row.push(tds[colIndex++].textContent.trim() || '-');
+
+            // Subject
+            row.push(tds[colIndex++].textContent.trim() || '-');
+
+            // Description
+            row.push(tds[colIndex++].textContent.trim() || '-');
+
+            // Action Taken
+            row.push(tds[colIndex++].textContent.trim() || '-');
+
+            // Assignee
+            row.push(tds[colIndex++].textContent.trim() || '-');
+
+            // Priority
+            const priorityBadge = tds[colIndex++].querySelector('.badge');
+            row.push(priorityBadge?.textContent.trim() || '-');
+
+            // Category
+            const categoryBadge = tds[colIndex++].querySelector('.badge');
+            row.push(categoryBadge?.textContent.trim() || '-');
+
+            // Status
+            const statusBadge = tds[colIndex++].querySelector('.badge');
+            row.push(statusBadge?.textContent.trim() || '-');
+
+            // Close Time
+            row.push(tds[colIndex++].textContent.trim() || '-');
+
+            // Total Time
+            row.push(tds[colIndex++].textContent.trim() || '-');
+
+            data.push(row);
+        });
+
+        // Add title
+        doc.setFontSize(16);
+        doc.text("Complaints Export", 14, 15);
+
+        // Generate table
+        doc.autoTable({
+            head: [headers],
+            body: data,
+            startY: 20,
+            theme: 'grid',
+            styles: { fontSize: 7 },
+            headStyles: { fillColor: [33, 150, 243] }, // blue header
+            columnStyles: {
+                0: { cellWidth: 25 },   // Code
+                1: { cellWidth: 30 },   // Report Date
+                2: { cellWidth: 30 },   // Last Update
+                3: { cellWidth: 25 },   // Reporter
+                4: { cellWidth: 25 },   // Area
+                5: { cellWidth: 25 },   // Equipment
+                6: { cellWidth: 30 },   // Subject
+                7: { cellWidth: 40 },   // Description
+                8: { cellWidth: 30 },   // Action Taken
+                9: { cellWidth: 25 },   // Assignee
+                10: { cellWidth: 20 },  // Priority
+                11: { cellWidth: 25 },  // Category
+                12: { cellWidth: 25 },  // Status
+                13: { cellWidth: 30 },  // Close Time
+                14: { cellWidth: 20 }   // Total Time
+            }
+        });
+
+        // Save PDF
+        const dateStr = new Date().toISOString().slice(0, 10);
+        doc.save(`Complaints_Export_${dateStr}.pdf`);
+    });
+
+});
+</script>
 </div>

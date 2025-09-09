@@ -20,6 +20,7 @@ import ahqpck.maintenance.report.util.ImportUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -30,6 +31,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -49,10 +53,11 @@ public class ComplaintController {
     private final AreaService areaService;
     private final UserService userService;
 
-    // === LIST COMPLAINTS ===
     @GetMapping
     public String listComplaints(
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate reportDateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate reportDateTo,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "reportDate") String sortBy,
@@ -61,11 +66,19 @@ public class ComplaintController {
 
         try {
             int zeroBasedPage = page - 1;
-            Page<ComplaintDTO> complaintPage = complaintService.getAllComplaints(keyword, zeroBasedPage, size, sortBy,
-                    asc);
+
+            // Convert LocalDate to LocalDateTime for DB filtering (start/end of day)
+            LocalDateTime from = reportDateFrom != null ? reportDateFrom.atStartOfDay() : null;
+            LocalDateTime to = reportDateTo != null ? reportDateTo.atTime(LocalTime.MAX) : null;
+            System.out.println("From: " + from + ", To: " + to);
+
+            Page<ComplaintDTO> complaintPage = complaintService.getAllComplaints(keyword, from, to, zeroBasedPage, size,
+                    sortBy, asc);
 
             model.addAttribute("complaints", complaintPage);
             model.addAttribute("keyword", keyword);
+            model.addAttribute("reportDateFrom", reportDateFrom); // ← for Thymeleaf re-render
+            model.addAttribute("reportDateTo", reportDateTo); // ← for Thymeleaf re-render
             model.addAttribute("currentPage", page);
             model.addAttribute("pageSize", size);
             model.addAttribute("sortBy", sortBy);
@@ -81,7 +94,6 @@ public class ComplaintController {
             model.addAttribute("users", getAllUsersForDropdown());
             model.addAttribute("areas", getAllAreasForDropdown());
             model.addAttribute("equipments", getAllEquipmentsForDropdown());
-            // model.addAttribute("parts", getAllPartsForDropdown());
 
             // Empty DTO for create form
             model.addAttribute("complaintDTO", new ComplaintDTO());
@@ -153,7 +165,7 @@ public class ComplaintController {
             BindingResult bindingResult,
             RedirectAttributes ra) {
 
-                // System.out.println(complaintDTO);
+        // System.out.println(complaintDTO);
         if (bindingResult.hasErrors()) {
             handleBindingErrors(bindingResult, ra, complaintDTO);
             return "redirect:/complaints";
@@ -162,10 +174,10 @@ public class ComplaintController {
         try {
             // ObjectMapper mapper = new ObjectMapper();
             // List<ComplaintPartDTO> partsUsed = mapper.readValue(
-            //         partsUsedJson,
-            //         new TypeReference<List<ComplaintPartDTO>>() {
-            //         });
-            //         System.out.println(partsUsedJson);
+            // partsUsedJson,
+            // new TypeReference<List<ComplaintPartDTO>>() {
+            // });
+            // System.out.println(partsUsedJson);
             // complaintDTO.setPartsUsed(partsUsed);
             // System.out.println(partsUsedJson);
             complaintService.updateComplaint(complaintDTO);
