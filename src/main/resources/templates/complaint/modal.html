@@ -23,7 +23,7 @@
                         <div class="form-group">
                             <label for="subject">Subject <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" th:field="*{subject}"
-                                placeholder="e.g. Motor Overheating" required>
+                                placeholder="e.g. Motor Overheating">
                             <div class="invalid-feedback" th:if="${#fields.hasErrors('subject')}"
                                 th:errors="*{subject}">
                                 Please enter a subject.
@@ -39,7 +39,7 @@
 
                                     <!-- Visible Autocomplete Input -->
                                     <input type="text" class="form-control" list="areaOptions" id="areaInput"
-                                        placeholder="Search area by name or code" autocomplete="off" required />
+                                        placeholder="Search area by name or code" autocomplete="off" />
 
                                     <!-- Datalist for Suggestions -->
                                     <datalist id="areaOptions">

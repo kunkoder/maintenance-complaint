@@ -302,32 +302,60 @@ function fetchEngineerData(from = null, to = null) {
             currentFrom = data.dates[0];
             currentTo = data.dates[data.dates.length - 1];
 
-            // Update headers
             const dayHeaderRow = document.getElementById('dayHeaders');
-            dayHeaderRow.innerHTML = '';
-            const numDays = data.dates.length;
+            const thead = dayHeaderRow.parentNode;
 
-            // Helper: create day headers (Day 1, Day 2, ...)
-            function createDayThs(dateArray, offset = 0) {
-                const ths = [];
-                for (let i = 0; i < dateArray.length; i++) {
-                    const th = document.createElement('th');
-                    th.textContent = `${formatShort(dateArray[i])}`;
-                    th.style.whiteSpace = 'pre-line';
-                    ths.push(th);
-                }
-                return ths;
+            // 👇 STEP 1: Clear existing dynamic headers (date row + subheader row)
+            dayHeaderRow.innerHTML = ''; // Clear date headers
+
+            // Remove existing subheader row if exists (to prevent stacking)
+            const existingSubHeader = thead.querySelector('tr[data-subheader="true"]');
+            if (existingSubHeader) {
+                existingSubHeader.remove();
             }
 
-            const openThs = createDayThs(data.dates);
-            openThs.forEach(th => dayHeaderRow.appendChild(th));
+            // Hide static status headers (Open, Pending, Closed)
+            document.getElementById('openHeader').colSpan = 0;
+            document.getElementById('pendingHeader').style.display = 'none';
+            document.getElementById('closedHeader').colSpan = 0;
 
-            const pendingThs = createDayThs(data.dates);
-            pendingThs.forEach(th => dayHeaderRow.appendChild(th));
+            const numDays = data.dates.length;
 
-            const closedThs = createDayThs(data.dates);
-            closedThs.forEach(th => dayHeaderRow.appendChild(th));
+            // 👇 STEP 2: Render new date headers (grouped by date)
+            for (let i = 0; i < numDays; i++) {
+                const dateShort = formatShort(data.dates[i]);
 
+                const thDate = document.createElement('th');
+                thDate.colSpan = 2;
+                thDate.textContent = dateShort;
+                thDate.classList.add('bg-primary', 'text-white'); // 🔵 Match primary color
+                thDate.style.verticalAlign = 'middle';
+                dayHeaderRow.appendChild(thDate);
+            }
+
+            // 👇 STEP 3: Create and insert subheader row (Open / Closed)
+            const subHeaderRow = document.createElement('tr');
+            subHeaderRow.setAttribute('data-subheader', 'true'); // marker for cleanup
+            subHeaderRow.classList.add('bg-primary', 'text-white'); // 🔵 Primary background
+
+            for (let i = 0; i < numDays; i++) {
+                const thOpen = document.createElement('th');
+                thOpen.textContent = 'Open';
+                thOpen.style.fontSize = '0.8em';
+                thOpen.classList.add('text-white');
+                subHeaderRow.appendChild(thOpen);
+
+                const thClosed = document.createElement('th');
+                thClosed.textContent = 'Closed';
+                thClosed.style.fontSize = '0.8em';
+                thClosed.classList.add('text-white');
+                subHeaderRow.appendChild(thClosed);
+            }
+
+            // Insert subheader row right after dayHeaders
+            thead.insertBefore(subHeaderRow, dayHeaderRow.nextSibling);
+
+            // 👇 STEP 4: Render table body
             const tbody = document.getElementById('engineerTableBody');
             tbody.innerHTML = '';
 
@@ -335,9 +363,10 @@ function fetchEngineerData(from = null, to = null) {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
           <td class="text-left fw-bold">${row.assignee}</td>
-          ${row.open.map(v => `<td>${v}</td>`).join('')}
-          ${row.pending.map(v => `<td>${v}</td>`).join('')}
-          ${row.closed.map(v => `<td>${v}</td>`).join('')}
+          ${data.dates.map((date, i) => `
+            <td>${row.open[i] || 0}</td>
+            <td>${row.closed[i] || 0}</td>
+          `).join('')}
         `;
                 tbody.appendChild(tr);
             });
