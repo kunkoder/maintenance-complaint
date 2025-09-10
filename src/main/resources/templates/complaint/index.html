@@ -58,47 +58,104 @@
                                 <h4 class="card-title" th:text="${title}"></h4>
                                 <form class="form-inline ml-auto" th:action="@{/complaints}" method="get"
                                     id="complaintsForm">
-                                    <div class="input-icon">
-                                        <input type="text" name="keyword" th:value="${keyword}" id="userSearchInput"
-                                            class="form-control" placeholder="Search...">
-                                        <span class="input-icon-addon"><i class="fa fa-search"></i></span>
-                                    </div>
-                                    <!-- Date Range Filter -->
-                                    <div class="form-group">
-                                        <label for="reportDateFrom" class="sr-only">Report Date Range</label>
-                                        <div class="input-group input-daterange" style="width: 280px;">
-                                            <input type="date" name="reportDateFrom" id="reportDateFrom"
-                                                th:value="${reportDateFrom}" class="form-control form-control"
-                                                placeholder="From" onchange="this.form.submit()">
-                                            <div class="input-group-prepend input-group-append">
-                                                <span class="input-group-text">to</span>
+
+                                    <div class="dropdown mr-2">
+                                        <button class="btn btn-primary dropdown-toggle" type="button"
+                                            id="filterDropdownBtn" data-toggle="dropdown" aria-haspopup="true"
+                                            aria-expanded="false" style="padding: 0.375rem 0.75rem;">
+                                            <i class="fa fa-filter"></i> Filter
+                                        </button>
+                                        <div class="dropdown-menu p-3" aria-labelledby="filterDropdownBtn"
+                                            style="min-width: 350px; max-width: 400px; width: 100%;">
+
+                                            <div class="form-group pb-0">
+                                                <label class="form-label small d-block">Search</label>
+                                                <div class="input-icon w-100">
+                                                    <input type="text" name="keyword" th:value="${keyword}"
+                                                        class="form-control form-control-sm w-100"
+                                                        placeholder="ID, Subject, Reporter, Assignee...">
+                                                    <span class="input-icon-addon"><i class="fa fa-search"></i></span>
+                                                </div>
                                             </div>
-                                            <input type="date" name="reportDateTo" id="reportDateTo"
-                                                th:value="${reportDateTo}" class="form-control form-control"
-                                                placeholder="To" onchange="this.form.submit()">
+
+                                            <div class="form-group pb-0">
+                                                <label class="form-label small d-block">Report Date</label>
+                                                <div class="input-group input-daterange w-100">
+                                                    <input type="date" name="reportDateFrom"
+                                                        th:value="${reportDateFrom}"
+                                                        class="form-control form-control-sm" placeholder="From">
+                                                    <div class="input-group-prepend input-group-append">
+                                                        <span class="input-group-text">to</span>
+                                                    </div>
+                                                    <input type="date" name="reportDateTo" th:value="${reportDateTo}"
+                                                        class="form-control form-control-sm" placeholder="To">
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group pb-0">
+                                                <label class="form-label small d-block">Assignee</label>
+                                                <input type="text" class="form-control form-control-sm w-100"
+                                                    list="assigneeOptions" id="assigneeInput"
+                                                    placeholder="Search by name or ID" autocomplete="off" />
+
+                                                <datalist id="assigneeOptions">
+                                                    <option th:each="user : ${users}"
+                                                        th:value="${user.name} + ' (' + ${user.employeeId} + ')'"
+                                                        th:data-employee-id="${user.employeeId}">
+                                                    </option>
+                                                </datalist>
+
+                                                <select class="d-none" name="assigneeId" id="assigneeSelect">
+                                                    <option th:each="user : ${users}" th:value="${user.employeeId}">
+                                                    </option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group pb-0">
+                                                <label class="form-label small d-block">Status</label>
+                                                <select name="status" class="form-control form-control-sm w-100">
+                                                    <option value="">All Status</option>
+                                                    <th:block
+                                                        th:each="status : ${T(ahqpck.maintenance.report.entity.Complaint.Status).values()}">
+                                                        <option th:value="${status}" th:text="${status}"
+                                                            th:selected="${param.status == status}">
+                                                        </option>
+                                                    </th:block>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="form-label small d-block">Equipment</label>
+                                                <input type="text" class="form-control form-control-sm w-100"
+                                                    list="equipmentOptions" id="equipmentInput"
+                                                    placeholder="Search by name or code" autocomplete="off" />
+
+                                                <datalist id="equipmentOptions">
+                                                    <option th:each="equip : ${equipments}"
+                                                        th:value="${equip.name} + ' (' + ${equip.code} + ')'"
+                                                        th:data-code="${equip.code}">
+                                                    </option>
+                                                </datalist>
+
+                                                <!-- Hidden select for form submission -->
+                                                <select class="d-none" name="equipmentCode" id="equipmentSelect">
+                                                    <option th:each="equip : ${equipments}" th:value="${equip.code}">
+                                                    </option>
+                                                </select>
+                                            </div>
+
+                                            <button type="submit" class="btn btn-primary btn-sm btn-block mt-2">
+                                                <i class="fas fa-check"></i> Apply Filters
+                                            </button>
+
+                                            <button type="button" class="btn btn-secondary btn-sm btn-block mt-1"
+                                                onclick="resetFilters()">
+                                                <i class="fas fa-undo"></i> Reset Filters
+                                            </button>
+
                                         </div>
                                     </div>
 
-                                    <div class="form-group ml-2">
-                                        <button type="button" class="btn btn-outline-secondary btn-sm"
-                                            onclick="clearDateFilter()">
-                                            <i class="fas fa-times"></i> Clear
-                                        </button>
-                                    </div>
-
-                                    <!-- Size Dropdown -->
-                                    <div class="form-group">
-                                        <label for="pageSizeSelect" class="sr-only">Items per page:</label>
-                                        <select name="size" id="pageSizeSelect" class="form-control"
-                                            onchange="this.form.submit()">
-                                            <option value="10" th:selected="${pageSize == 10}">10</option>
-                                            <option value="30" th:selected="${pageSize == 30}">30</option>
-                                            <option value="50" th:selected="${pageSize == 50}">50</option>
-                                            <option value="100" th:selected="${pageSize == 100}">100</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Column Visibility Dropdown -->
                                     <div class="dropdown mr-2">
                                         <button class="btn btn-primary dropdown-toggle" type="button"
                                             id="columnToggleDropdown" data-toggle="dropdown" aria-haspopup="true"
@@ -108,27 +165,21 @@
                                         <div class="dropdown-menu dropdown-menu-right"
                                             aria-labelledby="columnToggleDropdown"
                                             style="min-width: 250px; max-height: 300px; overflow-y: auto; padding: 0.5rem 0;">
-                                            <h6 class="dropdown-header px-3 py-2">
-                                                Show / Hide Columns
-                                            </h6>
+                                            <h6 class="dropdown-header px-3 py-2">Show / Hide Columns</h6>
                                             <div id="column-toggle-list"></div>
                                         </div>
                                     </div>
 
-                                    <!-- Filter Dropdown -->
                                     <div class="dropdown">
-                                        <button class="btn btn-primary dropdown-toggle" type="button"
-                                            id="filterDropdown" data-toggle="dropdown" aria-haspopup="true"
-                                            aria-expanded="false" style="padding: 0.375rem 0.5rem;">
-                                            <i class="fa fa-filter"></i>
+                                        <button class="btn btn-primary dropdown-toggle" type="button" id="sortDropdown"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                            style="padding: 0.375rem 0.5rem;">
+                                            <i class="fa fa-sort"></i>
                                         </button>
-                                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="filterDropdown"
+                                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="sortDropdown"
                                             style="min-width: 200px;">
-                                            <!-- Hidden inputs for sort state -->
                                             <input type="hidden" name="sortBy" id="sortByInput" th:value="${sortBy}" />
                                             <input type="hidden" name="asc" id="ascInput" th:value="${asc}" />
-
-                                            <!-- Sort Column -->
                                             <h6 class="dropdown-header">Sort Column</h6>
                                             <th:block th:each="field : ${sortFields}">
                                                 <a class="dropdown-item sort-column" href="#" th:text="${field}"
@@ -136,10 +187,7 @@
                                                     th:classappend="${sortBy == field} ? 'active' : ''">
                                                 </a>
                                             </th:block>
-
                                             <div class="dropdown-divider"></div>
-
-                                            <!-- Sort Order -->
                                             <h6 class="dropdown-header">Sort Order</h6>
                                             <a class="dropdown-item" href="#" data-asc="true"
                                                 th:classappend="${asc == true} ? 'active' : ''">Ascending</a>
@@ -147,120 +195,108 @@
                                                 th:classappend="${asc == false} ? 'active' : ''">Descending</a>
                                         </div>
                                     </div>
+
+                                    <div class="form-group">
+                                        <label for="pageSizeSelect" class="sr-only">Items per page:</label>
+                                        <select name="size" id="pageSizeSelect" class="form-control form-control"
+                                            onchange="this.form.submit()">
+                                            <option value="10" th:selected="${pageSize == 10}">10</option>
+                                            <option value="30" th:selected="${pageSize == 30}">30</option>
+                                            <option value="50" th:selected="${pageSize == 50}">50</option>
+                                            <option value="100" th:selected="${pageSize == 100}">100</option>
+                                            <option value="300" th:selected="${pageSize == 300}">300</option>
+                                            <option value="500" th:selected="${pageSize == 500}">500</option>
+                                            <option value="-1" th:selected="${pageSize == -1}">All</option>
+                                        </select>
+                                    </div>
                                 </form>
                             </div>
                         </div>
 
                         <div class="card-body">
-                            <!-- Include Modals -->
+
                             <div th:replace="~{complaint/modal :: modal}"></div>
 
-                            <!-- Table -->
                             <div class="table-responsive">
                                 <table id="document-table" class="display table table-striped table-hover">
                                     <thead class="bg-primary text-white">
                                         <tr>
-                                            <th width="8%">Code</th>
-                                            <th width="15%">Report Date</th>
-                                            <th width="15%">Last Update</th>
-                                            <th width="12%">Reporter</th>
-                                            <th width="10%">Area</th>
-                                            <th width="12%">Equipment</th>
-                                            <th width="15%">Subject</th>
-                                            <th width="35%">Description</th>
-                                            <th width="12%">Action Taken</th>
-                                            <th width="12%">Assignee</th>
-                                            <th width="8%">Priority</th>
-                                            <th width="10%">Category</th>
-                                            <th width="9%">Status</th>
-                                            <th width="10%">Close Time</th>
-                                            <th width="8%">Total Time</th>
+                                            <th style="min-width: 50px;">Code</th>
+                                            <th style="min-width: 125px;">Report Date</th>
+                                            <th style="min-width: 125px;">Last Update</th>
+                                            <th style="min-width: 50px;">Reporter</th>
+                                            <th style="min-width: 100px;">Area</th>
+                                            <th style="min-width: 100px;">Equipment</th>
+                                            <th style="min-width: 100px;">Subject</th>
+                                            <th style="min-width: 175px;">Description</th>
+                                            <th style="min-width: 175px;">Action Taken</th>
+                                            <th style="min-width: 50px;">Assignee</th>
+                                            <th style="min-width: 50px;">Priority</th>
+                                            <th style="min-width: 50px;">Category</th>
+                                            <th style="min-width: 50px;">Status</th>
+                                            <th style="min-width: 130px;">Close Time</th>
+                                            <th style="min-width: 100px;">Total Time</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr th:each="complaint : ${complaints.content}" class="table-row-hover"
-                                            th:data-id="${complaint.id}">
-                                            <!-- Code -->
+                                        <tr th:each="complaint : ${complaints.content}" th:data-id="${complaint.id}">
                                             <td data-field="code">
                                                 <a th:href="@{/complaints/{id}(id=${complaint.id})}"
-                                                    class="font-weight-bold" th:text="${complaint.code}"></a>
+                                                    class="font-weight-bold text-dark" th:text="${complaint.code}">-</a>
                                             </td>
-
-                                            <!-- Report Date -->
                                             <td data-field="reportDate"
-                                                th:text="${#temporals.format(complaint.reportDate, 'MMM d, yyyy')}">-
+                                                th:text="${#temporals.format(complaint.reportDate, 'MMM d, yyyy')}">
+                                                -
                                             </td>
-
-                                            <!-- Last Update -->
                                             <td data-field="updatedAt"
                                                 th:text="${#temporals.format(complaint.updatedAt, 'MMM d, yyyy HH:mm')}">
-                                                -</td>
-
-                                            <!-- Reporter -->
-                                            <td data-field="reporter" th:text="${complaint.reporter?.name ?: '-'}">-
+                                                -
                                             </td>
-
-                                            <!-- Area -->
-                                            <td data-field="area" th:text="${complaint.area?.name ?: '-'}">-</td>
-
-                                            <!-- Equipment -->
-                                            <td data-field="equipment" th:text="${complaint.equipment?.name ?: '-'}">-
+                                            <td data-field="reporter" th:text="${complaint.reporter?.name ?: '-'}">
+                                                -
                                             </td>
-
-                                            <!-- Subject -->
+                                            <td data-field="area" th:text="${complaint.area?.name ?: '-'}">
+                                                -
+                                            </td>
+                                            <td data-field="equipment" th:text="${complaint.equipment?.name ?: '-'}">
+                                                -
+                                            </td>
                                             <td data-field="subject" th:text="${complaint.subject ?: '-'}">-</td>
 
-                                            <!-- Description -->
                                             <td data-field="description" th:text="${complaint.description ?: '-'}">-
                                             </td>
-
-                                            <!-- Action Taken -->
                                             <td data-field="actionTaken" th:text="${complaint.actionTaken ?: '-'}">-
                                             </td>
 
-                                            <!-- Assignee -->
                                             <td data-field="assignee" th:text="${complaint.assignee?.name ?: '-'}">-
                                             </td>
 
-                                            <!-- Priority -->
                                             <td data-field="priority">
                                                 <span class="badge badge-pill px-3 py-2" th:classappend="${
                       complaint.priority == 'HIGH' ? 'badge-danger' :
                       complaint.priority == 'MEDIUM' ? 'badge-warning' :
-                      complaint.priority == 'LOW' ? 'badge-success' :
-                      'badge-secondary'
+                      'badge-success'
                   }" th:text="${complaint.priority ?: '-'}"></span>
                                             </td>
-
-                                            <!-- Category -->
                                             <td data-field="category">
                                                 <span class="badge badge-pill px-3 py-2" th:classappend="${
-                      complaint.category == 'MECHANICAL' ? 'badge-danger' :
-                      complaint.category == 'ELECTRICAL' ? 'badge-warning' :
-                      complaint.category == 'IT' ? 'badge-info' :
-                      'badge-secondary'
+                      complaint.category == 'MECHANICAL' ? 'badge-info' :
+                      complaint.category == 'ELECTRICAL' ? 'badge-danger' :
+                      'badge-success'
                   }" th:text="${complaint.category ?: '-'}"></span>
                                             </td>
-
-                                            <!-- Status -->
                                             <td data-field="status">
                                                 <span class="badge badge-pill px-3 py-2" th:classappend="${
-                      complaint.status == 'OPEN' ? 'badge-danger' :
-                      complaint.status == 'IN_PROGRESS' ? 'badge-warning' :
-                      complaint.status == 'PENDING' ? 'badge-info' :
-                      complaint.status == 'CLOSED' ? 'badge-success' :
-                      'badge-secondary'
+                      complaint.status == 'OPEN' ? 'badge-warning' :
+                      complaint.status == 'PENDING' ? 'badge-danger' :
+                      'badge-success'
                   }" th:text="${complaint.status ?: '-'}"></span>
                                             </td>
-
-                                            <!-- Close Time -->
                                             <td data-field="closeTime"
                                                 th:text="${complaint.closeTime != null ? #temporals.format(complaint.closeTime, 'MMM d, yyyy HH:mm') : '-'}">
                                                 -</td>
-
-                                            <!-- Total Resolution Time -->
-                                            <td data-field="totalResolutionTimeMinutes"
-                                                th:text="${complaint.resolutionTimeDisplay ?: '-'}">-</td>
+                                            <td data-field="totalTimeMinutes"
+                                                th:text="${complaint.totalTimeDisplay ?: '-'}">-</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -314,80 +350,8 @@
         </div>
     </div>
 
-    <style>
-        /* Container for the dropdown */
-        .column-toggle-container {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-        }
-
-        .custom-checkbox-item {
-            display: flex;
-            align-items: center;
-            padding: 0.4rem 1rem;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: background-color 0.15s ease;
-            user-select: none;
-        }
-
-        .custom-checkbox-item:hover {
-            background-color: #f1f3f5;
-        }
-
-        .custom-checkbox {
-            position: relative;
-            width: 18px;
-            height: 18px;
-            flex-shrink: 0;
-            margin-right: 10px;
-        }
-
-        .custom-checkbox input {
-            opacity: 0;
-            position: absolute;
-            pointer-events: none;
-        }
-
-        .custom-checkbox .checkmark {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 18px;
-            height: 18px;
-            background-color: #fff;
-            border: 2px solid #ced4da;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-        }
-
-        .custom-checkbox input:checked+.checkmark {
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-
-        .custom-checkbox input:checked+.checkmark:after {
-            content: "";
-            position: absolute;
-            left: 5px;
-            top: 2px;
-            width: 5px;
-            height: 10px;
-            border: solid white;
-            border-width: 0 2px 2px 0;
-            transform: rotate(45deg);
-        }
-
-        .custom-checkbox-label {
-            font-size: 0.95rem;
-            color: #212529;
-            font-weight: 500;
-            flex-grow: 1;
-        }
-    </style>
-
     <!-- Scripts Fragment -->
     <th:block layout:fragment="scripts">
-        <!-- <script th:src="@{/js/example.js}"></script> -->
         <script>
             document.addEventListener("DOMContentLoaded", function () {
                 const table = document.getElementById("document-table");
@@ -407,20 +371,18 @@
                     { key: "actionTaken", label: "Action Taken", visible: true },
                     { key: "assignee", label: "Assignee", visible: true },
                     { key: "priority", label: "Priority", visible: false },
-                    { key: "category", label: "Category", visible: true },
+                    { key: "category", label: "Category", visible: false },
                     { key: "status", label: "Status", visible: true },
                     { key: "closeTime", label: "Close Time", visible: true },
-                    { key: "totalResolutionTimeMinutes", label: "Total Time", visible: true }
+                    { key: "totalTimeMinutes", label: "Total Time", visible: true }
                 ];
 
                 columnSettings.forEach((col, index) => {
-                    // Create wrapper div (like Bootstrap's custom-control)
                     const div = document.createElement("div");
                     div.className = "px-3 py-1";
                     div.style.cursor = "pointer";
                     div.style.userSelect = "none";
 
-                    // Use innerHTML with Font Awesome for checkbox
                     div.innerHTML = `
                     <div class="d-flex align-items-center">
                         <span class="column-checkbox" data-index="${index}" 
@@ -432,28 +394,23 @@
                     </div>
                     `;
 
-                    // Save references
                     const checkboxSpan = div.querySelector(".column-checkbox");
                     const th = headerRow.children[index];
                     const tds = Array.from(dataRows).map(row => row.children[index]);
 
-                    // Initially hide if not visible
                     if (!col.visible) {
                         th.style.display = "none";
                         tds.forEach(td => td.style.display = "none");
                     }
 
-                    // Toggle on click
                     div.addEventListener("click", function () {
                         const isChecked = checkboxSpan.innerHTML.trim() !== "";
                         if (isChecked) {
-                            // Uncheck
                             checkboxSpan.style.backgroundColor = "";
                             checkboxSpan.innerHTML = "";
                             th.style.display = "none";
                             tds.forEach(td => td.style.display = "none");
                         } else {
-                            // Check
                             checkboxSpan.style.backgroundColor = "#007bff";
                             checkboxSpan.style.borderColor = "#007bff";
                             checkboxSpan.innerHTML = '<i class="fas fa-check" style="color: white;"></i>';
@@ -461,7 +418,6 @@
                             tds.forEach(td => td.style.display = "");
                         }
                     });
-
                     container.appendChild(div);
                 });
             });
@@ -533,6 +489,7 @@
                         form.submit();
                     });
                 });
+
             });
             // Auto-show Flash Modal
             $(document).ready(function () {
@@ -543,10 +500,62 @@
             });
 
             function clearDateFilter() {
-    document.getElementById('reportDateFrom').value = '';
-    document.getElementById('reportDateTo').value = '';
-    document.getElementById('complaintsForm').submit();
-}
+                document.getElementById('reportDateFrom').value = '';
+                document.getElementById('reportDateTo').value = '';
+                document.getElementById('complaintsForm').submit();
+            }
+        </script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                function resetFilters() {
+                    document.querySelectorAll('#complaintsForm input, #complaintsForm select').forEach(el => {
+                        if (el.name === 'size' || el.name === 'sortBy' || el.name === 'asc') return; // preserve pagination/sort
+                        if (el.type === 'checkbox') {
+                            el.checked = false;
+                        } else {
+                            el.value = '';
+                        }
+                    });
+                    document.getElementById('complaintsForm').submit();
+                }
+
+                function syncSelect(inputId, selectId) {
+                    const input = document.getElementById(inputId);
+                    const select = document.getElementById(selectId);
+
+                    if (!input || !select) {
+                        console.warn(`Missing input or select: ${inputId}, ${selectId}`);
+                        return;
+                    }
+
+                    input.addEventListener('input', () => {
+                        let options;
+                        if (selectId === 'assigneeSelect') {
+                            options = document.querySelectorAll('#assigneeOptions option');
+                        } else if (selectId === 'equipmentSelect') {
+                            options = document.querySelectorAll('#equipmentOptions option');
+                        }
+
+                        const opt = [...options].find(o => o.value === input.value);
+                        select.value = opt ? (opt.dataset.employeeId || opt.dataset.code) : '';
+                    });
+                }
+
+                syncSelect('assigneeInput', 'assigneeSelect');
+                syncSelect('equipmentInput', 'equipmentSelect');
+
+                // Keep dropdown open until Apply clicked
+                const filterDropdown = document.getElementById('filterDropdownBtn');
+                const dropdownMenu = filterDropdown.nextElementSibling;
+                const applyButton = dropdownMenu.querySelector('button[type="submit"]');
+
+                dropdownMenu.addEventListener('click', e => e.stopPropagation());
+                applyButton.addEventListener('click', () => $(filterDropdown).dropdown('toggle'));
+            });
+        </script>
+        <script>
+
         </script>
     </th:block>
 

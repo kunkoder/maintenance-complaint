@@ -1,12 +1,12 @@
 package ahqpck.maintenance.report.entity;
 
+import ahqpck.maintenance.report.util.Base62;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import ahqpck.maintenance.report.util.Base62;
-import ahqpck.maintenance.report.util.ZeroPaddedCodeGenerator;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,6 +20,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -46,39 +47,26 @@ public class Complaint {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    // @Column(nullable = false)
-    // private String area;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "area_code", referencedColumnName = "code", nullable = true)
-    private Area area;
-
-    // @Column(nullable = false)
-    // private String machine;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "equipment_code", referencedColumnName = "code", nullable = false)
-    private Equipment equipment;
-
-    // @Column(nullable = false)
-    // private String reporter;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reporter", referencedColumnName = "employee_id", nullable = false)
-    private User reporter;
-
     @Column(nullable = true)
     private String subject;
 
     @Column(columnDefinition = "TEXT", nullable = true)
     private String description;
 
-    // @Column(nullable = true)
-    // private String assignee;
+    @Column(name = "action_taken", columnDefinition = "TEXT", nullable = true)
+    private String actionTaken;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assignee", referencedColumnName = "employee_id", nullable = false)
-    private User assignee;
+    @Column(name = "close_time", nullable = true)
+    private LocalDateTime closeTime;
+
+    @Column(name = "total_time_minutes", nullable = true)
+    private Integer totalResolutionTimeMinutes;
+
+    @Column(name = "image_before", nullable = true)
+    private String imageBefore;
+
+    @Column(name = "image_after", nullable = true)
+    private String imageAfter;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -88,22 +76,25 @@ public class Complaint {
     @Column(nullable = false)
     private Category category;
 
-    @Column(name = "action_taken", columnDefinition = "TEXT", nullable = true)
-    private String actionTaken;
-
-    private String imageBefore;
-
-    private String imageAfter;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status;
 
-    @Column(name = "close_time", nullable = true)
-    private LocalDateTime closeTime;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reporter", referencedColumnName = "employee_id", nullable = false)
+    private User reporter;
 
-    @Column(name = "total_resolution_time_minutes", nullable = true)
-    private Integer totalResolutionTimeMinutes;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assignee", referencedColumnName = "employee_id", nullable = true)
+    private User assignee;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "area_code", referencedColumnName = "code", nullable = true)
+    private Area area;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "equipment_code", referencedColumnName = "code", nullable = true)
+    private Equipment equipment;
 
     @OneToMany(mappedBy = "complaint", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -137,16 +128,12 @@ public class Complaint {
     @PrePersist
     public void prePersist() {
         if (this.id == null) {
-            // this.id = ZeroPaddedIdGenerator.generate("CMP");
             this.id = Base62.encode(UUID.randomUUID());
         }
-        // if (this.code == null) {
-        //     this.code = ZeroPaddedIdGenerator.generate("CP"); 
-        // }
 
         LocalDateTime now = LocalDateTime.now();
         if (this.reportDate == null) {
-            this.reportDate = now; 
+            this.reportDate = now;
         }
         this.updatedAt = now;
         this.status = this.status != null ? this.status : Status.OPEN;

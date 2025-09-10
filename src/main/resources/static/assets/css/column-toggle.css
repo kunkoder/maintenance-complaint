@@ -1,0 +1,68 @@
+/* Container for the dropdown */
+.column-toggle-container {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.custom-checkbox-item {
+    display: flex;
+    align-items: center;
+    padding: 0.4rem 1rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.15s ease;
+    user-select: none;
+}
+
+.custom-checkbox-item:hover {
+    background-color: #f1f3f5;
+}
+
+.custom-checkbox {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-right: 10px;
+}
+
+.custom-checkbox input {
+    opacity: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+.custom-checkbox .checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 18px;
+    height: 18px;
+    background-color: #fff;
+    border: 2px solid #ced4da;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.custom-checkbox input:checked + .checkmark {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.custom-checkbox input:checked + .checkmark:after {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.custom-checkbox-label {
+    font-size: 0.95rem;
+    color: #212529;
+    font-weight: 500;
+    flex-grow: 1;
+}
